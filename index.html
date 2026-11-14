@@ -3939,8 +3939,8 @@ function liveCost(){
     else{say(pick(['คุณอดข้าวหลายมื้อ เพราะเงินไม่พอซื้อขนมปัง','หนี้ร้านค้าหัวมุมพอกพูนจนเถ้าแก่ไม่ยอมให้ติดอีก']),'bad');st('hp',-R(3,7));st('joy',-6);}
   }
   if(h.k==='hideout'){st('joy',-2);if(chance(.3)){st('hp',-R(2,5));say('คุณต้องย้ายที่ซ่อนกลางดึกเพราะมีคนตามรอยมา','bad');}}
-  if(h.k==='street'&&S.age>=18){st('hp',-R(2,6));st('joy',-6);say(pick([W.street?W.street:W.id==='aot'?'คุณนอนใต้สะพานริมคลอง ลมหนาวพัดผ่านทั้งคืน':'คุณนอนในศาลเจ้าร้างท้ายหมู่บ้าน','คุณเปลี่ยนที่นอนทุกคืน ไม่มีที่ไหนเป็นบ้าน']),'bad');
-    const r=RENTS[W.id][0];if(S.money>=r.rent*2){S.rent=r.id;say(`คุณเก็บเงินได้พอ จึงเช่า${r.n}`,'good');}}
+  if(h.k==='street'&&S.age>=18&&S.flags.homeless&&typeof hlYear==='function'){hlYear();}else if(h.k==='street'&&S.age>=18){st('hp',-R(2,6));st('joy',-6);say(pick([W.street?W.street:W.id==='aot'?'คุณนอนใต้สะพานริมคลอง ลมหนาวพัดผ่านทั้งคืน':'คุณนอนในศาลเจ้าร้างท้ายหมู่บ้าน','คุณเปลี่ยนที่นอนทุกคืน ไม่มีที่ไหนเป็นบ้าน']),'bad');
+    const r=RENTS[W.id][0];if(!S.flags.homeless&&S.money>=r.rent*2){S.rent=r.id;say(`คุณเก็บเงินได้พอ จึงเช่า${r.n}`,'good');}}
   if(h.k==='parents'&&S.flags.stayHome)st('joy',-1);
 }
 FOLLOW.moveOut=function(S){
@@ -14961,6 +14961,217 @@ for(const X of Object.values(WORLDS))if(typeof X.isWhere==='function'){const iw=
 
 /* ---- 15. an event without any main character is not titled "พบตัวละครหลัก" ---- */
 {const akT=ask;ask=function(title,text,choices,kind){try{if(title==='พบตัวละครหลัก'){const ids=castsIn(String(text||''));if(!ids||!ids.length)title=/ทัพ|บุก|สงคราม|ประหาร|ระเบิด|ยกพล/.test(text||'')?'เหตุการณ์ใหญ่':'เรื่องสำคัญ';}}catch(e){}return akT.call(this,title,text,choices,kind);};}
+
+
+/* --- z_work74.js --- */
+/* ===== v74 working life and money pressure: a job is a career (rank, performance, promotion, getting fired), you can
+   actually go to work (put in effort, overtime, ask for a raise, day labour), the workplace has its own events, money
+   gets lost in ways that fit each world, debt collectors come, and living homeless can be a chosen way of life ===== */
+const RANKN=['ฝึกหัด','ประจำ','อาวุโส','หัวหน้า'],RANKM=[.85,1,1.25,1.6];
+const BOSS=()=>['heian','jjedo'].includes(W.id)?'นายจ้าง':'หัวหน้า';
+const coW=()=>{const p=typeof npc==='function'&&npc();return p&&p.n?p.n.replace(/^(ป้า|ลุง|ยาย|ตา|หนู|ช่าง|พี่|น้า)/,''):'เพื่อนร่วมงาน';};
+const isWork=S=>!!(S.job&&!S.job.pt&&!S.job.mil);
+function wkInit(){const j=S&&S.job;if(!j||j.wk)return j&&j.wk;j.wk={perf:50,lv:1,base:j.pay,y0:S.year,ly:S.year};return j.wk;}
+function wkSetLv(lv){const j=S.job,w=wkInit();if(!w)return;const extra=j.pay-Math.round(w.base*RANKM[w.lv]);w.lv=lv;w.ly=S.year;j.pay=Math.max(1,Math.round(w.base*RANKM[lv])+extra);}
+function wkBase(f){const j=S.job,w=wkInit();if(!w)return 0;const old=Math.round(w.base*RANKM[w.lv]);w.base=Math.max(1,w.base*f);const nw=Math.round(w.base*RANKM[w.lv]);j.pay=Math.max(1,j.pay+nw-old);return nw-old;}
+const perf=d=>{const w=wkInit();if(w)w.perf=Math.max(0,Math.min(100,w.perf+d));};
+{const sj0=setJob;setJob=function(id){const prev=S&&S.job&&S.job.id;const r=sj0.apply(this,arguments);try{if(S.job&&S.job.id!==prev){S.job.wk={perf:50,lv:S.job.pt||S.job.mil?1:0,base:S.job.pay,y0:S.year,ly:S.year};if(!S.job.pt&&!S.job.mil)S.job.pay=Math.max(1,Math.round(S.job.pay*RANKM[0]));}}catch(e){}return r;};}
+const amt=(a,b)=>R(a,b),pct=f=>Math.max(1,Math.round(Math.max(0,S.money)*f));
+const lose=(n,why)=>{mon(-n);if(why)say(`${why} (เสีย ${fmt(n)})`,'bad');};
+
+/* ---- going to work yourself, from the งาน / หางาน menu ---- */
+const WORKLINE=[n=>`คุณตั้งใจทำงาน${n}ทั้งเดือน ${BOSS()}เริ่มจำชื่อคุณได้`,()=>'งานที่กองพะเนินถูกเคลียร์จนหมดโต๊ะ คุณกลับบ้านดึกแต่ภูมิใจ',()=>'คุณแก้ปัญหาที่ค้างมาหลายเดือนได้สำเร็จ',
+  ()=>`คุณเรียนเคล็ดลับใหม่จากรุ่นพี่ในที่ทำงาน`,()=>'คุณมาถึงก่อนทุกคนและกลับหลังทุกคนทั้งเดือน',n=>`ลูกค้าคนหนึ่งกลับมาขอบคุณคุณถึงที่ทำงาน${n}`];
+const DAYJOB={aot:['แบกกระสอบที่ท่าเรือ','ช่วยขนหินซ่อมกำแพง','เก็บเกี่ยวมันฝรั่งในไร่'],naruto:['ช่วยขนของที่ตลาด','ทาสีรั้วให้บ้านคนรวย','ถอนหญ้าในสวน'],op:['ขนปลาขึ้นจากเรือ','ขัดดาดฟ้าเรือสินค้า','ล้างจานในร้านอาหารริมท่า'],
+  bleach:['ขนของในตลาดรุคอนไก','ล้างจานร้านราเมง','แจกใบปลิวหน้าสถานี'],jjk:['แจกใบปลิวหน้าสถานี','ยกของในโกดัง','เป็นพนักงานชั่วคราวในงานอีเวนต์'],jojo:['ส่งหนังสือพิมพ์ตอนเช้า','ยกของในโกดัง','ล้างจานร้านอาหาร'],
+  heian:['ช่วยตำข้าวในโรงสี','แบกฟืนเข้าเมือง','กวาดลานวัด'],jjedo:['แบกฟืนเข้าเมือง','ช่วยงานในนาข้าว','ส่งของทางเรือในคลอง'],db:['ขนของให้ร้านค้า','ล้างรถลอยฟ้า','ช่วยงานในไร่'],
+  lookism:['ส่งอาหารด้วยมอเตอร์ไซค์','ยกของในโกดัง','ทำงานร้านสะดวกซื้อกะดึกแทนเพื่อน'],bc:['ช่วยงานในไร่','แบกฟืน','ขัดรองเท้าให้ขุนนาง']};
+{const akW=ask;ask=function(title,text,choices,kind){try{if(S&&Array.isArray(choices)&&(/^งานปัจจุบัน:/.test(title||'')||title==='หางาน')){
+  const add=[],ft=ftOf();
+  if(S.job){const w=wkInit(),n=S.job.n,P=payOf(S.job),ot=Math.max(1,Math.round(P/7));
+    if(!S.job.pt&&!S.job.mil)title=`งานปัจจุบัน: ${n} · ระดับ${RANKN[w.lv]}`;
+    text=`ผลงาน ${Math.round(w.perf)}/100 · ทำมา ${S.year-w.y0} ปี · ค่าจ้าง ${fmt(P)} ต่อปี${S.money<0?` · หนี้ ${fmt(-S.money)}`:''}`;
+    add.push({l:'ตั้งใจทำงานเดือนนี้',g:'diligent',ok:ft>0,h:ft>0?'ใช้เวลาว่าง 1 · ผลงาน+ ฝีมือ+':'เวลาว่างหมด รอเดือนหน้า',f(S){useFt();perf(R(4,9)+Math.floor((S.sk?.[jobSk(S.job)]||0)/25));const k=jobSk(S.job);if(k)skill(k,R(1,2));st('joy',-1);say(pick(WORKLINE)(n),'good');liveAct('work');}});
+    add.push({l:'ทำงานล่วงเวลา',g:'diligent selfish',ok:ft>0,h:ft>0?`ได้ราว ${fmt(ot)} · เหนื่อย สุขภาพ- ความสุข-`:'เวลาว่างหมด',f(S){useFt();mon(ot);perf(2);st('hp',-R(2,4));st('joy',-R(2,4));
+      say(S.partner&&chance(.4)?`คุณได้เงินเพิ่ม ${fmt(ot)} แต่${S.partner.n}กินข้าวเย็นคนเดียวอีกคืน`:pick([`คุณได้เงินเพิ่ม ${fmt(ot)} ตาแทบปิดตอนเดินกลับบ้าน`,`ค่าล่วงเวลา ${fmt(ot)} คุ้มกับหลังที่ปวดไหม คุณไม่แน่ใจ`]),'plain');if(S.partner)S.partner.love=Math.max(0,(S.partner.love??50)-2);liveAct('work');}});
+    if(!S.job.pt&&!S.job.mil)add.push({l:'ขอขึ้นค่าจ้าง',g:'brave',ok:w.ask!==S.year&&S.year-w.y0>=1,h:w.ask===S.year?'ขอไปแล้วปีนี้':S.year-w.y0<1?'ต้องทำงานครบหนึ่งปีก่อน':`โอกาสขึ้นกับผลงานและเสน่ห์`,f(S){w.ask=S.year;
+      if(chance(.15+w.perf/160+(S.sk?.charm||0)/300)){const d=wkBase(1.12);st('joy',6);say(`${BOSS()}ยอมขึ้นค่าจ้างให้ ${fmt(Math.max(1,d))} ต่อปี "ผลงานคุณพูดแทนตัวเองแล้ว"`,'good');}
+      else{perf(-3);st('joy',-4);say(pick([`${BOSS()}ปฏิเสธ "ตอนนี้ยังไม่ใช่เวลา"`,`${BOSS()}ถามกลับว่าปีนี้คุณทำอะไรเกินหน้าที่บ้าง คุณตอบไม่ได้`]),'bad');}}});}
+  else if(S.age>=15){const dj=pick(DAYJOB[W.id]||DAYJOB.aot),g=R(1,2)+(S.st.fit>60?1:0);
+    add.push({l:`รับจ้างรายวัน: ${dj}`,g:'diligent',ok:ft>0,h:ft>0?`ได้ราว ${fmt(g)} · ใช้เวลาว่าง 1`:'เวลาว่างหมด',f(S){useFt();mon(g);st('hp',-1);st('fit',1);say(pick([`คุณ${dj}ทั้งวัน ได้ค่าแรง ${fmt(g)}`,`${dj}เหนื่อยจนหลังแข็ง แต่ได้ ${fmt(g)} มาประทังชีวิต`]),'plain');liveAct('work');}});
+    if(homeOf().k==='street'&&S.age>=18){add.push({l:'เก็บของเก่าไปขาย',g:'diligent',ok:ft>0,f(S){useFt();const v=R(0,2);mon(v);say(v?`คุณเก็บของเก่าได้หนึ่งกระสอบ ขายได้ ${fmt(v)}`:'วันนี้คนเก็บของเก่าเยอะกว่าของ คุณได้แค่ขวดแตกสองใบ','plain');liveAct('bag');}});
+      add.push({l:'ขอเศษอาหารจากร้านค้า',g:'safe',f(S){st('joy',-2);if(chance(.6)){st('hp',2);say(pick(['เถ้าแก่ร้านข้าวยื่นข้าวที่เหลือให้ห่อหนึ่ง ยังอุ่นอยู่','แม่ค้าใจดีแบ่งขนมปังเก่าให้ "พรุ่งนี้มาใหม่นะ"']),'good');}else say('เจ้าของร้านไล่คุณออกไปก่อนจะได้พูดจบ','bad');}});}}
+  if(add.length){const i=choices.findIndex(c=>c&&c.skip);choices=[...add,...choices];}}}catch(e){}return akW.call(this,title,text,choices,kind);};}
+
+/* ---- workplace events ---- */
+const WKEV=[
+  {w:3,when:S=>true,f:S=>{const B=BOSS(),c=coW();return{text:`${B}โยนงานด่วนมาให้ ต้องเสร็จภายในสามวัน`,sc:'work',choices:[
+    {l:'อดหลับอดนอนทำให้เสร็จ',g:'diligent brave',f(S){perf(8);st('hp',-4);st('joy',-2);say('คุณส่งงานทันเวลาพร้อมขอบตาดำ '+B+'พยักหน้าให้ครั้งแรก','good');}},
+    {l:'ขอเลื่อนกำหนดส่ง',g:'safe',f(S){perf(-3);say(`${B}ทำหน้าไม่พอใจ แต่ก็ยอมให้อีกสองวัน`,'plain');}},
+    {l:`ขอให้${c}ช่วย`,g:'kind',f(S){perf(4);st('joy',2);say(`${c}ช่วยจนงานเสร็จ แล้วบอกว่า "คราวหน้าตาเธอช่วยฉันบ้างนะ"`,'good');}}]};}},
+  {w:3,when:S=>true,f:S=>{const B=BOSS(),c=coW(),what=pick(['ของเสียหายไปหลายชิ้น','ลูกค้าไม่พอใจหนัก','งานทั้งหมดต้องทำใหม่']),loss=amt(1,4);return{text:`คุณทำพลาดในงาน ทำให้${what}`,sc:'work',choices:[
+    {l:'ยอมรับผิดและชดใช้',g:'kind',f(S){lose(loss,'คุณยอมรับผิดตรงๆ แล้วหักเงินตัวเองชดใช้');perf(2);dk(-1);}},
+    {l:`โทษว่าเป็นความผิดของ${c}`,g:'dark selfish',f(S){dk(4);if(chance(.55)){say(`ไม่มีใครสงสัย ${c}โดนตำหนิแทน แต่เขามองคุณแปลกๆ ไปอีกนาน`,'plain');}else{perf(-12);say('ความจริงถูกเปิดโปงต่อหน้าทุกคน ไม่มีใครอยากทำงานกับคุณอีก','bad');}}},
+    {l:'แอบแก้ไขเองก่อนใครรู้',g:'curious',f(S){if(chance(.35+(S.st.iq||0)/200)){perf(3);say('คุณแก้เสร็จก่อนเช้า ไม่มีใครรู้เรื่องเลย','good');}else{perf(-8);say('แก้ไม่ทัน แถมโดนจับได้ว่าพยายามปิดบัง','bad');}}}]};}},
+  {w:2,when:S=>true,f:S=>{const who=pick(['ลูกค้าคนหนึ่ง','ผู้ว่าจ้างรายใหญ่']);return{text:`${who}ตะคอกใส่คุณต่อหน้าทุกคน ทั้งที่ไม่ใช่ความผิดของคุณ`,sc:'work',choices:[
+    {l:'อดทนยิ้มรับ',g:'safe kind',f(S){st('joy',-4);perf(4);say('คุณยิ้มจนเขาเงียบไปเอง กลับถึงบ้านแล้วนั่งนิ่งอยู่นาน','plain');}},
+    {l:'อธิบายอย่างสุภาพแต่หนักแน่น',g:'brave',f(S){if(chance(.4+(S.sk?.charm||0)/150)){perf(3);st('joy',3);say('เขาฟังจนจบ แล้วขอโทษคุณ','good');}else{perf(-4);say('เขายิ่งโมโหแล้วไปฟ้อง'+BOSS(),'bad');}}},
+    {l:'ตะคอกกลับ',g:'rebel',f(S){perf(-10);st('joy',4);say('สะใจอยู่สามวินาที แล้ว'+BOSS()+'ก็เรียกคุณเข้าห้อง','bad');}}]};}},
+  {w:2,when:S=>true,f:S=>{const B=BOSS(),c=coW();return{text:`${c}เอางานที่คุณทำมาทั้งเดือนไปเสนอ${B}ว่าเป็นผลงานของตัวเอง`,sc:'office',choices:[
+    {l:`บอก${B}ตรงๆ พร้อมหลักฐาน`,g:'brave',f(S){if(chance(.45+(S.st.iq||0)/250)){perf(9);say(`${B}เชื่อคุณ ${c}โดนย้ายไปทำงานอื่น`,'good');}else{perf(-2);say('หลักฐานไม่พอ บรรยากาศในที่ทำงานอึดอัดไปหลายเดือน','bad');}}},
+    {l:'ปล่อยไป ครั้งหน้าค่อยระวัง',g:'safe',f(S){st('joy',-3);say('คุณเริ่มเก็บสำเนางานทุกชิ้นไว้กับตัว','plain');}},
+    {l:`คุยกับ${c}ตัวต่อตัว`,g:'kind brave',f(S){if(chance(.5)){perf(3);say(`${c}ยอมรับแล้วไปบอก${B}ความจริงเอง`,'good');}else{st('joy',-3);say(`${c}ยักไหล่ "ใครพิสูจน์ได้ล่ะ"`,'bad');}}}]};}},
+  {w:2,when:S=>S.age>=20,f:S=>({text:'เพื่อนร่วมงานชวนไปกินข้าวด้วยกันหลังเลิกงาน',sc:'tavern',choices:[
+    {l:'ไปด้วย',g:'kind love',f(S){mon(-1);perf(3);st('joy',4);say(pick(['คุณรู้เรื่องในที่ทำงานมากกว่าที่อยู่มาทั้งปี','วงข้าวเย็นทำให้ทุกคนสนิทกันขึ้น']),'good');}},
+    {l:'ขอตัวกลับบ้าน',g:'home safe',f(S){if(S.partner){S.partner.love=Math.min(100,(S.partner.love??50)+2);say(`${S.partner.n}ดีใจที่คุณกลับมากินข้าวด้วยกัน`,'good');}else{st('hp',1);say('คุณกลับบ้านไปนอนเร็ว','plain');}}}]})},
+  {w:2,when:S=>S.year-(wkInit()?.y0||S.year)>=1,f:S=>{const B=BOSS();return{text:`ที่ทำงานขาดทุนหนัก ${B}ประกาศลดค่าจ้างทุกคนหนึ่งในสิบ`,sc:'office',choices:[
+    {l:'ยอมรับ ดีกว่าตกงาน',g:'safe',f(S){const d=wkBase(.9);say(`ค่าจ้างของคุณลดลง ${fmt(Math.abs(d))} ต่อปี`,'bad');st('joy',-4);}},
+    {l:'รวมตัวกับเพื่อนร่วมงานต่อรอง',g:'brave',f(S){if(chance(.4)){perf(2);say(`${B}ยอมถอย ลดแค่ค่าอาหารกลางวันแทน`,'good');}else{wkBase(.9);perf(-5);say(`${B}ไม่ยอม และจำหน้าคนที่นำต่อรองไว้`,'bad');}}},
+    {l:'ลาออกไปหางานใหม่',g:'rebel',f(S){say(`คุณวางจดหมายลาออกบนโต๊ะ${B} แล้วเดินออกมา`,'plain');S.job=null;st('joy',2);}}]};}},
+  {w:2,when:S=>(wkInit()?.lv||0)>=1,f:S=>({text:`${BOSS()}ให้คุณดูแลเด็กใหม่ที่เพิ่งเข้ามา เขาทำอะไรก็พลาดไปหมด`,sc:'work',choices:[
+    {l:'สอนอย่างใจเย็น',g:'kind',f(S){perf(5);st('joy',2);skill('charm',1);say('สามเดือนต่อมา เด็กคนนั้นทำงานได้ดีจนคุณภูมิใจแทน','good');}},
+    {l:'ปล่อยให้เรียนรู้เอง',g:'selfish',f(S){perf(-1);say('เด็กใหม่ลาออกไปในเดือนที่สอง','plain');}}]})},
+  {w:2,when:S=>(wkInit()?.perf||0)>=70,f:S=>{const b=Math.max(1,Math.round(payOf(S.job)*.25));return{text:`${BOSS()}เรียกคุณไปพบ แล้วยื่นซองโบนัสให้ "ผลงานคุณดีมาก"`,sc:'office',choices:[
+    {l:'รับไว้ด้วยความดีใจ',g:'safe',f(S){mon(b);st('joy',6);say(`ในซองมี ${fmt(b)} คุณเดินกลับบ้านตัวลอย`,'good');}},
+    {l:'แบ่งให้ทีมที่ช่วยกันมา',g:'kind',f(S){mon(Math.ceil(b/2));perf(4);dk(-2);say('เพื่อนร่วมงานเลี้ยงข้าวคุณกลับในสัปดาห์ต่อมา','good');}}]};}},
+  {w:2,when:S=>(S.st.joy||50)<40,f:S=>({text:'คุณทำงานหนักติดกันมานาน เช้านี้ตื่นมาแล้วไม่อยากลุกไปทำงานเลย',sc:'home',choices:[
+    {l:'ลาพักสักสามวัน',g:'safe home',f(S){st('joy',7);perf(-2);trauma(-3);say('สามวันที่ไม่ต้องคิดเรื่องงาน คุณกลับไปทำงานพร้อมหัวที่โล่งขึ้น','good');}},
+    {l:'ฝืนไปทำงานต่อ',g:'diligent',f(S){perf(2);st('hp',-4);trauma(3);say('คุณไปทำงานทุกวัน แต่จำไม่ได้ว่าทั้งเดือนทำอะไรไปบ้าง','bad');}}]})},
+];
+/* yearly review: rank up, a warning, or losing the job */
+function wkReview(){const j=S.job;if(!isWork(S))return null;const w=wkInit();w.perf+=(46+(S.sk?.[jobSk(j)]||0)/2.5+(has('diligent')||has('ambitious')?7:0)-(has('lazy')?8:0)-w.perf)*.3;const yrs=S.year-w.ly,B=BOSS();
+  if(w.lv<3&&w.perf>=68&&yrs>=2+w.lv&&S.age>=18)return{t:'เลื่อนตำแหน่ง',text:`${B}เรียกคุณเข้าไปคุย "ผลงานตลอดหลายปีของคุณ ทุกคนเห็นหมด" ตำแหน่ง${RANKN[w.lv+1]}ว่างอยู่`,sc:'office',choices:[
+    {l:`รับตำแหน่ง${RANKN[w.lv+1]}`,g:'ambitious brave',f(S){wkSetLv(w.lv+1);w.perf=55;st('joy',8);fm(1);say(`คุณได้เลื่อนเป็นระดับ${RANKN[w.lv]} ค่าจ้างขึ้นเป็น ${fmt(payOf(S.job))} ต่อปี`,'good');remember(`ได้เลื่อนเป็น${RANKN[w.lv]}`,`ที่${j.n}`,'work',2);}},
+    {l:'ขอทำงานเดิมต่อ ไม่อยากรับผิดชอบมากขึ้น',g:'safe home',f(S){st('joy',3);say('คุณเลือกชีวิตที่กลับบ้านตรงเวลา','plain');}}]};
+  if(w.perf<=22)return{t:'ที่ทำงาน',text:`${B}เรียกคุณเข้าห้อง วางสมุดบันทึกความผิดพลาดของคุณทั้งปีไว้บนโต๊ะ`,sc:'office',choices:[
+    {l:'ขอโอกาสอีกครั้ง',g:'safe',f(S){if(chance(.5+(S.sk?.charm||0)/200)){w.perf=40;say(`${B}ถอนหายใจ "ครั้งสุดท้ายนะ"`,'plain');}else{say(`${B}ส่ายหน้า คุณถูกเลิกจ้าง`,'bad');S.job=null;st('joy',-10);remember('ถูกเลิกจ้าง',`จาก${j.n}`,'grief',2);}}},
+    {l:'ลาออกเองก่อนถูกไล่',g:'rebel',f(S){say('คุณเก็บของใส่กล่องแล้วเดินออกมาโดยไม่หันหลัง','plain');S.job=null;st('joy',-4);}}]};
+  return null;}
+
+/* ---- losing money: everyday bad luck, family needs, scams and each world's own levies ---- */
+const SCAM={aot:'เหมืองถ่านหินใต้ดิน',naruto:'โรงงานกระดาษยันต์ระเบิด',op:'แผนที่ขุมทรัพย์ของราชาโจรสลัด',heian:'กองเรือค้าขายกับแผ่นดินใหญ่',jjedo:'กองเรือค้าขายกับฮอลันดา',db:'แคปซูลรุ่นใหม่ที่ยังไม่วางขาย',bc:'เหมืองหินเวทในดินแดนต้องสาป'};
+const TOOL={aot:'เกวียนลากของ',naruto:'ชุดเครื่องมือทำมาหากิน',op:'เรือเล็กประจำบ้าน',bleach:'จักรยานคันเดียวที่มี',jjk:'โทรศัพท์มือถือ',jojo:'จักรยานคันเดียวที่มี',heian:'เกวียนเทียมวัว',jjedo:'เรือแจวลำเล็ก',db:'แคปซูลรถลอยฟ้า',lookism:'โทรศัพท์มือถือ',bc:'ไม้กวาดบินเก่า'};
+const LEVY=S=>{const w=W.id,p=S.place,y=S.year;
+  if(w==='aot')return p==='liberio'?['ทางการมาร์เลย์ขึ้นค่าธรรมเนียมเขตกักกันสำหรับชาวเอลเดีย','ทหารมาร์เลย์']:y>=854?['รัฐบาลเยเกอริสต์เก็บภาษีสงครามเพื่อสร้างกองทัพ','เจ้าหน้าที่เก็บภาษี']:['กองทหารรักษาการณ์ประกาศเก็บภาษีพิเศษเพื่อซ่อมกำแพง','เจ้าหน้าที่เก็บภาษี'];
+  if(w==='naruto')return['หมู่บ้านเก็บภาษีพิเศษเพื่อเตรียมรับสงคราม','เจ้าหน้าที่หมู่บ้าน'];
+  if(w==='op')return chance(.5)?['โจรสลัดกลุ่มหนึ่งยึดท่าเรือ แล้วเก็บค่าคุ้มครองทุกบ้าน','โจรสลัด']:['รัฐบาลโลกเก็บส่วยประจำปีจากทุกเกาะ เพื่อส่งให้มังกรฟ้า','ทหารเรือ'];
+  if(w==='bleach')return p==='rukon'?['แก๊งโจรในรุคอนไกมาเก็บค่าคุ้มครองทุกกระท่อม','แก๊งโจร']:['เจ้าของห้องขึ้นค่าเช่ากะทันหัน','เจ้าของห้อง'];
+  if(w==='jjk')return['ตึกที่คุณอยู่เสียหายจากเหตุที่ข่าวเรียกว่า "แก๊สรั่ว" บริษัทประกันไม่ยอมจ่าย','บริษัทประกัน'];
+  if(w==='jojo')return['เงินในกระเป๋าคุณหายไปต่อหน้าต่อตา ทั้งที่ไม่มีใครแตะ คุณได้ยินเสียงหัวเราะเบาๆ อยู่ข้างหลัง','คนที่มองไม่เห็น'];
+  if(w==='heian')return['ขุนนางเจ้าของที่ดินขึ้นส่วยข้าวอีกเท่าตัว','คนของขุนนาง'];
+  if(w==='jjedo')return['ไดเมียวขึ้นภาษีข้าว เพื่อใช้เดินทางไปรับใช้โชกุนที่เอโดะ','เจ้าหน้าที่ไดเมียว'];
+  if(w==='db')return p==='westcity'?['แคปซูลบ้านของคุณกดเปิดไม่ขึ้น ต้องส่งซ่อมที่แคปซูลคอร์ป','ช่างแคปซูล']:['ไดโนเสาร์หลงเข้ามาพังรั้วและสวนหลังบ้าน','ช่างซ่อม'];
+  if(w==='lookism')return['แก๊งในย่านมาเรียกเก็บ "ค่าคุ้มครอง" จากทุกร้าน','แก๊งในย่าน'];
+  if(w==='bc')return['ขุนนางเจ้าของแคว้นเก็บภาษีเพิ่ม เพื่อจัดงานเลี้ยงในนครหลวง','คนเก็บภาษี'];return['ทางการเก็บภาษีเพิ่ม','เจ้าหน้าที่'];};
+const MLOSS=[
+  {w:3,when:S=>S.money>=4,f:S=>{const a=Math.min(pct(.2),amt(2,6));return{t:'ถูกล้วงกระเป๋า',text:'ในตลาดที่คนแน่นขนัด มีคนชนไหล่คุณแล้วรีบเดินจากไป กระเป๋าเงินเบาผิดปกติ',sc:'market',choices:[
+    {l:'วิ่งไล่ตาม',g:'brave',f(S){if(chance(.3+(S.st.fit||0)/220)){say('คุณคว้าคอเสื้อเขาไว้ได้ที่ปากซอย แล้วได้เงินคืนครบ','good');fm(1);}else{st('hp',-2);lose(a,'เขาหายไปในฝูงชน คุณสะดุดล้มเข่าถลอก');}}},
+    {l:'ปล่อยไป',g:'safe',f(S){lose(a,'คุณยืนมองฝูงชนอยู่นาน แล้วเดินกลับบ้านมือเปล่า');}}]};}},
+  {w:3,when:S=>['own','rent','mate'].includes(homeOf().k),f:S=>{const a=amt(4,9),what=pick(['พายุเมื่อคืนพัดหลังคาบ้านพังไปครึ่งหนึ่ง','น้ำรั่วจากเพดานจนฟูกเปียกทั้งหลัง','ปลวกกินเสาบ้านจนบ้านเริ่มเอียง']);return{t:'บ้านต้องซ่อม',text:what,sc:'home',choices:[
+    {l:'จ้างช่างมาซ่อม',g:'safe',f(S){lose(a,'ช่างซ่อมเสร็จในสามวัน');}},
+    {l:'ซ่อมเองในวันหยุด',g:'diligent',f(S){if(chance(.35+(S.sk?.craft||0)/120)){lose(1,'คุณซื้อแค่วัสดุแล้วซ่อมเองจนเสร็จ');skill('craft',2);}else{lose(a+2,'ซ่อมเองพังกว่าเดิม สุดท้ายต้องจ้างช่างอยู่ดี');}}},
+    {l:'ปล่อยไว้ก่อน',g:'selfish',f(S){st('joy',-5);st('hp',-3);say('คุณนอนฟังเสียงน้ำหยดลงถังทุกคืน','bad');}}]};}},
+  {w:3,when:S=>par().length>0&&S.age>=20,f:S=>{const p=pick(par()),a=amt(6,14),sib=(typeof sibs==='function'?sibs():[]).filter(s=>s.alive&&S.year-s.by>=18);return{t:'ครอบครัวต้องการคุณ',text:`${p.role} (${p.n}) ล้มป่วยหนัก หมอบอกว่าต้องใช้ยาราคาแพง`,sc:'sick',choices:[
+    {l:'จ่ายค่ารักษาทั้งหมด',g:'kind',ok:S.money>=a,h:S.money>=a?`${fmt(a)}`:`ต้องใช้ ${fmt(a)}`,f(S){lose(a,`${p.role}ค่อยๆ หายดี จับมือคุณแน่นตอนออกจากที่รักษา`);st('joy',4);dk(-2);}},
+    ...(sib.length?[{l:`หารค่ารักษากับ${sibRel(sib[0])} ${sib[0].n}`,g:'kind safe',f(S){lose(Math.ceil(a/2),`คุณกับ${sibRel(sib[0])}ช่วยกันคนละครึ่ง ${p.role}หายดี`);}}]:[]),
+    {l:'กู้เงินมารักษา',g:'kind brave',f(S){mon(-a);say(`${p.role}หายดี แต่คุณมีหนี้ก้อนใหม่ ${fmt(a)}`,'plain');}},
+    {l:'บอกว่าไม่มีเงินพอ',g:'selfish safe',f(S){st('joy',-8);trauma(4);if(chance(.3))parentDie(p,'จากไปเพราะอาการป่วยที่รักษาไม่ทัน');else say(`${p.role}หายเองช้าๆ แต่ไม่เหมือนเดิมอีกแล้ว`,'bad');}}]};}},
+  {w:2,when:S=>S.age>=20&&!S.flags.guar,f:S=>{const who=pick(['ลูกพี่ลูกน้อง','เพื่อนเก่าสมัยเด็ก','ลุงข้างบ้าน']),a=amt(8,18);return{t:'เซ็นค้ำประกัน',text:`${who}มาขอให้คุณเซ็นค้ำประกันเงินกู้ ${fmt(a)} สัญญาว่าจะไม่ทำให้คุณเดือดร้อน`,sc:'neighbor',choices:[
+    {l:'เซ็นให้',g:'kind',f(S){S.flags.guar={y:S.year+R(1,2),a,who};st('joy',2);say(`${who}กอดคุณแน่น "บุญคุณครั้งนี้ไม่ลืมเลย"`,'plain');}},
+    {l:'ปฏิเสธอย่างสุภาพ',g:'safe',f(S){st('joy',-2);say(`${who}เดินจากไปเงียบๆ ไม่มาหาคุณอีกเลย`,'plain');}}]};}},
+  {w:2,when:S=>S.age>=20&&S.money>=10,f:S=>{const thing=SCAM[W.id]||'หุ้นบริษัทที่ไม่มีใครเคยได้ยินชื่อ',a=Math.max(4,pct(.3));return{t:'โอกาสรวยทางลัด',text:`ชายแต่งตัวดีคนหนึ่งชวนคุณลงทุนใน${thing} สัญญาว่าเงินจะเพิ่มเป็นสามเท่าในหกเดือน`,sc:'tavern',choices:[
+    {l:`ลงทุน ${fmt(a)}`,g:'curious selfish',f(S){if(chance(.12)){mon(a);st('joy',6);say(`ไม่น่าเชื่อ มันได้ผลจริง คุณได้กำไร ${fmt(a)}`,'good');}else{lose(a,'หกเดือนต่อมาสำนักงานของเขาว่างเปล่า ไม่มีใครรู้ว่าเขาไปไหน');st('joy',-6);}}},
+    {l:'ขอดูเอกสารก่อน',g:'curious',f(S){if(chance(.4+(S.st.iq||0)/200)){fm(1);say('เอกสารปลอมทุกแผ่น คุณแจ้งทางการ เขาถูกจับในอาทิตย์ต่อมา','good');}else say('เขาบอกว่าเอกสารอยู่ที่สำนักงานใหญ่ แล้วก็ไม่เคยกลับมาอีก','plain');}},
+    {l:'ไม่สนใจ',g:'safe',f(S){say('สามเดือนต่อมา เพื่อนบ้านสองคนหมดตัวเพราะเขา','plain');}}]};}},
+  {w:2,when:S=>S.age>=16&&S.money>=3,f:S=>{const t=TOOL[W.id]||'เครื่องมือทำมาหากิน',a=amt(2,5);return{t:'ของพัง',text:`${t}ที่ใช้ทุกวันพังลงกลางทาง`,sc:'oops',choices:[
+    {l:'ซื้อใหม่',g:'safe',f(S){lose(a,`คุณได้${t}ใหม่ที่ดีกว่าเดิมนิดหน่อย`);}},
+    {l:'ซ่อมเอง',g:'diligent',f(S){if(chance(.4+(S.sk?.craft||0)/120)){skill('craft',1);say('ใช้เวลาทั้งคืน แต่มันกลับมาใช้ได้','good');}else lose(a+1,'ซ่อมไม่ได้ สุดท้ายต้องซื้อใหม่ แถมเสียค่าอะไหล่ไปเปล่าๆ');}}]};}},
+  {w:2,when:S=>S.age>=18&&S.money>=4&&!(S.flags.levyY>=S.year-1),f:S=>{const [x,who]=LEVY(S),a=amt(3,8);S.flags.levyY=S.year;return{t:'ถูกเรียกเก็บเงิน',text:x,sc:'soldiers',choices:[
+    {l:'จ่ายตามที่เรียก',g:'safe',f(S){lose(a,'คุณจ่ายไปพร้อมกับทุกบ้านในละแวก');}},
+    {l:'ต่อรอง',g:'brave',f(S){if(chance(.3+(S.sk?.charm||0)/150))lose(Math.ceil(a/2),`${who}ยอมลดให้ครึ่งหนึ่ง`);else lose(a+1,`${who}ไม่ยอม แถมคิดเพิ่มเพราะคุณพูดมาก`);}},
+    {l:'ไม่จ่าย',g:'rebel dark',f(S){heat(8);if(chance(.5)){st('hp',-5);lose(Math.min(a,Math.max(0,S.money)),`${who}บุกเข้ามาเอาของมีค่าไปเอง`);}else say(`${who}ขู่ว่าจะกลับมาอีก`,'bad');}}]};}},
+  {w:2,when:S=>S.kids.some(k=>k.alive&&S.year-k.y>=6&&S.year-k.y<=15),f:S=>{const k=S.kids.find(k=>k.alive&&S.year-k.y>=6&&S.year-k.y<=15),a=amt(2,6);return{t:'ค่าเล่าเรียนของลูก',text:`ค่าเล่าเรียนของ ${k.n} ขึ้นอีกแล้ว ครูบอกว่าเด็กคนนี้หัวดีมาก`,sc:'school',choices:[
+    {l:'จ่ายให้ลูกได้เรียนต่อ',g:'kind',f(S){lose(a,`${k.n}วิ่งมากอดคุณตอนรู้ว่าได้เรียนต่อ`);}},
+    {l:'ให้ลูกออกมาช่วยงานที่บ้าน',g:'selfish',f(S){st('joy',-5);say(`${k.n}ไม่พูดอะไร แต่คุณเห็นเขามองตามเพื่อนที่ถือหนังสือไปโรงเรียน`,'bad');}}]};}},
+  {w:2,when:S=>S.age>=20,f:S=>{const ev=chance(.5)?['งานแต่งงานของญาติ','ทุกคนในครอบครัวต้องช่วยเงินตามธรรมเนียม']:['งานศพของญาติผู้ใหญ่','ทุกคนต้องช่วยค่าทำศพ'],a=amt(2,5);return{t:ev[0],text:`${ev[0]} ${ev[1]}`,sc:/ศพ/.test(ev[0])?'funeral':'wedding',choices:[
+    {l:'ช่วยเต็มที่',g:'kind',f(S){lose(a,'ญาติๆ พูดถึงน้ำใจของคุณไปอีกนาน');st('joy',2);}},
+    {l:'ช่วยตามกำลัง',g:'safe',f(S){lose(1,'คุณช่วยเท่าที่ไหว ป้าบางคนทำหน้าไม่พอใจ');}}]};}},
+];
+/* a guarantee comes due: the friend ran away */
+const GUAREV=g=>({t:'หนี้ที่ไม่ได้ก่อ',text:`${g.who}ที่คุณเซ็นค้ำประกันให้หายตัวไป เจ้าหนี้มาเคาะประตูบ้านคุณพร้อมสัญญาที่มีลายเซ็นของคุณ ยอดหนี้ ${fmt(g.a)}`,sc:'burgled',choices:[
+  {l:'ยอมจ่ายตามสัญญา',g:'safe',f(S){lose(g.a,'คุณจ่ายหนี้ที่ไม่ได้ก่อ แล้วนั่งเงียบอยู่ทั้งคืน');st('joy',-6);}},
+  {l:'ขอผ่อนจ่าย',g:'safe',f(S){lose(Math.ceil(g.a/2),'เจ้าหนี้ยอมให้ผ่อน งวดแรกหักไปครึ่งหนึ่ง');S.flags.guar={y:S.year+1,a:Math.floor(g.a/2),who:g.who,rest:1};}},
+  {l:'ออกตามหาตัวคนที่หนีไป',g:'brave',f(S){if(chance(.3)){say(`คุณเจอ${g.who}ที่เมืองอื่น เขาร้องไห้แล้วคืนเงินให้ครึ่งหนึ่ง`,'good');lose(Math.ceil(g.a/2));}else{lose(g.a,'คุณหาเขาไม่เจอ สุดท้ายต้องจ่ายเองทั้งหมด');}}}]});
+/* debt collectors when the money is gone */
+const DEBTEV=()=>{const d=-S.money;return{t:'เจ้าหนี้',text:`เจ้าหนี้มายืนรอหน้าบ้านตั้งแต่เช้า "หนี้ ${fmt(d)} จะจ่ายเมื่อไหร่"`,sc:'burgled',choices:[
+  {l:'ทำงานใช้หนี้ให้เขา',g:'diligent',f(S){const g=Math.min(d,R(2,5));mon(g);st('hp',-4);st('joy',-4);say(`คุณแบกของให้ร้านของเขาทั้งเดือน หักหนี้ไปได้ ${fmt(g)}`,'plain');liveAct('work');}},
+  {l:'ขอผ่อนผันอีกหน่อย',g:'safe',f(S){if(chance(.45+(S.sk?.charm||0)/150))say('เขาให้เวลาอีกสามเดือน "ครั้งสุดท้าย"','plain');else{heat(5);st('joy',-5);say('เขาเตะประตูบ้านคุณก่อนกลับ เพื่อนบ้านแอบมองกันทั้งซอย','bad');}}},
+  ...(S.own?.items?.length?[{l:'ขายของมีค่าใช้หนี้',g:'safe',f(S){const id=pick(S.own.items),it=(W.shop||[]).find(x=>x.id===id),v=Math.max(1,Math.round((it?.cost||4)*.5));S.own.items.splice(S.own.items.indexOf(id),1);mon(v);say(`คุณขาย${it?.n||'ของมีค่า'}ได้ ${fmt(v)} เอาไปใช้หนี้`,'plain');}}]:[]),
+  ...(par().length?[{l:'ขอเงินพ่อแม่',g:'home',f(S){const g=Math.min(d,R(3,8));mon(g);st('joy',-4);say(`แม่แอบยัดเงิน ${fmt(g)} ใส่มือคุณ "อย่าบอกพ่อนะ"`,'plain');}}]:[]),
+  {l:'หนีไปซ่อนตัว',g:'dark rebel',f(S){heat(10);dk(2);say('คุณออกจากบ้านกลางดึก หนี้ยังอยู่ แต่ตอนนี้มีคนตามหาคุณด้วย','bad');}}]};};
+/* an adult without work feels it */
+let WKOPEN=0;
+const NOJOBEV=()=>({t:'ชีวิตคนตกงาน',text:`เงินเก็บเหลือแค่ ${fmt(Math.max(0,S.money))} ${par().length?'แม่ถามเบาๆ ตอนกินข้าวว่าหางานได้หรือยัง':'ค่ากินเดือนหน้ายังไม่รู้จะเอามาจากไหน'}`,sc:'home',choices:[
+  {l:'ออกไปหางานอย่างจริงจัง',g:'diligent',close:1,f(){WKOPEN=1;}},
+  {l:'รับจ้างรายวันไปก่อน',g:'diligent',f(S){const g=R(1,2);mon(g);st('hp',-1);say(`คุณรับจ้าง${pick(DAYJOB[W.id]||DAYJOB.aot)}ได้มา ${fmt(g)}`,'plain');liveAct('work');}},
+  ...(S.age>=18&&!S.own?.house?[{l:'ทิ้งทุกอย่าง ใช้ชีวิตไร้บ้าน',g:'rebel',f(S){goHomeless();}}]:[]),
+  {l:'ช่างมัน พรุ่งนี้ค่อยคิด',g:'lazy',f(S){st('joy',-2);say('คุณนอนมองเพดาน แล้วพรุ่งนี้ก็มาถึงอีกวัน','plain');}}]});
+
+/* ---- choosing to live homeless ---- */
+const HLSPOT={aot:S=>S.place==='underground'?['ตรอกมืดในเมืองใต้ดิน','บันไดหินที่ไม่มีใครเดินผ่าน']:['ใต้สะพานริมคลอง','ระเบียงโบสถ์ที่เปิดให้คนไร้บ้าน'],naruto:()=>['บนหลังคาร้านค้าตอนกลางคืน','ศาลเจ้าร้างท้ายหมู่บ้าน'],
+  op:()=>['ข้างลังสินค้าในท่าเรือ','ใต้ท้องเรือเก่าที่เกยฝั่ง'],bleach:S=>S.place==='rukon'?['กระท่อมพังในรุคอนไก','ใต้ต้นไม้ใหญ่ริมทาง']:['สวนสาธารณะริมแม่น้ำ','ใต้สะพานทางด่วน'],jjk:()=>['สถานีรถไฟตอนดึก','ร้านอินเทอร์เน็ตคาเฟ่ที่เปิดยี่สิบสี่ชั่วโมง'],
+  jojo:S=>S.place==='cairo'?['ริมแม่น้ำไนล์','ตรอกหลังตลาดเครื่องเทศ']:S.place==='naples'?['ใต้สะพานริมอ่าว','บันไดโบสถ์เก่า']:['ศาลาริมทะเล','สวนสาธารณะโมริโอ'],heian:()=>['ใต้ประตูราโชมงที่พังไปครึ่งหลัง','ริมแม่น้ำคาโมะ'],jjedo:()=>['ใต้สะพานนิฮงบาชิ','ศาลเจ้าร้างริมทุ่งนา'],
+  db:()=>['ถ้ำนอกเมือง','ซากรถลอยฟ้าข้างทาง'],lookism:()=>['สถานีรถไฟโซลตอนดึก','ห้องเช่ารายวันที่ถูกที่สุดในซอย'],bc:()=>['ใต้กำแพงเมือง','โรงนาร้างชายป่า']};
+const hlSpot=()=>pick((HLSPOT[W.id]||HLSPOT.naruto)(S));
+function goHomeless(){if(S.own?.house){const o=W.shop.find(s=>s.id===S.own.house);const back=Math.round((o?.cost||0)*.4);mon(back);say(`คุณขาย${o?.n||'บ้าน'}ได้ ${fmt(back)}`,'plain');S.own.house=null;}
+  S.rent=null;S.flags.stayHome=0;S.flags.homeless=1;S.flags.hlY=S.year;st('joy',2);
+  if(S.partner?.married){S.partner.love=Math.max(0,(S.partner.love??50)-25);say(`${S.partner.n}ไม่เข้าใจว่าทำไมคุณเลือกแบบนี้`,'bad');}
+  say(`คุณเก็บของที่จำเป็นใส่ห่อผ้าใบเดียว คืนแรกคุณนอนที่${hlSpot()} ไม่มีค่าเช่า ไม่มีใครรอ`,'plain');remember('เลือกใช้ชีวิตไร้บ้าน','ชีวิตที่มีแค่ห่อผ้าใบเดียว','flee',2);}
+function hlYear(){st('hp',-R(0,3));st('joy',has('cheerful')?R(-1,2):-R(0,3));const y=S.year-(S.flags.hlY||S.year);
+  say(pick([`ปีนี้คุณนอนที่${hlSpot()}เป็นส่วนใหญ่`,`คุณรู้แล้วว่าร้านไหนทิ้งอาหารเหลือตอนกี่โมง`,y>=3?'คนไร้บ้านรุ่นใหม่ๆ เริ่มมาขอคำแนะนำจากคุณ':'คุณเริ่มชินกับการตื่นเพราะแสงแดด ไม่ใช่เพราะนาฬิกา',`ฤดูหนาวปีนี้ผ่านไปได้ เพราะมีคนแบ่งผ้าห่มให้`]),'plain');}
+const HLEV=[
+  {w:3,f:S=>({t:'คืนที่หนาวที่สุดของปี',text:`ลมหนาวพัดเข้ามาถึง${hlSpot()} นิ้วมือคุณเริ่มชา`,sc:'snow',choices:[
+    {l:'ไปขอนอนที่โรงทานหรือวัด',g:'safe',f(S){st('joy',-1);say('มีคนเปิดประตูให้ พร้อมซุปร้อนๆ หนึ่งถ้วย','good');}},
+    {l:'ก่อกองไฟกับคนไร้บ้านคนอื่น',g:'kind',f(S){st('joy',4);say('รอบกองไฟ ชายแก่คนหนึ่งเล่าว่าเคยเป็นพ่อค้าใหญ่มาก่อน ทุกคนหัวเราะ ไม่มีใครเชื่อ','good');}},
+    {l:'ทนนอนต่อ',g:'brave',f(S){st('hp',-6);say('คุณตื่นมาตัวสั่น ไอไปทั้งสัปดาห์','bad');S.flags.cold=1;}}]})},
+  {w:2,f:S=>{const g=W.id==='op'?'ทหารเรือ':W.id==='naruto'?'นินจาลาดตระเวน':['jjk','jojo','lookism','bleach','db'].includes(W.id)?'ตำรวจ':'ยามรักษาการณ์';return{t:'ถูกไล่ที่',text:`${g}มาไล่ให้คุณออกจากที่นอนกลางดึก`,sc:'soldiers',choices:[
+    {l:'เก็บของย้ายไปที่ใหม่',g:'safe',f(S){st('joy',-2);say(`คุณย้ายไปนอนที่${hlSpot()}แทน`,'plain');}},
+    {l:'ขอร้องให้นอนต่อคืนเดียว',g:'kind',f(S){if(chance(.4+(S.sk?.charm||0)/150))say(`${g}มองคุณอยู่นาน แล้วเดินจากไปเงียบๆ`,'good');else{st('joy',-3);say('เขาเตะห่อผ้าของคุณกระเด็น','bad');}}},
+    {l:'เถียงกลับ',g:'rebel',f(S){heat(5);st('hp',-3);say('คุณโดนลากไปนอนที่ห้องขังหนึ่งคืน อย่างน้อยก็มีหลังคา','bad');}}]};}},
+  {w:2,f:S=>({t:'น้ำใจคนแปลกหน้า',text:'ตื่นเช้ามา มีข้าวห่อหนึ่งกับเหรียญไม่กี่เหรียญวางอยู่ข้างตัวคุณ ไม่มีใครอยู่แถวนั้น',sc:'help',choices:[
+    {l:'เก็บไว้แล้วขอบคุณในใจ',g:'safe',f(S){mon(1);st('joy',5);say('ข้าวห่อนั้นยังอุ่นอยู่','good');}},
+    {l:'แบ่งให้คนไร้บ้านที่แก่กว่า',g:'kind',f(S){dk(-3);st('joy',6);say('ยายคนนั้นยิ้มจนเห็นฟันที่เหลือไม่กี่ซี่','good');}}]})},
+  {w:2,f:S=>({t:'ข้าวของหาย',text:'ตอนคุณหลับ มีคนแอบเอาห่อผ้าของคุณไป',sc:'burgled',choices:[
+    {l:'ออกตามหา',g:'brave',f(S){if(chance(.4))say('คุณเจอเด็กขโมยห่อผ้าของคุณไป เขาร้องไห้ว่าหิว คุณแบ่งขนมปังให้แล้วเอาห่อผ้าคืน','good');else{lose(Math.min(2,Math.max(0,S.money)),'หาไม่เจอ เงินที่ซ่อนไว้ในห่อผ้าก็หายไปด้วย');}}},
+    {l:'ช่างมัน เริ่มใหม่',g:'safe',f(S){lose(Math.min(1,Math.max(0,S.money)),'คุณเริ่มต้นใหม่อีกครั้ง');}}]})},
+  {w:2,f:S=>({t:'อิสระ',text:'คุณตื่นมาตอนเช้าโดยไม่มีใครรอ ไม่มีบิล ไม่มีนาฬิกา มีแค่ท้องฟ้ากับเสียงเมืองที่กำลังตื่น',sc:'home',choices:[
+    {l:'ชีวิตแบบนี้ก็ดีแล้ว',g:'rebel',f(S){st('joy',5);trauma(-3);say('คุณเดินไปตามถนนโดยไม่ต้องไปไหน','good');}},
+    {l:'ถึงเวลากลับไปมีบ้านอีกครั้ง',g:'home',f(S){S.flags.homeless=0;say('คุณตัดสินใจว่าจะเก็บเงินเช่าห้องเล็กๆ สักห้อง','plain');}}]})},
+];
+/* the housing menu offers it; any other home ends it */
+{const akH=ask;ask=function(title,text,choices,kind){try{if(title==='ที่อยู่อาศัย'&&Array.isArray(choices)&&S&&S.age>=18&&homeOf().k!=='hideout'){
+  const small=S.kids.some(k=>k.alive&&S.year-k.y<12);const i=choices.findIndex(c=>c&&c.skip);
+  if(!S.flags.homeless)choices=[...choices.slice(0,i<0?choices.length:i),{l:'ใช้ชีวิตไร้บ้าน',g:'rebel',ok:!small,h:small?'ลูกยังเล็ก คุณทิ้งเขาไว้ไม่ได้':'ไม่มีค่าเช่า ไม่มีบ้าน · สุขภาพ- · อิสระ',f(S){goHomeless();}},...(i<0?[]:choices.slice(i))];
+  choices=choices.map(c=>(!c||c.skip||typeof c.f!=='function'||/ไร้บ้าน/.test(c.l))?c:{...c,f(){S.flags.homeless=0;return c.f.apply(this,arguments);}});}}catch(e){}return akH.call(this,title,text,choices,kind);};}
+{const nt=nowText;nowText=function(){const r=nt.apply(this,arguments);try{if(S&&S.flags.homeless&&homeOf().k==='street'&&!LIVE.act){const h=CLOCK.h;return h>=22||h<6?`คุณนอนขดตัวอยู่ที่${(HLSPOT[W.id]||HLSPOT.naruto)(S)[0]}`:h<9?'คุณตื่นเพราะแสงแดด แล้วพับผ้าห่มเก่าเก็บ':'คุณเดินเก็บของเก่าไปตามถนน';}}catch(e){}return r;};}
+
+/* ---- the monthly driver: at most one of these a month, and a few a year ---- */
+async function wkRun(ev){busy=true;try{render();await runEv(ev,'story');}finally{busy=false;}save();render();if(WKOPEN){WKOPEN=0;busy=true;try{await openJobs();}finally{busy=false;}save();render();}if(!S.alive)setTimeout(afterDeath,350);}
+const evOf=(id,o)=>({id,t:o.t||'',play:()=>o});
+{const mpW=monthPass;monthPass=async function(){const r=await mpW.apply(this,arguments);try{
+  if(!S||!S.alive||busy||!$('#modal').hidden||document.getElementById('btl')||jailed()||S.flags.titan||S.age<16)return r;
+  if(homeOf().k!=='street'&&S.flags.homeless)S.flags.homeless=0;
+  const yk='wk'+S.year;S.flags[yk]=S.flags[yk]||0;if(S.flags[yk]>=4)return r;let ev=null;
+  if(S.flags.guar&&S.year>=S.flags.guar.y&&(S.flags.guar.rest||chance(.5))){const g=S.flags.guar;S.flags.guar=null;ev=evOf('guar74',GUAREV(g));}
+  else if(S.flags.guar&&S.year>=S.flags.guar.y){S.flags.guar=null;say('ลูกหนี้ที่คุณค้ำประกันให้ใช้หนี้หมดแล้ว เขาเอาขนมมาฝากถึงบ้าน','good');}
+  if(!ev&&S.mo===11&&isWork(S)){const o=wkReview();if(o)ev=evOf('wkrev74',o);}
+  if(!ev&&S.money<0&&S.age>=18&&chance(.22))ev=evOf('debt74',DEBTEV());
+  if(!ev&&S.flags.homeless&&homeOf().k==='street'&&chance(.1)){const e=wpickBy(HLEV,x=>x.w);ev=evOf('hl74',e.f(S));}
+  if(!ev&&isWork(S)&&S.age>=16&&chance(.09)){const L=WKEV.filter(e=>e.when(S));if(L.length){const e=wpickBy(L,x=>x.w);ev=evOf('wk74',{t:'ที่ทำงาน',...e.f(S)});}}
+  if(!ev&&S.age>=16&&chance(S.money>40?.08:.05)){const L=MLOSS.filter(e=>e.when(S));if(L.length){const e=wpickBy(L,x=>x.w);ev=evOf('ml74',{t:'เรื่องเงินๆ ทองๆ',...e.f(S)});}}
+  if(!ev&&!S.job&&!S.flags.homeless&&S.age>=20&&S.age<=55&&S.money<25&&!(S.flags.njM>S.year*12+(S.mo||0)-8)&&chance(.12)){S.flags.njM=S.year*12+(S.mo||0);ev=evOf('nojob74',NOJOBEV());}
+  if(ev){S.flags[yk]++;await wkRun(ev);}
+  }catch(e){console.error(e);}return r;};}
 
 /* ===== setup ===== */
 const cfg={world:'aot',sex:'m',year:835,place:'shiganshina',vil:'konoha',name:'',edited:false,traits:null,look:null,dream:null};
