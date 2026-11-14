@@ -3049,7 +3049,7 @@ function drawScene(){
   const w=cv.clientWidth,h=cv.clientHeight;if(!w||!h)return;
   const y=S.year;
   $('#vPlace').textContent=placeName(S);$('#vSea').textContent=`${season(y)[0]} · ${W.yl(y)}`;$('#vMoment').textContent=S.cap||'';
-  const key=[W.id,S.place,S.origin,y,Math.floor((S.mo||0)/3),S.mood,(S.fx||[]).join(','),S.flags.hokageN,S.flags.outlaw,w,h].join('|');
+  const key=[W.id,S.place,S.origin,y,Math.floor((S.mo||0)/3),S.mood,(S.fx||[]).join(','),S.flags.hokageN,S.flags.outlaw,(S.trip&&S.trip.k)||'',w,h].join('|');
   if(key===sceneKey&&sceneCache)return;
   sceneKey=key;
   const R0=paintSet(w,h,S.mood?[S.mood]:['dawn','day','dusk','night'],S.fx||[],y);
@@ -3075,7 +3075,7 @@ function paintSet(w,h,moods,fx,y,rows=72){
   else if(mood!=='grief'&&mood!=='quake'){c.fillStyle='rgba(255,248,225,.75)';c.beginPath();c.arc(w*.8,h*.2,h*.07,0,7);c.fill();}
   if(fx.includes('meteor')){c.strokeStyle='rgba(190,120,255,.9)';c.lineWidth=3;c.beginPath();c.moveTo(w*.15,h*.05);c.lineTo(w*.38,h*.38);c.stroke();c.fillStyle='#d9b8ff';c.beginPath();c.arc(w*.38,h*.38,4,0,7);c.fill();}
   const r=rng(hash(W.id+S.place));
-  const kind=W.places[S.place]?.v||'city';
+  const kind=(typeof viewKind==='function'&&viewKind())||W.places[S.place]?.v||'city';
   const lay=document.createElement('canvas');lay.width=lw;lay.height=lh;const lc=lay.getContext('2d');lc.scale(lw/w,lh/h);
   const L=[];VIEW[kind](lc,w,h,r,y,fx,L);
   if(TINT[mood]){lc.globalCompositeOperation='source-atop';lc.fillStyle=TINT[mood];lc.fillRect(0,0,w,h);lc.globalCompositeOperation='source-over';}
@@ -3823,7 +3823,7 @@ function drawHome(px,dt,hr){
   LIVE.inNow=wantInside(hr);if(LIVE.inNow){drawInside(px,dt,hr);return;}
   try{drawAmbient(px,dt,hr);}catch(e){}
   const lw=LIVE.lw,lh=LIVE.lh,gy=Math.floor(lh*.8);
-  const ht=homeTier(),tier=ht===-2?2:Math.max(0,ht),street=ht===-1;
+  const ht=(typeof tripTier==='function'&&tripTier()!=null)?tripTier():homeTier(),tier=ht===-2?2:Math.max(0,ht),street=ht===-1;
   const px2=(x,y,w,h,col)=>px(x*2,gy-(gy-y)*2,w*2,h*2,col);
   const H0=street?tent(px2,4,gy):drawHouse(px2,2,gy,tier,hr),H={x:H0.x*2,w:H0.w*2,door:H0.door*2,roofY:gy-(gy-H0.roofY)*2};LIVE.house={x:H.x,w:H.w,roofY:H.roofY};
   let x=2+H0.w+3;
@@ -9033,7 +9033,7 @@ function battle(E,o={}){return new Promise(done=>{try{if(typeof document==='unde
   const wd=setInterval(()=>{if(!d.isConnected){clearInterval(wd);return;}if(!lock&&!acts.children.length&&!qte&&performance.now()-lastAct>6000){if(en<=0)finish('win');else if(me<=0)finish('lose');else nextRound();}},1500);
   const key=e=>{if(lock)return;if(qte&&!qte.done&&(e.key===' '||e.key==='Enter')){e.preventDefault();qpress();return;}const n=+e.key;if(n>=1&&n<=9){const b=[...acts.querySelectorAll('button:not(:disabled)')][n-1];if(b){e.preventDefault();b.click();}}};document.addEventListener('keydown',key);
   const finish=r=>{if(lock)return;lock=true;BT.on=false;UNCON=0;clearInterval(wd);document.removeEventListener('keydown',key);hideQte();endFx={r,t0:performance.now()};intEl.textContent='';if(r==='win'&&typeof sfx==='function')sfx('good');
-    setTimeout(()=>{cancelAnimationFrame(raf);d.remove();},r==='win'||r==='lose'?1500:700);if(r!=='lose')S.st.hp=Math.max(1,Math.min(st0,Math.round(me)));S.btN=(S.btN||0)+1;if(r==='win')S.btW=(S.btW||0)+1;acts.innerHTML='';done({r,t:lastT,hp:me,dealt});};
+    setTimeout(()=>{cancelAnimationFrame(raf);d.remove();},r==='win'||r==='lose'?1500:700);if(r!=='lose')S.st.hp=Math.max(1,Math.min(100,Math.round(me)));S.btN=(S.btN||0)+1;if(r==='win')S.btW=(S.btW||0)+1;acts.innerHTML='';done({r,t:lastT,hp:me,dealt});};
   let unc=0;const uncNote=()=>{acts.innerHTML='';const b=document.createElement('div');b.className='uncnote';b.textContent='สภาวะไร้สติ · ร่างกายสู้เอง คุณควบคุมไม่ได้จนกว่าจะแพ้หรือชนะ';acts.append(b);};
   const uncEnter=v=>{unc=v||1;UNCON=unc;UNCWAS=unc;const now=performance.now();banner={n:'สภาวะไร้สติ',col:'#a0141e',t0:now,end:now+2400,big:1};flash=now+300;flashRGB='0,0,0';if(!calm)shake=now+600;try{cutIn({n:'สภาวะไร้สติ',col:'#a0141e'},'ดวงตาดำสนิท สติหลุดไป แต่ร่างกายลุกขึ้นสู้ต่อด้วยสัญชาตญาณ','lk_unc');}catch(e){}uncNote();};
   const uncAct=()=>{if(lock)return;uncNote();const pool=typeof uncPool==='function'?uncPool():[];hit(pool.length?pick(pool):L[0]);};
@@ -9086,12 +9086,13 @@ function battle(E,o={}){return new Promise(done=>{try{if(typeof document==='unde
     if(k==='charge'){ep=Math.min(100,ep+40);charge=1;guard=0;say2(`คุณรวบรวม${EN} ตาหน้าจะแรงขึ้น`);rings.push({...POS.me,t0:performance.now(),col:'#8bd3ff',big:1});hud();setTimeout(()=>enemyTurn(),650);}
     if(k==='talk'){if(chance(pTalk())){say2('คุณพูดจนอีกฝ่ายลดอาวุธลง');setTimeout(()=>finish('talk'),700);}else{say2(E.curse||E.titan?`${E.n} ไม่เข้าใจคำพูดของมนุษย์`:`${E.n} ไม่ฟังคุณเลย`);setTimeout(()=>enemyTurn(),600);}}
     if(k==='trick'){const p=Math.min(.85,.35+(S.sk?.charm||0)/250+(S.dark||0)/400);if(chance(p)){trick=1;say2(`คุณแกล้งทำเป็นเจ็บหนัก ${E.n} ลดการ์ดลง การโจมตีครั้งหน้าจะแรงขึ้นมาก`);setTimeout(nextRound,500);}else{say2(`${E.n} มองออกว่าคุณแกล้ง`);setTimeout(()=>enemyTurn(1.25),600);}}
+    if(k&&k.heal){const g=btHealUse(k,me),nw=performance.now();me=Math.min(100,me+g.v);ep=Math.min(100,Math.max(0,ep-(g.ep||0)));guard=0;nums.push({...POS.me,v:-g.v,txt:'+'+g.v,t0:nw,col:'#63c74d'});rings.push({...POS.me,t0:nw,col:'#63c74d',big:1});if(typeof sfx==='function')sfx('good');say2(g.x);hud();setTimeout(()=>enemyTurn(),800);return;}
     if(k==='flee'){if(chance(pFlee())){say2('คุณหนีออกมาได้ทัน');setTimeout(()=>finish('flee'),600);}else{say2('หนีไม่พ้น!');setTimeout(()=>enemyTurn(1.15),600);}}};
   const btn=(n,h,cls,col,f,dis)=>{const b=document.createElement('button');b.type='button';if(cls)b.className=cls;if(col&&b.style.setProperty)b.style.setProperty('--c',col);b.innerHTML='<span></span><small></small>';b.firstChild.textContent=n;b.lastChild.textContent=h;b.disabled=!!dis;b.onclick=()=>{if(lock)return;acts.innerHTML='';f();};acts.append(b);return b;};
   const menu=()=>{if(lock)return;acts.innerHTML='';lastAct=performance.now();if(unc){uncNote();setTimeout(uncAct,700);return;}
     if(combo>=5){const best=L.reduce((a,t)=>(t.lv||0)>(a.lv||0)?t:a,L[0]);btn(`ท่าไม้ตาย · ${best.id==='basic'?'หมัดเต็มแรง':best.n}`,'เกจเต็ม · แรง 2.4 เท่า ไม่ใช้'+EN,'ult','#fee761',()=>hit(best,1));}
-    for(const t of L.slice(0,7)){const est=Math.round(10+(t.lv||0)*120+(myPow()-E.pow)*.3),cs=cost(t),no=cs>ep;btn(t.id==='basic'?'โจมตีด้วยตัวเอง':t.n,no?`${EN}ไม่พอ (ต้องใช้ ${cs})`:`แรง ~${Math.max(4,est)}${cs?` · ${EN} ${cs}`:` · +${EN} 18`}${t.hp?` · เสีย HP ${t.hp}`:''}${t.isFull?' · ร่ายนาน':''}${btStatOf(t.anim)&&t.id!=='basic'?` · ทำให้${BTST[btStatOf(t.anim)][0]}`:''}`,'',t.col||'#888',()=>hit(t),no);}
-    btn('ตั้งการ์ด',`ลดดาเมจ 60%${intent==='heavy'?' · เหมาะกับตานี้!':''}`,'alt','#8b9bb4',()=>alt('guard'));btn(`รวบรวม${EN}`,`+40 · ตาหน้าแรงขึ้น`,'alt','#8bd3ff',()=>alt('charge'),charge);
+    for(const t of L.filter(t=>t.anim!=='heal').slice(0,7)){const est=Math.round(10+(t.lv||0)*120+(myPow()-E.pow)*.3),cs=cost(t),no=cs>ep;btn(t.id==='basic'?'โจมตีด้วยตัวเอง':t.n,no?`${EN}ไม่พอ (ต้องใช้ ${cs})`:`แรง ~${Math.max(4,est)}${cs?` · ${EN} ${cs}`:` · +${EN} 18`}${t.hp?` · เสีย HP ${t.hp}`:''}${t.isFull?' · ร่ายนาน':''}${btStatOf(t.anim)&&t.id!=='basic'?` · ทำให้${BTST[btStatOf(t.anim)][0]}`:''}`,'',t.col||'#888',()=>hit(t),no);}
+    if(typeof btHeals==='function')for(const hh of btHeals(me,ep))btn(hh.n,hh.h,'alt',hh.col,()=>alt(hh),hh.no);btn('ตั้งการ์ด',`ลดดาเมจ 60%${intent==='heavy'?' · เหมาะกับตานี้!':''}`,'alt','#8b9bb4',()=>alt('guard'));btn(`รวบรวม${EN}`,`+40 · ตาหน้าแรงขึ้น`,'alt','#8bd3ff',()=>alt('charge'),charge);
     btn('พูดคุย / เจรจา',`โอกาส ${Math.max(0,Math.round(pTalk()*100))}%`,'alt','',()=>alt('talk'));btn('หลอกให้ตายใจ',trick?'ศัตรูตายใจอยู่แล้ว':'ครั้งหน้าแรงขึ้น 1.7 เท่า','alt','',()=>alt('trick'),trick);btn(o.pool?'ถอยออกมา':'หนี',`โอกาส ${Math.round(pFlee()*100)}%`,'alt','',()=>alt('flee'));
     acts.querySelector('button:not(:disabled)')?.focus({preventScroll:true});};
   rollIntent();hud();say2(o.title?`${o.title} · ${E.n} ขวางหน้าคุณ`:`${E.n} ตั้งท่าสู้`);setTimeout(()=>{if(!lock)menu();},1100);
@@ -11611,7 +11612,7 @@ function thinkTick(dt){if(!THINKON.get()||!S||!S.alive||LIVE.inNow)return;THNEXT
     if(!cand.length)return;const c=pick(cand),p=pOf(c.ref);if(!p||!p.alive)return;
     thinkHide();const el=document.createElement('div');el.className='think';const n=document.createElement('span');n.className='tn';n.textContent=(p.short||p.n)+' คิดว่า…';const tx=document.createElement('span');tx.textContent=npcThought(p);el.append(n,tx);
     const k=scenePx,top=c.q.gy-(c.q.ht>=10?33:c.q.ht*3+6);el.style.left=Math.max(70,Math.min(cv.clientWidth-70,c.q.x*k))+'px';el.style.top=Math.max(44,top*k)+'px';
-    cv.parentElement.append(el);THEL=el;setTimeout(()=>{el.classList.add('out');},4200);setTimeout(()=>{if(THEL===el)thinkHide();else el.remove();},4800);}catch(e){}}
+    cv.parentElement.append(el);THEL=el;try{if(typeof thkFit==='function')thkFit(el,cv);}catch(e){}const thd=typeof thkDur==='function'?thkDur(el):4200;setTimeout(()=>{el.classList.add('out');},thd);setTimeout(()=>{if(THEL===el)thinkHide();else el.remove();},thd+600);THNEXT=Math.max(THNEXT,thd+3000);}catch(e){}}
 {const lf0=liveFrame;liveFrame=function(dt){const r=lf0.apply(this,arguments);try{thinkTick(dt||16);}catch(e){}return r;};}
 /* the person card shows what they think of you */
 {const a0=ask;ask=function(title,text,choices,kind){try{document.getElementById('mThink')?.remove();}catch(e){}const r=a0.apply(this,arguments);
@@ -14163,8 +14164,14 @@ function vTree(px,x,gy,s,c1,c2){px(x+3*s,gy-6*s,2*s,6*s,'#5a3e2a');disc(px,x+4*s
 function vHouse(px,x,gy,w,h,wall,roof,jp){px(x,gy-h,w,h,wall);if(jp){px(x-2,gy-h-2,w+4,3,roof);px(x+1,gy-h-4,w-2,2,roof);}else{for(let i=0;i<5;i++)px(x-1+i,gy-h-5+i,w+2-2*i,1,roof);px(x-1,gy-h-1,w+2,1,roof);}px(x+Math.floor(w/2)-2,gy-6,4,6,'#3e2731');px(x+2,gy-h+3,3,3,'#9fc0d4');if(w>12)px(x+w-5,gy-h+3,3,3,'#9fc0d4');}
 function vLantern(px,x,y,t,col){const f=vN(t+x*40,300)%3;px(x,y,3,4,col||'#e43b44');px(x+1,y+1,1,2,f?'#fee761':'#feae34');}
 function vNpc(seed){const r=rng(seed);const L=LOOKS[W.id]||LOOKS.aot||{hair:[['','#3e2731']]};const H=L.hair||[['','#3e2731']];return CL(r()<.5?'m':'f',H[Math.floor(r()*H.length)][1],['short','long','bob','pony','spiky'][Math.floor(r()*5)],['#5a6988','#8a4a32','#3e8948','#a22633','#f0ece0','#68386c'][Math.floor(r()*6)],{skin:['#f1d3b8','#e2b896','#c99470'][Math.floor(r()*3)]});}
-function vBubble(c,k,x,y,text,lw){if(!text)return;const fs=Math.max(10,Math.round(3.3*k));c.save();c.setTransform(1,0,0,1,0,0);c.font=`${fs}px "IBM Plex Sans Thai","Leelawadee UI",Tahoma,sans-serif`;
-  const maxW=Math.min(lw*k*.62,fs*20);const words=String(text).split(/(?<=\s)/);const lines=[];let cur='';for(const w of words){if(c.measureText(cur+w).width>maxW&&cur){lines.push(cur);cur=w;}else cur+=w;}if(cur)lines.push(cur);const L=lines.slice(0,3);if(lines.length>3)L[2]=L[2].replace(/.{2}$/,'…');
+/* text that always fits: break on spaces (and inside very long Thai runs), shrink the font before ever dropping words */
+function vWrap(c,text,maxW){const words=String(text).split(/(?<=\s)/),lines=[];let cur='';
+  const push=w=>{if(c.measureText(cur+w).width>maxW&&cur){lines.push(cur);cur='';}if(c.measureText(w).width>maxW){let part='';for(const ch of w){if(c.measureText(part+ch).width>maxW&&part){lines.push(part);part='';}part+=ch;}cur=part;}else cur+=w;};
+  for(const w of words)push(w);if(cur)lines.push(cur);return lines;}
+function vFit(c,text,maxW,fs0,maxL,font){let fs=fs0,L;for(;fs>=8;fs--){c.font=font(fs);L=vWrap(c,text,maxW);if(L.length<=maxL)break;}if(L.length>maxL){L=L.slice(0,maxL);L[maxL-1]=L[maxL-1].replace(/.{1,2}$/,'…');}return{fs:Math.max(8,fs),L};}
+const VFONT=fs=>`${fs}px "IBM Plex Sans Thai","Leelawadee UI",Tahoma,sans-serif`;
+function vBubble(c,k,x,y,text,lw){if(!text)return;const fs0=Math.max(10,Math.round(3.3*k));c.save();c.setTransform(1,0,0,1,0,0);
+  const maxW=Math.min(lw*k*.66,fs0*22);const {fs,L}=vFit(c,text,maxW,fs0,4,VFONT);c.font=VFONT(fs);
   const bw=Math.max(...L.map(l=>c.measureText(l).width))+fs*.9,bh=L.length*fs*1.35+fs*.5;let bx=Math.min(Math.max(4,x*k-bw/2),lw*k-bw-4),by=Math.max(fs*2.2,y*k-bh-6);
   c.fillStyle='rgba(250,248,240,.96)';c.strokeStyle='#181425';c.lineWidth=Math.max(2,k*.6);c.beginPath();c.roundRect?c.roundRect(bx,by,bw,bh,fs*.5):c.rect(bx,by,bw,bh);c.fill();c.stroke();
   c.beginPath();c.moveTo(x*k-4,by+bh);c.lineTo(x*k,by+bh+fs*.6);c.lineTo(x*k+5,by+bh);c.fill();
@@ -14173,10 +14180,10 @@ function vBubble(c,k,x,y,text,lw){if(!text)return;const fs=Math.max(10,Math.roun
 function vSplit(line){const m=String(line).match(/["“]([^"”]{2,})["”]/);if(!m)return{narr:line,quote:''};
   const before=line.slice(0,m.index).trim(),after=line.slice(m.index+m[0].length).trim();const me=/^คุณ(ตอบ|พูด|ตะโกน|บอก|ถาม|กระซิบ)|^คุณ.{0,12}(ว่า|ตอบ)$/.test(before);
   const narr=after.length>6?after:'';return{quote:m[1],narr,me};}
-function vSub(c,k,lw,lh,text){const fs=Math.max(10,Math.round(3.2*k));c.save();c.setTransform(1,0,0,1,0,0);c.font=`${fs}px "IBM Plex Sans Thai","Leelawadee UI",Tahoma,sans-serif`;
-  const W2=c.canvas.width,maxW=W2*.9;const words=String(text).split(/(?<=\s)/);const lines=[];let cur='';for(const w of words){if(c.measureText(cur+w).width>maxW&&cur){lines.push(cur);cur=w;}else cur+=w;}if(cur)lines.push(cur);const L=lines.slice(0,2);
+function vSub(c,k,lw,lh,text){const fs0=Math.max(10,Math.round(3.2*k));c.save();c.setTransform(1,0,0,1,0,0);
+  const W2=c.canvas.width,maxW=W2*.92;const {fs,L}=vFit(c,text,maxW,fs0,3,VFONT);c.font=VFONT(fs);
   const bh=L.length*fs*1.4+fs*.6,by=c.canvas.height-bh-4;c.fillStyle='rgba(12,10,20,.72)';c.fillRect(0,by,W2,bh+4);c.fillStyle='#f3efe0';c.textAlign='center';L.forEach((l,i)=>c.fillText(l.trim(),W2/2,by+fs*1.15+i*fs*1.4));c.restore();}
-function vCaption(c,k,lw,txt,sub){const fs=Math.max(11,Math.round(3.6*k));c.save();c.setTransform(1,0,0,1,0,0);let top=4;try{const h=document.querySelector('#game .hud');const cv=c.canvas;if(h&&cv.clientHeight)top=(h.offsetHeight+4)*(cv.height/cv.clientHeight);}catch(e){}c.translate(0,top-4);c.font=`600 ${fs}px "IBM Plex Sans Thai","Leelawadee UI",Tahoma,sans-serif`;
+function vCaption(c,k,lw,txt,sub){let fs=Math.max(11,Math.round(3.6*k));c.save();c.setTransform(1,0,0,1,0,0);let top=4;try{const h=document.querySelector('#game .hud');const cv=c.canvas;if(h&&cv.clientHeight)top=(h.offsetHeight+4)*(cv.height/cv.clientHeight);}catch(e){}c.translate(0,top-4);let fsc=fs;for(;fsc>8;fsc--){c.font=`600 ${fsc}px "IBM Plex Sans Thai","Leelawadee UI",Tahoma,sans-serif`;if(c.measureText(txt).width+fsc*1.4<=lw*k-8)break;}fs=fsc;
   const w=Math.min(lw*k-8,c.measureText(txt).width+fs*1.4);c.fillStyle='rgba(24,20,37,.82)';c.fillRect(4,4,w,fs*1.6);c.fillStyle='#fee761';c.fillRect(4,4,3,fs*1.6);c.fillStyle='#f3efe0';c.fillText(txt,4+fs*.6,4+fs*1.15);
   if(sub){c.font=`${Math.round(fs*.82)}px "IBM Plex Sans Thai",Tahoma,sans-serif`;c.fillStyle='rgba(24,20,37,.7)';const w2=Math.min(lw*k-8,c.measureText(sub).width+fs*1.2);c.fillRect(4,6+fs*1.6,w2,fs*1.3);c.fillStyle='#c0cbdc';c.fillText(sub,4+fs*.6,6+fs*2.55);}c.restore();}
 function vBg(px,kind,lw,lh,gy,t,night){const jp=JP(),mod=MODERN();
@@ -14961,6 +14968,132 @@ for(const X of Object.values(WORLDS))if(typeof X.isWhere==='function'){const iw=
 
 /* ---- 15. an event without any main character is not titled "พบตัวละครหลัก" ---- */
 {const akT=ask;ask=function(title,text,choices,kind){try{if(title==='พบตัวละครหลัก'){const ids=castsIn(String(text||''));if(!ids||!ids.length)title=/ทัพ|บุก|สงคราม|ประหาร|ระเบิด|ยกพล/.test(text||'')?'เหตุการณ์ใหญ่':'เรื่องสำคัญ';}}catch(e){}return akT.call(this,title,text,choices,kind);};}
+
+
+/* --- z_heal75.js --- */
+/* ===== v75 healing in a fight, by the lore of each world: bind a wound, take medicine you bought, or use a healing power
+   you learned (reverse cursed technique, healing magic, medical ninjutsu, kaidō, Hamon, titan steam, a senzu bean).
+   Healing uses your turn, so the enemy still gets to strike. Healing techniques are no longer listed as attacks. ===== */
+let BTH={};
+{const bt0=battle;battle=function(E,o){BTH={n:{}};return bt0.apply(this,arguments);};}
+const MEDN={aot:['ผ้าพันแผลกับเหล้าล้างแผล','ห่อยาของหมอประจำเมือง'],naruto:['ยาเม็ดเสบียงทหาร','ยาสมานแผลของหน่วยแพทย์'],op:['ยาของหมอประจำเรือ','ผ้าพันแผลกับยาฆ่าเชื้อ'],bleach:['ยาฟื้นพลังวิญญาณจากร้านอุราฮาระ','ผ้าพันแผลหน่วยที่ 4'],
+  jjk:['ยาแก้ปวดจากห้องพยาบาลวิทยาลัย','ผ้าพันแผลห้ามเลือด'],jojo:['ชุดปฐมพยาบาล','ยาแก้ปวด'],heian:['ยาสมุนไพรจีนจากพระ','ผ้าพันแผลแช่สมุนไพร'],jjedo:['ยาสมุนไพรจากร้านยาเอโดะ','ผ้าพันแผลแช่สุรา'],
+  db:['ยาจากโรงพยาบาลเวสต์ซิตี้','ชุดปฐมพยาบาลแคปซูล'],lookism:['ยาแก้ปวดกับเทปพันแผล','สเปรย์บรรเทาปวด'],bc:['ยาน้ำฟื้นมานา','ยาสมุนไพรของแม่ชี']};
+const medName=()=>(MEDN[W.id]||MEDN.jojo)[0];
+const HEALPOW=[
+  {id:'rct',n:'วิชาย้อนกลับพลังคำสาป',ok:S=>typeof hp_==='function'&&hp_('jj_rct'),v:[28,40],ep:35,x:'คุณคูณพลังลบกับพลังลบให้เป็นบวก เนื้อที่ฉีกขาดค่อยๆ ปิดลงต่อหน้าศัตรู'},
+  {id:'bch',n:'เวทเยียวยา: แสงรักษา',ok:S=>W.id==='bc'&&hasP('bc_heal'),v:[24,34],ep:30,x:'แสงสีเขียวจากตำราเวทห่อตัวคุณ แผลค่อยๆ สมานกัน'},
+  {id:'mpalm',n:'วิชาฝ่ามือเยียวยา',ok:S=>W.id==='naruto'&&(S.sk?.medic||0)>=35&&(typeof isNinja!=='function'||isNinja(S)||S.flags.outlaw),v:[20,30],ep:30,x:'จักระสีเขียวเรืองขึ้นที่ฝ่ามือ คุณกดลงบนแผลตัวเองระหว่างถอยหลบ'},
+  {id:'uzu',n:'จักระอุซึมากิฟื้นร่าง',ok:S=>W.id==='naruto'&&hasP('uzuchakra'),v:[12,18],ep:15,x:'พลังชีวิตของตระกูลอุซึมากิทำให้แผลหายเร็วผิดคน'},
+  {id:'kaido',n:'คิโด้รักษา (ไคโด)',ok:S=>W.id==='bleach'&&typeof reaper==='function'&&reaper(S)&&(S.sk?.medic||0)>=30,v:[20,28],ep:28,x:'แสงอุ่นๆ จากฝ่ามือปิดบาดแผลแบบที่หน่วยที่ 4 สอน'},
+  {id:'hamon',n:'ฮามอนรักษาบาดแผล',ok:S=>W.id==='jojo'&&hasP('jo_hamon'),v:[18,26],ep:25,x:'คุณหายใจเป็นจังหวะ คลื่นฮามอนไหลผ่านเส้นเลือดจนเลือดหยุดไหล'},
+  {id:'steam',n:'ไอน้ำรักษาแผล (พลังไททัน)',ok:S=>W.id==='aot'&&(S.flags.shifter||hasP('titanShifter')),v:[25,35],ep:20,x:'ไอน้ำพวยพุ่งจากแผล เนื้อใหม่งอกขึ้นมาแทนที่ในไม่กี่วินาที'},
+];
+function btHeals(me,ep){const L=[];if(!S||me>=100)return L;
+  if(!BTH.n.wrap){const md=S.sk?.medic||0;L.push({heal:'wrap',n:W.id==='lookism'?'กัดฟันพันมือ ห้ามเลือด':'พันแผลห้ามเลือด',h:`ฟื้น HP ~${8+Math.floor(md/6)} · ใช้ได้ครั้งเดียว · ศัตรูได้โจมตี`,col:'#63c74d'});}
+  const meds=S.flags.meds||0;if(meds>0&&(BTH.n.med||0)<2)L.push({heal:'med',n:`ใช้${medName()}`,h:`ฟื้น HP ~22 · เหลือ ${meds} ชุด`,col:'#63c74d'});
+  if(W.id==='db'&&(S.flags.senzu||0)>0&&!BTH.n.senzu)L.push({heal:'senzu',n:'กินเมล็ดเซ็นซุ',h:`ฟื้นเต็ม · เหลือ ${S.flags.senzu} เมล็ด`,col:'#9be07a'});
+  for(const p of HEALPOW)if(p.ok(S)&&(BTH.n[p.id]||0)<2)L.push({heal:p.id,n:p.n,h:ep<p.ep?`พลังไม่พอ (ต้องใช้ ${p.ep})`:`ฟื้น HP ~${p.v[0]}–${p.v[1]} · ใช้พลัง ${p.ep}`,col:'#8ee07a',no:ep<p.ep});
+  if(W.id==='lookism'&&me<30&&!BTH.n.grit)L.push({heal:'grit',n:'ลุกขึ้นด้วยใจ',h:'ฟื้น HP เล็กน้อย · ครั้งเดียว',col:'#e8b86a'});
+  return L;}
+function btHealUse(k,me){const id=k.heal;BTH.n[id]=(BTH.n[id]||0)+1;
+  if(id==='wrap'){const v=R(7,10)+Math.floor((S.sk?.medic||0)/6);skill('medic',1);return{v,x:`คุณฉีกผ้าพันแผลห้ามเลือดอย่างลวกๆ ฟื้น HP ${v}`};}
+  if(id==='med'){S.flags.meds=Math.max(0,(S.flags.meds||0)-1);const v=R(18,26);return{v,ep:-10,x:`คุณใช้${medName()} ฟื้น HP ${v}`};}
+  if(id==='senzu'){S.flags.senzu=Math.max(0,(S.flags.senzu||0)-1);const v=100-me;return{v,ep:-40,x:'คุณเคี้ยวเมล็ดเซ็นซุ บาดแผลทั้งตัวหายไปในพริบตา!'};}
+  if(id==='grit'){const v=R(8,13);return{v,x:'คุณใช้มือยันพื้นลุกขึ้นมาอีกครั้ง "ยังไม่จบ"'};}
+  const p=HEALPOW.find(x=>x.id===id);const v=R(p.v[0],p.v[1]);return{v,ep:p.ep,x:`${p.x} ฟื้น HP ${v}`};}
+/* medicine to carry: every world's shop sells a pack of three */
+for(const [w,X] of Object.entries(WORLDS)){X.shop=X.shop||[];const nm=(MEDN[w]||MEDN.jojo)[0];if(!X.shop.some(i=>i.id==='medkit75'))X.shop.push({id:'medkit75',n:`${nm} (3 ชุด)`,cat:'med',cost:3,d:'พกไว้ใช้ระหว่างต่อสู้ ฟื้นพลังได้ทันที',eat:1,use(S){S.flags.meds=(S.flags.meds||0)+3;say(`คุณพก${nm}ไว้ 3 ชุด เผื่อต้องใช้ตอนสู้`,'plain');}});}
+/* the senzu beans: Karin's tower gives a few to those who climb it (a rare item already sold) */
+{const bF=buy;buy=function(it){const r=bF.apply(this,arguments);try{if(it&&it.id==='d_senzu'){S.flags.senzu=(S.flags.senzu||0)+2;say('คุณเก็บเซ็นซุอีกสองเมล็ดไว้ใช้ตอนสู้','good');}}catch(e){}return r;};}
+
+
+/* --- z_text75.js --- */
+/* ===== v75 text never gets cut: toasts show the whole line, the status line wraps instead of "…", NPC thought bubbles stay
+   inside the scene and stay up long enough to read ===== */
+try{const st=document.createElement('style');st.textContent=`
+.toast p{-webkit-line-clamp:6!important}
+.hud #vNow{white-space:normal!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.3}
+@media (max-width:560px){.hud{flex-wrap:wrap;row-gap:2px}.hud #vNow{flex-basis:100%;text-align:left!important;font-size:12px}}
+.think{max-width:min(78%,300px)!important;white-space:normal;overflow-wrap:anywhere}
+.think.fit{transform:none!important;animation:thkfade .35s ease-out!important}
+@keyframes thkfade{from{opacity:0}to{opacity:1}}
+`;document.head.append(st);}catch(e){}
+/* place the bubble so all of it is inside the scene: centred over the speaker, never above the top or past the sides */
+function thkFit(el,cv){const box=cv.parentElement,cw=box.clientWidth||cv.clientWidth,ch=box.clientHeight||cv.clientHeight;if(!cw||!ch)return;
+  const ax=parseFloat(el.style.left)||cw/2,ay=parseFloat(el.style.top)||ch/2;el.classList.add('fit');el.style.transform='none';
+  const w=el.offsetWidth,h=el.offsetHeight,hud=document.querySelector('#game .hud');let hudH=34;try{if(hud){const hb=hud.getBoundingClientRect(),bb=box.getBoundingClientRect();hudH=Math.max(4,hb.bottom-bb.top+4);}}catch(e){}
+  el.style.left=Math.round(Math.max(4,Math.min(cw-w-4,ax-w/2)))+'px';el.style.top=Math.round(Math.max(hudH,Math.min(ch-h-4,ay-h)))+'px';}
+const thkDur=el=>Math.min(9500,2800+String(el.textContent||'').length*65);
+
+
+/* --- z_trip75.js --- */
+/* ===== v75 being somewhere else: a trip is a stay — the top view becomes the place you are visiting (by the lore), your
+   family stays home, and each month you choose to stay longer, travel on to another place, or go home. A rogue ninja
+   lives in the wild, not in the village they fled. The header no longer repeats the same word. ===== */
+/* where each destination is drawn: a place of the world (pl) or a landscape (v) */
+const TRIPV={
+  aot:{'มิทราส เมืองหลวงในกำแพงซีน่า':{pl:'mitras'},'ชายหาดที่ทุกคนเห็นทะเลครั้งแรก':{v:'isle'},'โบสถ์ใต้ดินของตระกูลไรส์':{pl:'underground'},'เลแบรีโอ เมืองชาวเอลเดียในมาร์เลย์':{pl:'liberio'}},
+  naruto:{'หุบเขาแห่งจุดจบ':{v:'hida'},'ภูเขาเมียวโบคุ':{v:'grove'},'หมู่บ้านคุโมะ':{pl:'kumo_civil'},'หมู่บ้านซึนะในทะเลทราย':{pl:'suna_civil'}},
+  op:{'เกาะมนุษย์เงือก':{v:'sea'},'ลิตเติลการ์เดน':{v:'grove'},'อมาซอนลิลลี่ เกาะแห่งผู้หญิง':{v:'isle'},'ธริลเลอร์บาร์ค':{v:'rashomon',night:1},'โซว เกาะบนหลังช้าง':{v:'grove'}},
+  bleach:{'ฮูเอโกมุนโด':{v:'desert',night:1},'ลานฝึกใต้ร้านอุราฮาระ':{v:'outside'},'บ้านตระกูลชิบะ':{pl:'rukon'}},
+  jjk:{'ชายหาดโอกินาว่า':{v:'isle'},'บ้านตระกูลเซนอิน':{pl:'kyoto'},'ศาลเจ้าบนภูเขาที่ห้ามเข้า':{v:'hida'}},
+  jojo:{'เวนิส':{v:'canal'},'ปอมเปอี':{v:'naples'},'อัสวาน อียิปต์':{pl:'cairo'},'ศูนย์อวกาศแหลมคานาเวอรัล':{v:'port'}},
+  heian:{'ภูเขาไฟฟูจิ':{v:'hida'},'ศาลเจ้าอิเสะ':{v:'heiankyo'}},
+  jjedo:{'ภูเขาไฟฟูจิ':{v:'hida'},'ศาลเจ้าอิเสะ':{v:'heiankyo'},'นิฮงบาชิ เอโดะ':{pl:'edo'}},
+  db:{'ฐานทัพกองทัพริบบอนแดงที่ถูกทิ้ง':{v:'outside'},'ภูเขาฟรายแพน':{v:'hida'},'ดาวนาเม็ก':{v:'grove'},'สนามแข่งเกมของเซล':{v:'desert'}},
+  lookism:{'เกาะเชจู':{v:'isle'},'เม็กซิโก':{v:'desert'},'โตเกียว':{pl:'osaka'},'ค่ายมวยไทยที่ประเทศไทย':{v:'paddy'}},
+  bc:{'หอคอยตำราเวทฮาเจ':{pl:'hage'},'ฐานกองกระทิงดำ':{v:'outside'},'ป่าแม่มด':{pl:'witch'}}};
+const tripOf=()=>S&&S.trip&&S.trip.w===W.id?S.trip:null;
+const tripView=t=>{const m=(TRIPV[W.id]||{})[t.k]||{};if(m.pl&&W.places[m.pl])return W.places[m.pl].v;if(m.v&&VIEW[m.v])return m.v;return null;};
+/* what the top view shows: the trip, or the wild for a rogue ninja */
+function viewKind(){try{if(!S)return null;const t=tripOf();if(t)return tripView(t);if(W.id==='naruto'&&S.flags.outlaw&&VIEW.hida)return 'hida';}catch(e){}return null;}
+{const ds=drawScene;drawScene=function(){const r=ds.apply(this,arguments);try{const t=tripOf();if(t){const el=$('#vPlace');if(el)el.textContent=`กำลังเที่ยว · ${t.k}`;}}catch(e){}return r;};}
+/* at the destination: an inn instead of the house, and you are alone (unless your partner came along) */
+const WILDV=new Set(['outside','hida','grove','desert','isle','sea','paddy','suna']);
+const tripTier=()=>{const t=tripOf();if(t){const v=tripView(t);return WILDV.has(v)||S.money<2?-1:1;}if(W.id==='naruto'&&S.flags.outlaw)return -1;return null;};
+{const wa=wantActors;wantActors=function(){const r=wa.apply(this,arguments);try{const t=tripOf(),out=W.id==='naruto'&&S.flags.outlaw;if(t||out)return r.filter(a=>a.me||(a.id==='pa'&&t&&t.with)).map(a=>a.me?{...a,works:false}:a);}catch(e){}return r;};}
+{const nt2=nowText;nowText=function(){const r=nt2.apply(this,arguments);try{if(!S||LIVE.act||S.mood)return r;const h=CLOCK.h,t=tripOf();
+  if(t)return h>=22||h<6?`คุณพักค้างคืนที่${t.k}`:h<9?`เช้าแรกๆ ที่${t.k} คุณตื่นมาดูวิวแปลกตา`:`คุณเดินชม${t.k}`;
+  if(W.id==='naruto'&&S.flags.outlaw)return h>=22||h<6?'คุณนอนหลับตาข้างเดียวอยู่ในป่า คอยฟังเสียงฝีเท้า':h<9?'คุณลบรอยกองไฟเมื่อคืนก่อนออกเดินทาง':'คุณเดินเลี่ยงถนนใหญ่ ไม่ให้หน่วยล่าสังหารเจอรอย';}catch(e){}return r;};}
+/* the header: no word twice */
+{const rdM=render;render=function(){const r=rdM.apply(this,arguments);try{const el=$('#gMeta');if(el){const seen=new Set(),parts=el.textContent.split(' · ').filter(p=>{const k=p.trim();if(!k||seen.has(k))return false;seen.add(k);return true;});const t=parts.join(' · ');if(t!==el.textContent)el.textContent=t;}}catch(e){}return r;};}
+
+/* ---- travelling becomes a stay ---- */
+const tripCost=t=>Math.max(1,Math.ceil((t.c||20)/12));
+function tripEnd(why){const t=S.trip;if(!t)return;S.trip=null;const m=S.year*12+(S.mo||0)-t.m0;
+  say(why||(m<=1?`คุณกลับบ้านจาก${t.k}พร้อมเรื่องเล่ามากมาย`:`คุณกลับบ้านหลังอยู่ที่${t.k}มา ${m} เดือน ทุกคนที่บ้านดีใจที่ได้เห็นหน้า`),'plain');try{sceneKey='';render();}catch(e){}}
+{const tg=travelGo;travelGo=async function(d){const prev=S.trip;S.trip={k:d.n,w:W.id,c:d.c,m0:S.year*12+(S.mo||0),from:prev?prev.k:null,with:!!(S.partner&&S.partner.married&&S.money>=d.c*2)};
+  if(S.trip.with)mon(-Math.round(d.c*.6));try{sceneKey='';render();}catch(e){}return tg.apply(this,arguments);};}
+/* the arrival window: "กลับบ้าน" ends the trip, "อยู่ต่อ" keeps you there */
+{const akT=ask;ask=function(title,text,choices,kind){try{const t=tripOf();if(t&&Array.isArray(choices)&&title===`✈ ${t.k}`){
+  choices=choices.map(c=>c&&c.l==='กลับบ้าน'?{...c,l:'กลับบ้านเลย',f(){tripEnd();}}:c);
+  choices.splice(choices.length-1,0,{l:'พักอยู่ที่นี่ต่ออีกสักพัก',g:'curious',h:`ค่าที่พักราว ${fmt(tripCost(t))} ต่อเดือน · กลับหรือไปต่อเมื่อไหร่ก็ได้จากปุ่มท่องเที่ยว`,f(S){say(`คุณตัดสินใจอยู่ที่${t.k}ต่ออีกสักพัก`,'plain');}});}}catch(e){}return akT.call(this,title,text,choices,kind);};}
+/* the travel button: while away it is the trip menu (stay, go on somewhere else, go home) */
+async function tripMenu(){const t=tripOf();if(!t||busy)return;busy=true;let next=null;try{
+  const L=(TRAVEL[W.id]||[]).filter(d=>d.n!==t.k&&(!d.when||d.when(S))&&S.age>=(d.min||0)),D=(TRAVEL[W.id]||[]).find(d=>d.n===t.k),m=S.year*12+(S.mo||0)-t.m0;
+  await ask(`✈ ${t.k}`,`คุณอยู่ที่นี่มา ${m} เดือน · เงินเหลือ ${fmt(S.money)} · ค่าที่พักราว ${fmt(tripCost(t))} ต่อเดือน`,[
+    ...(D&&D.deep&&ftOf()>0?D.deep.map(x=>{const a=goAct(x);return{...a,f(){useFt();return a.f.apply(this,arguments);}};}):[]),
+    ...L.map(d=>({l:`เดินทางต่อไป${d.n}`,ok:S.money>=Math.ceil(d.c*.6),h:`${fmt(Math.ceil(d.c*.6))} · ${d.d}`,close:1,f(){next=d;}})),
+    {l:'กลับบ้าน',g:'home safe',f(){tripEnd();}},{l:'อยู่ต่อ',skip:1,f(){}}],'menu');
+  if(next){mon(-Math.ceil(next.c*.6)+next.c);S.ft=Math.max(S.ft||0,1);say(`คุณออกจาก${t.k} มุ่งหน้าไป${next.n}`,'plain');busy=false;await travelGo(next);}}
+  finally{busy=false;save();render();}}
+{const tm=travelMenu;travelMenu=async function(){if(tripOf())return tripMenu();return tm.apply(this,arguments);};}
+try{const wb=WACTS.find(a=>a[0]==='travelBtn');if(wb)wb[2]=()=>travelMenu();}catch(e){}
+{const rdT=render;render=function(){const r=rdT.apply(this,arguments);try{const b=document.querySelector('#acts [data-w="travelBtn"]');const t=tripOf();if(b&&t&&S.age>=12){const lab=`✈ อยู่ที่${t.k.split(' ')[0]} · กลับ/ไปต่อ`;b.dataset.base=lab;if(b.textContent!==lab)b.textContent=lab;b.disabled=!S.alive;}}catch(e){}return r;};}
+/* each month away: pay for the stay; work, money and family pull you home after a while */
+{const mpT=monthPass;monthPass=async function(){const r=await mpT.apply(this,arguments);try{const t=tripOf();if(!t||!S.alive)return r;
+  if(jailed()||S.flags.titan){S.trip=null;return r;}
+  const m=S.year*12+(S.mo||0)-t.m0;mon(-tripCost(t));
+  if(S.money<0){tripEnd(`เงินหมดระหว่างอยู่ที่${t.k} คุณต้องขอติดเกวียนพ่อค้ากลับบ้าน`);return r;}
+  if(isWork(S)&&m>=2&&!t.warned){t.warned=1;perf(-8);say(`${BOSS()}ส่งจดหมายมาถามว่าคุณจะกลับมาทำงานเมื่อไหร่`,'bad');}
+  if(isWork(S)&&m>=5&&chance(.4)){say(`คุณหายไปนานเกินไป ${BOSS()}รับคนใหม่มาแทนแล้ว`,'bad');S.job=null;}
+  if(S.kids.some(k=>k.alive&&S.year-k.y<12)&&m>=3&&chance(.3)){tripEnd(`จดหมายจากบ้านบอกว่าลูกๆ คิดถึง คุณเก็บของกลับจาก${t.k}ทันที`);return r;}
+  if(AUTO.on&&m>=R(1,4))tripEnd();
+  else if(chance(.35)){const D=(TRAVEL[W.id]||[]).find(d=>d.n===t.k);if(D&&D.arr){const [x,e]=pick(D.arr);goEff(e);say(`ที่${t.k}: ${x}`,'plain');toast(x,`เดือน ${(S.mo||0)+1} · ${t.k}`,'');}}
+  save();render();}catch(e){console.error(e);}return r;};}
+/* moving house, being jailed or dying ends any trip */
+{const dD=die;die=function(){try{if(S)S.trip=null;}catch(e){}return dD.apply(this,arguments);};}
 
 
 /* --- z_work74.js --- */
