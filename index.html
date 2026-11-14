@@ -1051,10 +1051,10 @@ function festivalEv(S){if(outlawNow()||S.flags?.wanted)return null;
   const o=[];
   if(S.partner)o.push({l:`ไปเที่ยวกับ ${S.partner.n}`,g:'love',f(S){S.partner.love=Math.min(100,(S.partner.love??50)+R(5,10));st('joy',6);liveAct('heart');say(pick([`${S.partner.n} จับมือคุณตลอดงาน`,`คุณกับ ${S.partner.n} ยืนดูท้องฟ้าด้วยกันโดยไม่พูดอะไร`,`${S.partner.n} ซื้อของเล่นราคาถูกให้คุณเป็นที่ระลึก`,`คุณกับ ${S.partner.n} ทะเลาะกันเรื่องเล็กๆ แล้วก็คืนดีกันก่อนงานเลิก`]),'good');}});
   if(S.kids.some(k=>k.alive&&S.year-k.y<14))o.push({l:'พาลูกๆ ไปเที่ยว',g:'kind home',f(S){mon(-2);st('joy',6);say(pick(['ลูกๆ วิ่งจนหลับคาหลังคุณตอนเดินกลับ','ลูกคนเล็กหลงไปพักหนึ่ง แต่หาเจอที่แผงขายขนม','ลูกๆ ช้อนปลาทองได้คนละตัว','ลูกคนโตชนะเกมปาเป้า ได้ตุ๊กตาใหญ่กว่าตัว']),'good');}});
-  if(S.age>=14)o.push({l:'ตั้งแผงขายของในงาน',g:'curious diligent',f(S){const k=Object.entries(S.sk||{}).sort((a,b)=>b[1]-a[1])[0],g=R(3,8)+Math.floor((k?.[1]||0)/10);mon(g);if(k)skill(k[0],1);say(`คุณขายของได้ ${fmt(g)}${k?` ฝีมือ${W.skL[k[0]]}ช่วยได้มาก`:''}`,'good');}});
+  if(S.age>=14)o.push({l:'ตั้งแผงขายของในงาน',g:'curious diligent',f(S){const k=Object.entries(S.sk||{}).sort((a,b)=>b[1]-a[1])[0],g=R(3,8)+Math.floor((k?.[1]||0)/10);mon(g);if(k)skill(k[0],1);say(pick([`คุณขายของได้ ${fmt(g)}${k?` ฝีมือ${W.skL[k[0]]}ช่วยได้มาก`:''}`,`แผงของคุณขายดีจนของหมดก่อนงานเลิก ได้มา ${fmt(g)}`,`ฝนตกลงมาช่วงหัวค่ำ แต่คุณก็ขายได้ ${fmt(g)}`,`เด็กๆ มารุมแผงของคุณ ได้ ${fmt(g)} กับเสียงหัวเราะอีกเต็มกระเป๋า`,`คนรู้จักแวะมาอุดหนุนกันหลายคน ได้ ${fmt(g)}`]),'good');}});
   if(!S.partner&&S.age>=16)o.push({l:'ไปหาคนถูกใจในงาน',g:'love curious',f(S){findPartner(.1);}});
   o.push({l:'ไปเดินเที่ยวกับเพื่อนๆ',g:'curious',f(S){st('joy',4);say(pick(['คุณกินขนมจนพุงกาง','คุณยิงเป้าได้รางวัลตุ๊กตาตัวใหญ่','คุณกับเพื่อนหัวเราะกันจนน้ำตาไหล','คุณเจอเพื่อนเก่าที่ไม่ได้เจอกันหลายปี','คุณถูกหมอดูทักว่าปีหน้าจะมีเรื่องใหญ่']),'good');}});
-  o.push({l:'อยู่บ้านพักผ่อน',g:'home safe',f(S){st('hp',1);say('คุณได้ยินเสียงงานรื่นเริงดังมาจากไกลๆ');}});
+  o.push({l:'อยู่บ้านพักผ่อน',g:'home safe',f(S){st('hp',1);say(typeof FESTHOME!=='undefined'?pick(FESTHOME):'คุณได้ยินเสียงงานรื่นเริงดังมาจากไกลๆ');}});
   return{t:F[0],text:pick(F[1]),choices:o};
 }
 /* life around you: everyday scenes, never repeated within the last 14 shown */
@@ -2766,10 +2766,10 @@ function applyAct(o,cat){
   if(o.find){findPartner(o.bonus||0);return;}
   if(o.love&&S.partner){S.partner.love=Math.min(100,(S.partner.love??50)+rng2(o.love));skill('charm',R(1,3));st('joy',R(3,7));}
   o.f?.(S);
-  say(o.txt?pick([].concat(o.txt)):`คุณ${o.l}${o.love&&S.partner?` กับ ${S.partner.n}`:''}`,'good');
+  say(o.txt?pick([].concat(o.txt)):'คุณ'+((typeof actLab==='function'&&actLab(o))||o.l),'good');
   liveAct(o.a||CATANIM[cat]||'star');
 }
-function doDoc(){const c=S.age<16?0:5;S.ap=Math.max(0,(S.ap??3)-1);mon(-c);st('hp',R(6,15));say(c?`จ่ายค่าหมอ ${fmt(c)} สุขภาพดีขึ้น`:'พ่อแม่พาคุณไปหาหมอ สุขภาพดีขึ้น','good');liveAct('heal');}
+function doDoc(){const c=S.age<16?0:5;S.ap=Math.max(0,(S.ap??3)-1);mon(-c);st('hp',R(6,15));say(typeof docLine==='function'?docLine(c):(c?`จ่ายค่าหมอ ${fmt(c)} สุขภาพดีขึ้น`:'พ่อแม่พาคุณไปหาหมอ สุขภาพดีขึ้น'),'good');liveAct('heal');}
 async function openAct(a){
   if(a.id==='job')return openJobs();
   if(a.id==='shop')return openShop();
@@ -3757,7 +3757,7 @@ function nowText(){
   if(['fire','quake'].includes(S.mood))return'ทุกคนวิ่งหนีกันอลหม่าน';
   if(S.mood==='grief')return'บ้านเงียบงัน ทุกคนไว้ทุกข์';
   if(S.mood==='festive')return'ทั้งบ้านออกมาร่วมงานรื่นเริง';
-  if(LIVE.act)return'คุณ'+ACTTXT[LIVE.act.k];
+  if(LIVE.act)return'คุณ'+(LIVE.act.txt||ACTTXT[LIVE.act.k]);
   if(hr>=22||hr<6)return'ทุกคนในบ้านหลับสนิท';
   if(hr<8)return S.partner?.married||kids||S.age<18?'ตื่นเช้า กินข้าวเช้าพร้อมหน้ากัน':'ตื่นเช้า ต้มน้ำชาดื่มคนเดียว';
   if(me?.away)return S.job?(S.job.pt?`คุณไป${S.job.n}`:`คุณออกไปทำงาน${S.job.n}`):'คุณไปเรียนหนังสือ';
@@ -5115,7 +5115,7 @@ function dreamStep(){
   const d=DREAMS[W.id].find(x=>x.id===S.dream)||DREAMS[W.id][0];
   return{t:`ทางสู่ความฝัน · ${d?.n||''}`,big:1,play:()=>({sc:st.sc||(DPSC[S.dream]||[])[i]||null,text:typeof st.x==='function'?st.x():st.x,choices:[
     {l:typeof st.y==='function'?st.y():st.y,g:st.g||'brave',f(S){const r=st.f(S);if(r!==false){S.dStep=i+1;}else S.dCD=S.year*12+(S.mo||0)+12;}},
-    {l:'ยังไม่ใช่ตอนนี้',g:'safe',f(S){S.dCD=S.year*12+(S.mo||0)+18;say('คุณเก็บความฝันไว้ในใจอีกสักพัก','plain');}},
+    {l:'ยังไม่ใช่ตอนนี้',g:'safe',f(S){S.dCD=S.year*12+(S.mo||0)+18;}},
   ]})};
 }
 /* character creation: pick three traits that do not contradict, and a dream */
@@ -7883,7 +7883,7 @@ function toro(f,x,g,on){f(x-2,g-3,6,3,'#8b8a80');f(x,g-10,2,7,'#9a9990');f(x-2,g
 /* ===================== techniques: when you fight, you choose what to fight with, and the story's own words come out of your mouth ===================== */
 var TECH=null;
 const FIGHTRE=/สู้|ปราบ|กำจัด|ลงมือ|โจมตี|ฟัน|ลอบ|ท้า|ร่วมรบ|รับภารกิจ|ล่าแต้ม|นำฝูง|ขวาง|ต่อสู้|ประลอง|บุก|ยิง|ขึ้นเวที|ปะทะ|จัดการ|สังหาร|ล่า/;
-const isFight=c=>!!c&&!c.skip&&FIGHTRE.test(c.l||'')&&!/ไม่|หนี|ถอย|ปฏิเสธ/.test(c.l||'')&&/brave|dark|hero/.test(c.g||'');
+const isFight=c=>!!c&&!c.skip&&!c.nf&&FIGHTRE.test(c.l||'')&&!/ไม่|หนี|ถอย|ปฏิเสธ/.test(c.l||'')&&/brave|dark|hero/.test(c.g||'');
 const hp_=id=>hasP(id),jjS=S=>(typeof sorc==='function'&&sorc(S))||(typeof hsorc==='function'&&hsorc(S))||['cuser','jkiller','hcuser','hsukuna'].includes(S.job?.id);
 const T=(id,n,need,o)=>({id,n,need,...o});
 /* each world's arsenal: need(S), pw (power that drives it), chant, full (complete incantation), anim, col, lv (survival bonus), hp/dk cost, risk */
@@ -12038,7 +12038,7 @@ function phoneOpen(){try{const pb=document.createElement('b');pb.innerHTML='<i><
 .phonep .phbtn{display:block;width:100%;margin:6px 0;padding:10px 12px;border-left-color:#8bd3ff}.phonep .phbtn:disabled{opacity:.45;cursor:default}`;document.head.append(st);}catch(e){}})();
 /* the phone button sits with the world actions and only shows in modern eras */
 if(typeof WACTS!=='undefined'&&!WACTS.some(a=>a[0]==='phoneBtn'))WACTS.push(['phoneBtn','📰 ข่าวสาร',()=>phoneOpen()]);
-{const rd=render;render=function(){const r=rd.apply(this,arguments);try{const b=document.querySelector('#acts [data-w="phoneBtn"]');if(b){const K=mediaKind(),young=S&&S.alive&&S.age<9;let K2=K;if(young){const w=W.id,y=S.year;K2=(['jjk','lookism','bleach','jojo','db'].includes(w)&&phoneOKy(w,y))||(w==='naruto'&&y>=74)?'phone':w==='heian'||(w==='jjedo'&&y<1615)||w==='naruto'?'letter':'paper';}b.hidden=!K2;b.disabled=!K;if(K2){const t2=`${MEDIA[K2].ic} ${MEDIA[K2].n}${K?'':' · อายุ 9 ปีขึ้นไป'}`;if(b.textContent!==t2)b.textContent=t2;}}}catch(e){}return r;};}
+{const rd=render;render=function(){const r=rd.apply(this,arguments);try{const b=document.querySelector('#acts [data-w="phoneBtn"]');if(b){const K=mediaKind(),young=S&&S.alive&&S.age<9;let K2=K;if(young){const w=W.id,y=S.year;K2=(['jjk','lookism','bleach','jojo','db'].includes(w)&&phoneOKy(w,y))||(w==='naruto'&&y>=74)?'phone':w==='heian'||(w==='jjedo'&&y<1615)||w==='naruto'?'letter':'paper';}b.hidden=!K2;b.disabled=!K;if(K2){const t2=`${MEDIA[K2].ic} ${MEDIA[K2].n}${K?'':' · อายุ 9+'}`;if(b.textContent!==t2)b.textContent=t2;}}}catch(e){}return r;};}
 
 /* ===== v57 fixes: the right face in every scene =====
    a short name that is a shared surname ("ยามาซากิ", "คิม", "มังกี้") or sits inside another name ("มากิ" in "อินุมากิ")
@@ -13633,7 +13633,7 @@ const ECHOT={
       {l:'ไปทำบุญ/ทำความดีเพื่อลบล้าง',g:'kind',f(S){dk(-6);st('joy',3);say('ความดีไม่ได้ลบอดีต แต่มันทำให้คุณกล้ามองกระจกอีกครั้ง','plain');}},
       {l:'ยอมรับว่านั่นก็คือตัวคุณ',g:'dark',f(S){dk(3);trauma(-3);say('คุณเลิกโกหกตัวเอง ความรู้สึกผิดเบาลง แต่ความมืดก็ฝังลึกขึ้น','bad');}}]})],
   brave:[a=>({x:`เรื่องที่คุณ "${a.l}" ตอน "${a.t}" เมื่อ ${S.year-a.y} ปีก่อน กลายเป็นเรื่องเล่าของคนรุ่นใหม่ มีคนมาขอให้คุณช่วยเรื่องที่ไม่มีใครกล้า`,c:[
-      {l:'รับเรื่องนั้น',g:'brave hero',f(S){if(!live(.85+fitb(400),'ล้มลงในเรื่องที่ไม่มีใครกล้ารับ'))return;fm(6);mon(R(5,15));say('คุณทำสำเร็จอีกครั้ง ชื่อของคุณถูกพูดถึงไปอีกหลายปี','good');}},
+      {l:'รับเรื่องนั้น',g:'brave hero',f(S){if(!live(.85+fitb(400),'เสียชีวิตขณะรับงานอันตรายที่ไม่มีใครกล้ารับ'))return;fm(6);mon(R(5,15));say('คุณทำสำเร็จอีกครั้ง ชื่อของคุณถูกพูดถึงไปอีกหลายปี','good');}},
       {l:'บอกว่าวันนั้นคุณแค่โชคดี',g:'safe',f(S){st('joy',2);say('ความถ่อมตัวของคุณทำให้เรื่องเล่ายิ่งยิ่งใหญ่ขึ้น','plain');}}]})],
   love:[a=>({x:`คุณเดินผ่านที่ที่เคยเกิดเรื่อง "${a.t}" เมื่อ ${S.year-a.y} ปีก่อน ตอนที่คุณเลือก "${a.l}" คนคนนั้นยืนอยู่ตรงนั้นพอดี ผมเริ่มมีสีขาวแล้ว`,c:[
       {l:'เข้าไปทักทาย',g:'love kind',f(S){st('joy',8);trauma(-4);say(pick(['คุณสองคนหัวเราะเรื่องเก่าจนน้ำตาไหล','เขาบอกว่าวันนั้นเป็นหนึ่งในวันที่ดีที่สุดในชีวิตเขา','ไม่มีใครพูดถึงสิ่งที่อาจจะเป็น แต่ทั้งคู่รู้']),'good');}},
@@ -13726,7 +13726,7 @@ const MST=[
     {l:'ใช้เสน่ห์ต่อรองให้ตัวเอง',g:'selfish',f(S){mon(R(8,20));dk(2);say('ทุกดีลของคุณจบด้วยรอยยิ้มของอีกฝ่าย และกระเป๋าเงินของคุณ','plain');}}]})],
   ['fight60',S=>(S.sk?.fight||0)>=60&&S.age>=14,S=>({text:'ข่าวเรื่องฝีมือของคุณไปถึงหูคนทั้งย่าน เด็กหนุ่มคนหนึ่งคุกเข่าขอเป็นศิษย์ ส่วนนักเลงอีกกลุ่มส่งคนมาท้า',choices:[
     {l:'รับเด็กคนนั้นเป็นศิษย์',g:'kind',f(S){S.flags.pupil=1;fm(3);skill('fight',2);say('สอนคนอื่นทำให้คุณเข้าใจท่าของตัวเองลึกขึ้น','good');}},
-    {l:'สู้กับคนที่มาท้า',g:'brave',foe:['นักสู้ที่มาท้าประลอง',55],f(S){if(!live(.9+fitb(400),'แพ้ในการประลองครั้งสำคัญ'))return;fm(4);skill('fight',3);say('ชื่อของคุณถูกพูดถึงในทุกโรงฝึก','good');}}]})],
+    {l:'สู้กับคนที่มาท้า',g:'brave',foe:['นักสู้ที่มาท้าประลอง',55],f(S){if(!live(.9+fitb(400),'บาดเจ็บหนักจนไม่ฟื้นหลังการประลองกับนักสู้ที่มาท้า'))return;fm(4);skill('fight',3);say('ชื่อของคุณถูกพูดถึงในทุกโรงฝึก','good');}}]})],
   ['cook50',S=>(S.sk?.cook||0)>=50&&S.age>=14,S=>({text:'กลิ่นอาหารจากบ้านคุณลอยไปทั้งซอย เพื่อนบ้านเริ่มมาขอซื้อ "เปิดร้านเถอะ จะมาอุดหนุนทุกวัน"',choices:[
     {l:'เปิดแผงขายอาหารหน้าบ้าน',g:'curious',f(S){S.flags.stall=1;mon(R(6,15));skill('trade',2);say('แผงเล็กๆ ของคุณมีคิวทุกเย็น','good');}},
     {l:'ทำให้คนที่รักกินก็พอ',g:'kind home',f(S){st('joy',5);for(const p of par())st('joy',1);say('มื้อเย็นของบ้านคุณกลายเป็นเวลาที่ทุกคนรอคอย','good');}}]})],
@@ -14662,7 +14662,7 @@ const docReason=()=>{if(!S)return null;const inj=S.flags?.inj;if(inj){const k=St
   if(S.st.hp<35)return pick(['คุณไข้ขึ้นสูงตั้งแต่เมื่อคืน ตัวร้อนจนพูดไม่รู้เรื่อง','คุณปวดท้องจนลุกไม่ขึ้น กินอะไรก็อาเจียนออกมา','คุณหน้าซีด เวียนหัวจนเกือบเป็นลมกลางบ้าน']);
   if(S.st.hp<50)return pick(['คุณรู้สึกครั่นเนื้อครั่นตัว ไข้ต่ำๆ มาหลายวัน','คุณเหนื่อยง่ายผิดปกติ ไอเล็กน้อยทั้งสัปดาห์','ผื่นแดงขึ้นตามแขน คันจนเกาเป็นแผล']);return null;};
 {const aw=actWeight;actWeight=function(id){const w=aw.apply(this,arguments);if(id==='doc'&&!docReason())return 0;return w;};}
-{const dd=doDoc;doDoc=function(){try{const r=docReason();say(r||'คุณไปตรวจสุขภาพประจำปี หมอบอกว่าแข็งแรงดี','plain');}catch(e){}return dd.apply(this,arguments);};}
+{const dd=doDoc;doDoc=function(){try{const r=docReason();if(r)say(r,'plain');}catch(e){}return dd.apply(this,arguments);};}
 /* the routine never takes a healthy child to the doctor (when doc is the only option its zero weight still won) */
 let ACTAUTO=false;
 {const aa=autoAct;autoAct=function(){ACTAUTO=true;try{return aa.apply(this,arguments);}finally{ACTAUTO=false;}};}
@@ -14706,7 +14706,7 @@ try{const hb=document.getElementById('dreamBtn');if(hb)hb.remove();}catch(e){}
 if(typeof WACTS!=='undefined'&&!WACTS.some(a=>a[0]==='dreamActBtn'))WACTS.splice(0,0,['dreamActBtn','ความฝัน',()=>dreamMenu()]);
 if(typeof ACTICO!=='undefined')ACTICO.push([/^ความฝัน/,'💭']);
 {const rdD=render;render=function(){const r=rdD.apply(this,arguments);try{const b=document.querySelector('#acts [data-w="dreamActBtn"]');if(b&&S){const ok=S.alive&&S.age>=7;b.disabled=!ok;
-  const cur=(DREAMS[W.id]||[]).find(d=>d.id===S.dream);const lab=ok?(cur?`ความฝัน: ${cur.n.length>14?cur.n.slice(0,13)+'…':cur.n}`:'ความฝัน · เลือกเส้นทาง'):'ความฝัน · อายุ 7 ปีขึ้นไป';
+  const cur=(DREAMS[W.id]||[]).find(d=>d.id===S.dream);const lab=ok?(cur?`ความฝัน: ${cur.n.length>14?cur.n.slice(0,13)+'…':cur.n}`:'ความฝัน · เลือกเส้นทาง'):'ความฝัน · อายุ 7+';
   const sp=b.querySelector('span');if(sp)sp.textContent=lab;else if(!b.dataset.lab||b.dataset.lab!==lab){b.dataset.lab=lab;const ic=b.textContent.match(/^\S+\s/);b.textContent=(ic&&/💭/.test(ic[0])?'💭 ':'')+lab;}b.title=cur?`ความฝันตอนนี้: ${cur.n} · กดเพื่อเปลี่ยน`:'เลือกความฝัน/เส้นทางในอนาคต';}}catch(e){}return r;};}
 
 
@@ -14780,6 +14780,187 @@ function enLimb(px,x,gy,now,edash){try{if(!CURMV||now>=edash)return;const k=1-(e
   else if(ty==='grab'){const s=Math.round(Math.sin(now/40));px(x-10+s,gy-18,4,2,'#e8b796');px(x-10+s,gy-14,4,2,'#e8b796');}
   else if(ty==='throw'){const tx=x-8-Math.round(k*70);px(tx,gy-20+Math.round(Math.sin(k*3.14)*-6),3,3,'#8b9bb4');}
 }catch(e){}}
+
+
+/* --- y_polish73.js --- */
+/* ===== v73 polish: every status line, scene and result line agrees with what is actually happening; nothing a child
+   could not do is offered to a child; the same line does not come back again and again ===== */
+
+/* ---- 1. the status line names the real action ("คุณกำลังนั่งสมาธิในที่เงียบสงบ"), and the icon fits it ---- */
+let ACTLAB=null;
+const actLab=o=>{let l=String(o&&o.l||'').replace(/^[^฀-๿a-zA-Z]+/,'').replace(/\s*[(·].*$/,'').trim();
+  if(!l||/^(ไม่|ปฏิเสธ|ปิด|ยกเลิก|กลับบ้าน|อยู่บ้าน|เดินผ่าน|ช่างมัน)/.test(l))return null;if(o.love&&S&&S.partner&&!l.includes(S.partner.n))l=/ด้วยกัน$/.test(l)?l.replace(/ด้วยกัน$/,`กับ${S.partner.n}`):`${l}กับ${S.partner.n}`;return l;};
+const ACTICON=[[/สมาธิ|ยืดเหยียด|หายใจ|ภาวนา/,'star'],[/ดื่ม|เหล้า|เบียร์|สาเก|โซจู/,'star'],[/ทำงานอาสา|แบกกระสอบ|ขนของ|รับจ้าง/,'work'],[/ดนตรี|เพลง|ร้อง|ขลุ่ย|กลอง|คาราโอเกะ|บิวะ|โคโตะ|ซามิเซ็น/,'note'],
+  [/ตกปลา|นอนดู|ดูนก|ดูเมฆ|แช่|ออนเซ็น|เซ็นโตะ|น้ำพุร้อน|ชม|เดินเล่น|ริมทะเล|ริมแม่น้ำ/,'star'],[/กิน|ราเม็ง|ปิ้งย่าง|หมูย่าง|ดินเนอร์|คาเฟ่|ดังโงะ|พุดดิ้ง|ไก่ทอด/,'cook'],
+  [/วาด|การ์ตูน|กลอน|พระสูตร|ตัดต่อ/,'art'],[/เกม|โชงิ|เคมาริ|สวนสนุก|หนัง|ทีวี|ละคร|การแสดง|ซารุงากุ|คาบุกิ|ขบวนแห่|ศึก/,'star'],[/ขี่|ขับรถ|ล่องเรือ/,'ride']];
+{const ap=applyAct;applyAct=function(o,cat){let o2=o;try{if(o&&!o.find){const l=String(o.l||'');const m=ACTICON.find(([re])=>re.test(l));
+    if(m&&(!o.a||o.a==='heal'&&!/หมอ|แพทย์|พยาบาล|สมุนไพร/.test(l)||cat==='fun'))o2={...o,a:cat==='date'&&m[1]!=='cook'&&m[1]!=='ride'?'heart':m[1]};}}catch(e){}
+  const prev=ACTLAB;ACTLAB=actLab(o);try{return ap.call(this,o2,cat);}finally{ACTLAB=prev;}};}
+{const ak=ask;ask=function(title,text,choices,kind){
+  if(!title&&!['menu','deed'].includes(kind))title='เรื่องระหว่างปี';
+  if(Array.isArray(choices)&&!['menu','deed'].includes(kind))choices=choices.map(c=>(!c||typeof c.f!=='function')?c:{...c,f(){const prev=ACTLAB;ACTLAB=ACTLAB||actLab(c);try{return c.f.apply(this,arguments);}finally{ACTLAB=prev;}}});
+  return ak.call(this,title,text,choices,kind);};}
+{const la=liveAct;liveAct=function(k){const r=la.apply(this,arguments);try{if(LIVE.act){
+  let t=null;if(ACTLAB)t=(/^(กำลัง|เพิ่ง)/.test(ACTLAB)?'':'กำลัง')+ACTLAB;
+  else{const it=S.log[S.log.length-1].items,last=String((it[it.length-1]||{}).x||'');
+    if(k==='heart'&&/เริ่มคบ/.test(last))t='เพิ่งเริ่มคบกับคนใหม่';else if(k==='work'&&S.job)t=`เพิ่งได้งาน${S.job.n}`;}
+  if(t)LIVE.act.txt=t.length>40?t.slice(0,39)+'…':t;}}catch(e){}return r;};}
+
+/* ---- 2. the doctor: a healthy check-up does not "get better", and a real illness is actually treated ---- */
+function docLine(c){const why=typeof docReason==='function'?docReason():null,kid=S.age<16,mod=typeof MODERN==='function'&&MODERN();
+  if(!why){S.st.hp=Math.min(100,S.st.hp+R(1,3));return kid?pick(['หมอฟังเสียงหัวใจแล้วลูบหัวคุณ "แข็งแรงดีมาก"','แม่ซื้อขนมให้หนึ่งชิ้น เพราะคุณไม่ร้องไห้ตอนหมอตรวจ','หมอบอกพ่อว่าให้คุณกินผักเยอะๆ คุณทำหน้าเบ้ไปตลอดทาง'])
+    :pick([`ค่าตรวจ ${fmt(c)} หมอบอกว่าให้นอนให้พอ แค่นั้นเอง`,`ค่าตรวจ ${fmt(c)} ไม่มีอะไรน่าห่วง คุณเดินออกมาตัวเบาขึ้น`,`หมอตรวจละเอียดทุกอย่าง ทุกอย่างปกติ เสียค่าตรวจ ${fmt(c)}`]);}
+  if(S.flags.cold){delete S.flags.cold;return(kid?'พ่อแม่พาคุณไปหาหมอ ':'')+pick(['หมอให้ยาแก้ไอรสขมปี๋ สามวันต่อมาหวัดก็หาย','หมอสั่งให้นอนห่มผ้าและดื่มน้ำอุ่นเยอะๆ หวัดหายภายในไม่กี่วัน'])+(c?` · ค่ารักษา ${fmt(c)}`:'');}
+  if(S.flags.inj)return(kid?'พ่อแม่พาคุณไปหาหมอ ':'')+pick(['หมอทำแผลให้ใหม่ เปลี่ยนผ้าพันแผล แล้วกำชับห้ามฝืนร่างกาย','หมอดามแขนขาให้ แล้วสั่งให้พักนิ่งๆ'])+(c?` · ค่ารักษา ${fmt(c)}`:'');
+  return(kid?'พ่อแม่พาคุณไปหาหมอ ':'')+pick([mod?'หมอให้ยามาสามชนิด กินครบสัปดาห์อาการก็ดีขึ้น':'หมอต้มยาสมุนไพรให้ดื่ม ขมจนน้ำตาไหล แต่อาการดีขึ้นจริง','หมอให้นอนพักสองวัน ไข้ค่อยๆ ลดลง','หมอบอกว่ามาทันเวลา ถ้าปล่อยไว้อีกสัปดาห์อาจแย่กว่านี้'])+(c?` · ค่ารักษา ${fmt(c)}`:'');}
+
+/* ---- 3. what a child cannot do: missions, tournaments, travel, legends, training and the activity list wait for an age ---- */
+const WAGE={misBtn:S=>W.id==='naruto'&&!/civil|orphan/.test(S.place)?10:12,tourBtn:()=>10,travelBtn:()=>12,legBtn:()=>10,trainBtn:()=>5,actvBtn:()=>6};
+{const rdA=render;render=function(){const r=rdA.apply(this,arguments);try{if(S)for(const [id,f] of Object.entries(WAGE)){const b=document.querySelector(`#acts [data-w="${id}"]`);if(!b)continue;
+  if(!b.dataset.base)b.dataset.base=b.textContent.replace(/ · อายุ \d+\+$/,'');const need=f(S),young=S.alive&&S.age<need;
+  const t=young?`${b.dataset.base} · อายุ ${need}+`:b.dataset.base;if(b.textContent!==t)b.textContent=t;if(young){b.disabled=true;b.title=`ยังเด็กเกินไป ต้องอายุ ${need} ปีขึ้นไป`;}}}catch(e){}return r;};}
+for(const [fn,id] of [['missionMenu','misBtn'],['tourMenu','tourBtn'],['travelMenu','travelBtn'],['legendMenu','legBtn'],['trainMenu','trainBtn']]){try{const f0=eval(fn);if(typeof f0!=='function')continue;
+  const w=async function(){if(S&&S.age<WAGE[id](S)){toast(`ยังเด็กเกินไป ต้องอายุ ${WAGE[id](S)} ปีขึ้นไป`,'รอโตอีกนิด','');return;}return f0.apply(this,arguments);};eval(fn+'=w');}catch(e){}}
+/* drinking places and drinks: not for children (legal age by world) */
+const DRINKRE=/เหล้า|เบียร์|โซจู|สาเก|คาสิโน|บ่อน|ไนต์คลับ|ผับ|บาร์(?!เบอร์)|ไวน์|ดื่ม(?!ชา|นม|น้ำ)/;
+const drinkAge=()=>['jjk','bleach','jojo','db'].includes(W.id)?20:W.id==='lookism'?19:16;
+{const ao=actOpts;actOpts=function(cat){const r=ao.apply(this,arguments);try{if(S&&S.age<drinkAge())return r.filter(o=>!DRINKRE.test(String(o.l||'')));}catch(e){}return r;};}
+{const to=townOpts;townOpts=function(){const r=to.apply(this,arguments);try{if(S&&S.age<15)return r.filter(o=>!DRINKRE.test(`${o.n||''}`));}catch(e){}return r;};}
+{const am=actMenu;actMenu=async function(){const L=ACTV[W.id];if(!Array.isArray(L)||!S||S.age>=drinkAge())return am.apply(this,arguments);
+  ACTV[W.id]=L.filter(a=>!DRINKRE.test(String(a[0]||'')));try{return await am.apply(this,arguments);}finally{ACTV[W.id]=L;}};}
+try{const cr=MINI.find(e=>e.id==='c_ruins');if(cr){const w0=cr.when;cr.when=S=>S.age>=16&&(!w0||w0(S));}}catch(e){}
+
+/* ---- 4. the same activity line is not repeated: later times read as practice, progress or a new small moment ---- */
+const SEASONTH=['ฤดูหนาว','ฤดูหนาว','ต้นฤดูใบไม้ผลิ','ฤดูใบไม้ผลิ','ปลายฤดูใบไม้ผลิ','ต้นฤดูร้อน','ฤดูร้อน','กลางฤดูร้อน','ต้นฤดูใบไม้ร่วง','ฤดูใบไม้ร่วง','ปลายฤดูใบไม้ร่วง','ต้นฤดูหนาว'];
+let REPCTX=null;
+const repSeen=x=>{S.flags.rs=S.flags.rs||{};const h=String(x).slice(0,48);const n=S.flags.rs[h]||0;S.flags.rs[h]=n+1;const ks=Object.keys(S.flags.rs);if(ks.length>400)delete S.flags.rs[ks[0]];return n;};
+function repLine(c){const l=c.l,p=(typeof npc==='function'&&npc())||null,who=p?p.n:'เพื่อนบ้าน',ss=SEASONTH[S.mo||0],pn=S.partner?S.partner.n:'';
+  if(c.eat)return c.med?pick([`คุณ${l}อีกครั้ง อาการดีขึ้นเหมือนครั้งก่อน`,`${l}ครั้งนี้ได้ผลเร็วกว่าที่คิด`]):pick([`คุณ${l}อีกครั้ง รสชาติยังดีเหมือนเดิม`,`${l}ครั้งนี้อร่อยกว่าที่จำได้`,`คุณ${l} แล้วแบ่งให้คนในบ้านชิมด้วย`,`คุณ${l}ช้าๆ ทีละคำ`]);
+  if(c.love&&pn)return pick([`${pn}จำได้ว่าครั้งแรกที่มาด้วยกัน คุณทำอะไรเปิ่นไว้ แล้วหัวเราะไม่หยุด`,`${pn}จับมือคุณไว้ตลอดทาง`,`คุณกับ${pn}คุยกันเรื่องอนาคตจนลืมเวลา`,`${ss} ${pn}บอกว่าชอบช่วงเวลาแบบนี้ที่สุด`,`วันนี้คุณกับ${pn}ทะเลาะกันเรื่องเล็กๆ แต่ก็ดีกันก่อนกลับบ้าน`]);
+  if(/แบก|ขนของ|รับจ้าง|ทำงาน|ช่วยงาน|ส่งของ|ส่งนม|ไร่|นา/.test(l))return pick([`คุณ${l}จนหลังแข็ง แต่ได้เงินมาพอซื้อข้าวทั้งสัปดาห์`,`${l}วันนี้หัวหน้างานใจดี ปล่อยกลับเร็ว`,`คุณ${l}กับ ${who} ช่วยกันจนงานเสร็จก่อนค่ำ`,`${ss} ${l}เหนื่อยกว่าปกติ แต่ร่างกายคุณชินแล้ว`]);
+  const k=c.sk&&Object.keys(c.sk)[0],v=k?(S.sk?.[k]||0):0;
+  if(k){if(v<15)return pick([`คุณ${l}อีกครั้ง ยังเก้ๆ กังๆ แต่ดีกว่าครั้งก่อนนิดหน่อย`,`${l}วันนี้ไม่ค่อยเข้าหัว แต่คุณก็ทำจนจบ`,`คุณ${l}จนเหงื่อซึม ${who} เดินผ่านมาให้กำลังใจ`]);
+    if(v<40)return pick([`คุณ${l}จนเริ่มเข้าที่ ร่างกายจำได้โดยไม่ต้องคิด`,`${who} ผ่านมาเห็นแล้วชมว่าคุณเก่งขึ้นเยอะ`,`${ss}ปีนี้ คุณ${l}ทุกสัปดาห์จนเป็นกิจวัตร`,`คุณเจอจุดที่ทำพลาดประจำ แล้วแก้มันได้ในที่สุด`]);
+    return pick([`คุณ${l}ได้คล่องจนมีคนมาขอให้ช่วยสอน`,`วันนี้คุณ${l}แล้วเห็นสิ่งที่ไม่เคยสังเกตมาก่อน`,`${who} พาลูกมาให้คุณช่วยสอน`,`คุณ${l}จนสิ่งที่เคยยากกลายเป็นเรื่องง่าย`]);}
+  return pick([`คุณ${l}อีกครั้ง วันนี้มี ${who} มาด้วย`,`${l}ครั้งนี้สนุกกว่าที่คิด คุณกลับบ้านพร้อมรอยยิ้ม`,`คุณ${l}เหมือนทุกที แต่วันนี้ใจลอยไปคิดเรื่องอนาคต`,`${ss} คุณ${l} อากาศดีจนไม่อยากกลับบ้าน`,`${l}วันนี้คนเยอะกว่าปกติ แต่คุณก็หาที่ได้`]);}
+{const sy=say;say=function(x,k,t){try{if(REPCTX&&S&&S.alive&&typeof x==='string'&&(k==='good'||k==='plain'||k===undefined)&&!REPCTX.done){REPCTX.done=1;if(repSeen(x)>0&&!/ได้รับพลัง|เสียชีวิต|ตาย/.test(x))x=repLine(REPCTX);}}catch(e){}return sy.call(this,x,k,t);};}
+{const ap3=applyAct;applyAct=function(o,cat){const prev=REPCTX;REPCTX=o&&!o.find?{l:actLab(o)||String(o.l||''),sk:o.sk,love:!!o.love}:null;try{return ap3.apply(this,arguments);}finally{REPCTX=prev;}};}
+/* actMenu results go through say inside its own choice; mark them as activity lines */
+{const sy2=say;say=function(x,k,t){try{if(!REPCTX&&S&&typeof x==='string'&&ACTV[W.id]){const a=ACTV[W.id].find(a=>Array.isArray(a[2])&&a[2].includes(x));if(a&&repSeen(x)>0)x=repLine({l:a[0],sk:null});}}catch(e){}return sy2.call(this,x,k,t);};}
+/* festival: staying home, and the stall, each have more than one moment */
+const FESTHOME=['คุณได้ยินเสียงงานรื่นเริงดังมาจากไกลๆ','คุณนั่งกินขนมที่บ้านฟังเสียงกลองจากงาน','แสงไฟจากงานส่องเข้ามาถึงหน้าต่าง คุณนอนมองเพดานเงียบๆ','เพื่อนบ้านแวะเอาของกินจากงานมาฝาก','คุณใช้คืนที่ทุกคนออกไปเที่ยวทำความสะอาดบ้านจนเอี่ยม','บ้านเงียบจนได้ยินเสียงจิ้งหรีด คุณหลับไปก่อนงานเลิก'];
+
+/* ---- 5. the cast hangout: the first time uses the character's own line, later times change with how close you are ---- */
+const HANGV={
+  talk:[[ (n)=>`${n}ตอบคุณสั้นๆ แต่ก็ไม่ได้รีบไปไหน`,(n)=>`คุณชวน${n}คุยเรื่องอากาศ ${n}พยักหน้าแบบคนที่ยังไม่สนิท`,(n)=>`${n}จำชื่อคุณได้แล้ว แม้จะเรียกผิดไปนิดหนึ่ง`],
+        [ (n)=>`${n}เล่าเรื่องที่เจอมาเมื่อวานให้ฟัง คุณหัวเราะจนท้องแข็ง`,(n)=>`คุณกับ${n}คุยกันจนไม่รู้ตัวว่าฟ้ามืดแล้ว`,(n)=>`${n}ถามถึงครอบครัวคุณ จำได้ด้วยว่าคุณเคยเล่าอะไรไว้`],
+        [ (n)=>`${n}เล่าเรื่องที่ไม่เคยบอกใครให้คุณฟัง`,(n)=>`คุณกับ${n}นั่งเงียบๆ ด้วยกันโดยไม่อึดอัดเลย`,(n)=>`${n}บ่นเรื่องที่ค้างใจให้ฟังยาวเหยียด แล้วขอบคุณที่คุณฟังจนจบ`]],
+  train:[[ (n)=>`${n}แก้ท่ายืนของคุณให้ "เท้าต้องมั่นกว่านี้"`,(n)=>`คุณล้มไม่เป็นท่าหลายรอบ ${n}ยื่นมือมาดึงขึ้นทุกครั้ง`],
+        [ (n)=>`วันนี้คุณรับมือ${n}ได้ครบสามจังหวะ ${n}ยิ้มนิดๆ`,(n)=>`${n}ฝึกให้จนคุณยกแขนไม่ขึ้น แล้วบอกว่าพรุ่งนี้มาใหม่`],
+        [ (n)=>`${n}เริ่มเอาจริงกับคุณมากขึ้น ไม่ออมมือให้เหมือนเมื่อก่อน`,(n)=>`คุณกับ${n}ซ้อมกันจนรู้จังหวะกันและกันโดยไม่ต้องพูด`]],
+  eat:[[ (n)=>`${n}สั่งเมนูเดิมที่ร้านเดิม แล้วกินเงียบๆ`,(n)=>`${n}ขอบคุณสั้นๆ ก่อนแยกกันไป`],
+        [ (n)=>`${n}เลือกร้านเอง แล้วสั่งเมนูที่คุณไม่เคยกินมาก่อน`,(n)=>`ระหว่างกิน ${n}เล่าเรื่องสมัยเด็กให้ฟัง`,(n)=>`${n}แย่งจ่ายเงิน แต่คุณเร็วกว่า`],
+        [ (n)=>`${n}บอกว่าไม่ได้นั่งกินข้าวกับใครสบายใจแบบนี้นานแล้ว`,(n)=>`${n}ตักของโปรดใส่จานให้คุณโดยไม่ต้องถาม`]]};
+try{if(CASTMEETS[0]&&CASTMEETS[0].id==='m_hang'){const hp0=CASTMEETS[0].play;CASTMEETS[0].play=function(S){const r=hp0.apply(this,arguments);try{
+  if(!r||!r.choices)return r;const id=(castsIn(r.text||'')||[])[0];if(!id||!CAST[W.id][id])return r;const sn=shortN(id);
+  const keys=['talk','train','eat'];r.choices=r.choices.map((c,i)=>{const kk=keys[i];if(!kk||typeof c.f!=='function')return c;return{...c,f(S){S.flags.hl=S.flags.hl||{};const key=id+kk,n=S.flags.hl[key]||0;S.flags.hl[key]=n+1;
+    const before=S.log[S.log.length-1].items.length,cap=capture?capture.length:0;const rr=c.f.apply(this,arguments);
+    if(n>0){const b=S.bonds?.[id]||0,tier=b>=60?2:b>=25?1:0,L=HANGV[kk][tier],x=pick(L)(sn);const it=S.log[S.log.length-1].items;for(let j=it.length-1;j>=before;j--)if(it[j].k==='good'){it[j].x=x;break;}
+      if(capture)for(let j=capture.length-1;j>=cap;j--)if(capture[j].k==='good'){capture[j].x=x;break;}}return rr;}};});}catch(e){}return r;};}}catch(e){}
+
+/* ---- 6. names fit the place: Wano is Edo Japan, Cairo is Egypt, Naples is Italy ---- */
+const CAIRON={m:['อาเหม็ด','มูฮัมหมัด','โอมาร์','ฮัสซัน','คาริม','ยูซุฟ','ทาเร็ก','ซามีร์'],f:['ไลลา','ฟาติมา','นูร์','ซาร่า','อามิร่า','ฮานา','ยัสมิน','มาเรียม']};
+try{NAMES.jojo.im.f=NAMES.jojo.im.f.filter(x=>x!=='ทรีช');NAMES.jojo.m=NAMES.jojo.m.map(x=>x==='อาเคมิ'?'ทาดาชิ':x);}catch(e){}
+const NPCN={op:{wano:()=>NAMES.jjedo},jojo:{cairo:()=>CAIRON,naples:()=>NAMES.jojo.im}};
+{const mk=makeNpc;makeNpc=function(x){const p=mk.apply(this,arguments);try{const T=NPCN[W.id]?.[S.place];if(T){const L=T();if(L&&L[p.sx])p.n=(x.t[p.sx]||'')+pick(L[p.sx]);}}catch(e){}return p;};}
+try{const om=WORLDS.op.mkName;WORLDS.op.mkName=function(sx,pl){pl=pl||(typeof S!=='undefined'&&S&&S.place);if(pl==='wano'){const g=pick(NAMES.jjedo[sx]);return chance(.4)?`${pick(NAMES.jjedo.l)} ${g}`:g;}return om.call(this,sx,pl);};}catch(e){}
+try{const jm=WORLDS.jojo.mkName;WORLDS.jojo.mkName=function(sx,pl){return jm.call(this,sx,pl||(typeof S!=='undefined'&&S&&S.place));};}catch(e){}
+
+/* ---- 7. scenes: an action's scene comes from the action and its result, not from a stray word in the story text ---- */
+try{const ci=VKIND.findIndex(([k,re])=>k==='clinic'&&/ไข้/.test(re.source));if(ci>=0)VKIND[ci][1]=/หมอ|รักษา|ป่วย|กินยา|ยาสมุนไพร|ยาแก้|ร้านยา|แผลสด|ทำแผล|โรงพยาบาล|พยาบาล|ไข้(?!่)/;}catch(e){}
+const VSET=new Set(['sea','forest','palace','shrine','festival','market','tavern','road','onsen','ruins','arena']);
+vigFrom=function(label,text,result,place){
+  const lr=`${label||''} ${result||''}`;let kind=vKind(label||'');if(kind==='town')kind=vKind(lr);
+  if(kind==='town'){const tk=vKind(text||'');kind=VSET.has(tk)?tk:/ฝัน|ใจ|ความรู้สึก|ตัวเอง|ชีวิต|พ่อ|แม่|ลูก|ครอบครัว|คืนดี|ขอโทษ|ไม่คุยกัน/.test(lr)?'home':'town';}
+  let cast=null;try{const ids=castsIn(`${label||''} ${text||''} ${result||''}`);cast=ids&&ids[0]||null;}catch(e){}
+  const line=String(result||'').replace(/^คุณเลือก: /,'').slice(0,70);
+  vigPush({kind,cast,label:String(label||'').slice(0,40),line,place:place||null,foe:kind==='battle',ms:5600});};
+{const vp=vigPush;vigPush=function(o){try{if(o&&/^ภารกิจ: /.test(o.label||'')&&!['battle','road','sea','forest','ruins','palace','market','work','clinic'].includes(o.kind))o.kind=/ปราบ|สกัด|ล่า|ปัดเป่า|กำจัด|คุ้มกัน|จับ|บุก|สู้|ไล่/.test(o.label)?'battle':'road';}catch(e){}return vp.apply(this,arguments);};}
+
+/* ---- 8. night dreams: more of them, and a life never has the same dream twice ---- */
+const ND=(x,a,b,fa,fb)=>[x,a,b,fa,fb];
+Object.entries({
+  aot:[ND('คุณฝันว่ากำแพงกลายเป็นกระจกใส ข้างในมีไททันยักษ์ยืนเรียงกันนับไม่ถ้วน ทุกตัวหลับตา','แตะกำแพง','ถอยออกมา',S=>{trauma(2);st('iq',1);say('ผิวกำแพงอุ่นเหมือนผิวคน คุณสะดุ้งตื่นพร้อมเหงื่อท่วมตัว','bad');},S=>say('คุณตื่นมาแล้วไม่กล้ามองกำแพงไปทั้งวัน','plain')),
+       ND('ในฝัน คุณขี่ม้าออกนอกกำแพงไปกับหน่วยสำรวจ ทุ่งหญ้ากว้างจนสุดสายตา ธงปีกแห่งอิสรภาพปลิวอยู่ข้างหน้า','ควบม้าตามธงไป','หันกลับเข้ากำแพง',S=>{st('joy',5);say('ลมพัดหน้าเย็นฉ่ำ คุณตื่นมาพร้อมหัวใจที่อยากเห็นโลกข้างนอก','good');},S=>{st('joy',1);say('ประตูปิดลงข้างหลังคุณ เสียงมันดังค้างอยู่ในหูจนเช้า','plain');})],
+  naruto:[ND('คุณฝันว่าเรียนจบโรงเรียนนินจา แต่ผ้าคาดหัวที่ได้รับเป็นแผ่นเหล็กว่างเปล่า ไม่มีสัญลักษณ์หมู่บ้าน','สลักสัญลักษณ์เอง','ถามครูว่าทำไม',S=>{skill('fight',1);say('คุณสลักด้วยมือตัวเองจนนิ้วเลือดออก ตื่นมาก็ยังรู้สึกเจ็บนิ้ว','plain');},S=>{st('iq',1);say('ครูยิ้มแล้วบอกว่า "ความหมายของมัน เธอต้องเติมเอง" คุณคิดเรื่องนั้นทั้งวัน','plain');}),
+          ND('ในฝัน คุณนั่งกินราเม็งข้างเด็กผมทองที่หัวเราะเสียงดัง เขาบอกว่าวันหนึ่งจะเป็นโฮคาเงะให้ได้','บอกว่าเชื่อเขา','หัวเราะเยาะ',S=>{st('joy',4);say('เด็กคนนั้นยิ้มกว้าง "สัญญานะ!" คุณตื่นมาพร้อมความอบอุ่นแปลกๆ','good');},S=>say('เขาไม่โกรธ แค่บอกว่า "คอยดูแล้วกัน" คุณตื่นมารู้สึกผิดนิดๆ','plain'))],
+  op:[ND('คุณฝันว่ายืนบนดาดฟ้าเรือที่ไม่มีลูกเรือ ใบเรือเป็นรูปหัวกะโหลกที่คุณวาดเอง','ล่องเรือออกไป','ทอดสมอรอ',S=>{st('joy',5);say('เรือแล่นไปถึงเกาะที่ไม่มีในแผนที่ คุณตื่นก่อนจะได้ขึ้นฝั่ง','good');},S=>say('เรือลำอื่นแล่นผ่านไปทีละลำ ไม่มีใครหันมามอง คุณตื่นมาเงียบไปนาน','plain')),
+      ND('ในฝัน ทะเลทั้งโลกแห้งหายไป ผู้คนเดินข้ามก้นทะเลไปหากันได้','เดินตามฝูงชนไป','นั่งคิดถึงเสียงคลื่น',S=>{st('iq',1);say('ก้นทะเลเต็มไปด้วยซากเรือและสมบัติ คุณตื่นมาก่อนจะเปิดหีบใบแรก','plain');},S=>{st('joy',2);say('คุณตื่นมาแล้ววิ่งไปดูทะเลหน้าบ้าน มันยังอยู่ คุณโล่งใจจนยิ้ม','good');})],
+  bleach:[ND('คุณฝันว่ามีโซ่เส้นหนึ่งงอกออกมาจากอกคุณ ปลายโซ่ขาดรุ่ย','ดึงโซ่ออก','กำโซ่ไว้แน่น',S=>{trauma(3);say('โซ่หลุดออกพร้อมความว่างเปล่าในอก คุณตื่นมาจับหน้าอกตัวเองอยู่นาน','bad');},S=>{st('joy',2);say('โซ่อุ่นขึ้นในมือ คุณตื่นมาพร้อมความรู้สึกว่ายังมีที่ให้กลับ','good');}),
+          ND('ในฝัน ผีเสื้อสีดำตัวหนึ่งบินมาเกาะไหล่คุณ แล้วพาคุณเดินไปยังประตูโชจิบานใหญ่สีขาว','เดินตามไป','ปัดมันออก',S=>{st('iq',2);say('อีกฝั่งประตูมีเมืองหลังคากระเบื้องขาวกว้างสุดตา คุณตื่นมาก่อนจะก้าวเข้าไป','plain');},S=>say('ผีเสื้อบินวนรอบตัวคุณสามรอบแล้วหายไป คุณตื่นมาใจหวิวๆ','plain'))],
+  jjk:[ND('คุณฝันว่านั่งรถไฟใต้ดินขบวนสุดท้าย ผู้โดยสารทุกคนไม่มีหน้า ยกเว้นคนตรงข้ามที่ยิ้มกว้างเกินคน','ลุกหนีไปตู้อื่น','ถามว่าเขาเป็นใคร',S=>{trauma(3);say('ตู้ถัดไปว่างเปล่า มีแต่เสียงหัวเราะดังตามมา คุณตื่นมาพร้อมเหงื่อเย็น','bad');},S=>{trauma(4);say('เขาตอบด้วยเสียงของคนที่คุณรู้จัก คุณสะดุ้งตื่นทันที','bad');}),
+       ND('ในฝัน คุณยืนกลางทะเลทรายสีขาวที่มีประตูไม้ตั้งอยู่บานเดียว ข้างหลังประตูมีเสียงเรียกชื่อคุณ','เปิดประตู','เดินหนี',S=>{st('iq',2);say('หลังประตูคือห้องนอนของคุณเอง คุณตื่นขึ้นในท่าเดียวกับในฝัน','plain');},S=>say('เสียงเรียกดังตามมาจนคุณตื่น','plain'))],
+  jojo:[ND('คุณฝันว่าเดินในซอยเล็กๆ ที่ไม่มีอยู่ในแผนที่ มีเด็กผู้หญิงกับหมาตัวหนึ่งยืนรออยู่ปลายซอย','เดินไปหาเธอ','วิ่งออกจากซอย',S=>{st('joy',2);say('เธอยิ้มแล้วบอกว่า "อย่าหันหลังกลับไปมองนะ" คุณไม่หัน และตื่นมาอย่างปลอดภัย','good');},S=>say('คุณวิ่งจนสุดซอย เสียงมือนับร้อยตบผนังตามหลังมา คุณตื่นมาตัวสั่น','bad')),
+        ND('ในฝัน คุณกำลังกินอาหารอิตาเลียนจานหนึ่ง ฟันที่ปวดมาทั้งปีหลุดออกมา แล้วฟันใหม่ก็ขึ้นแทนทันที','กินต่อจนหมดจาน','วิ่งไปหาหมอฟัน',S=>{st('hp',3);say('คุณตื่นมาพบว่าอาการปวดฟันหายไปแล้วจริงๆ','good');},S=>say('หมอฟันในฝันหัวเราะ "ไม่ต้องหรอก หายดีแล้ว" คุณตื่นมางงทั้งเช้า','plain'))],
+  heian:[ND('คุณฝันว่าขบวนอสูรร้อยตนเดินผ่านหน้าบ้านกลางดึก หัวขบวนเป็นโคมกระดาษที่มีตา','ซ่อนตัวใต้พื้นบ้าน','มองลอดช่องประตู',S=>say('ขบวนเดินผ่านไปจนเสียงเงียบ คุณตื่นมาตัวสั่นอยู่ใต้ผ้าห่ม','plain'),S=>{if(chance(.5)){trauma(4);say('โคมกระดาษหันมามองคุณพอดี คุณสะดุ้งตื่นพร้อมเสียงกรีดร้องของตัวเอง','bad');}else{st('iq',2);say('คุณจำหน้าอสูรได้ทุกตน ตื่นมาก็ร่างภาพไว้ทันที','plain');}}),
+         ND('ในฝัน ชายสี่แขนนั่งกินอาหารอยู่บนหลังคาพระราชวัง เขาหันมามองคุณแล้วหัวเราะ','ก้มกราบ','จ้องตอบ',S=>say('"รู้จักที่ต่ำที่สูงดี" เสียงนั้นดังค้างอยู่ในหูจนเช้า','plain'),S=>{trauma(5);say('ปากที่ท้องของเขายิ้มให้คุณ คุณตื่นมาไม่กล้าหลับต่อ','bad');})],
+  jjedo:[ND('คุณฝันว่าเดินเข้าป่าไผ่ ทุกต้นกระซิบคำสาปเบาๆ','ตามเสียงไป','อุดหูวิ่งออกมา',S=>{st('iq',2);say('ปลายป่ามีศาลเจ้าเล็กๆ ที่ไม่มีใครดูแล คุณตื่นมาอยากไปทำความสะอาดมัน','plain');},S=>say('คุณวิ่งจนหลุดออกมาที่ทุ่งนาตอนฟ้าสาง ตื่นมาเหนื่อยเหมือนวิ่งมาจริงๆ','plain')),
+         ND('ในฝัน ซามูไรไร้หัวคนหนึ่งยื่นดาบให้คุณ "นายของข้าตายแล้ว ช่วยรับไว้ที"','รับดาบ','ปฏิเสธ',S=>{skill('fight',1);say('ดาบหนักกว่าที่คิด คุณตื่นมาพร้อมมือที่ยังรู้สึกถึงด้ามดาบ','plain');},S=>say('ซามูไรก้มหัวแล้วเดินหายไปในหมอก คุณตื่นมาเศร้าโดยไม่รู้สาเหตุ','plain'))],
+  db:[ND('คุณฝันว่านั่งอยู่บนก้อนเมฆสีเหลือง ลอยผ่านทุกเมืองที่รู้จักในไม่กี่วินาที','บังคับให้เร็วขึ้นอีก','ลงไปทักทายผู้คน',S=>{st('joy',5);say('เมฆพาคุณพุ่งข้ามโลกจนคุณตกเตียง อย่างน้อยในฝัน ใจคุณก็บริสุทธิ์พอจะขึ้นเมฆได้','good');},S=>{st('joy',3);say('ทุกคนโบกมือให้ คุณตื่นมาพร้อมรอยยิ้ม','good');}),
+      ND('ในฝัน คุณสู้กับตัวเองอีกคน ทุกหมัดที่คุณต่อย อีกฝ่ายรู้ล่วงหน้าหมด','ต่อยแบบไม่ต้องคิด','หยุดแล้วยิ้มให้',S=>{skill('fight',2);say('หมัดที่ไม่คิดคือหมัดที่เขาหลบไม่ได้ คุณตื่นมาพร้อมความเข้าใจบางอย่าง','good');},S=>{st('joy',3);say('อีกฝ่ายยิ้มตอบแล้วจางหายไป','plain');})],
+  lookism:[ND('คุณฝันว่าเดินเข้าโรงเรียนแล้วทุกคนหันมามอง คุณไม่รู้ว่าเพราะหน้าตาหรือเพราะมีอะไรติดหน้า','ยิ้มกว้างๆ','ก้มหน้ารีบเดิน',S=>{skill('charm',1);say('คนที่มองเริ่มยิ้มตาม คุณตื่นมามั่นใจขึ้นนิดหน่อย','good');},S=>say('เสียงหัวเราะดังตามหลัง คุณตื่นมาแล้วรีบไปส่องกระจกเป็นอย่างแรก','plain')),
+           ND('ในฝัน ชายใส่แว่นดำยืนบนดาดฟ้าตึก ข้างล่างมีคนนับร้อยกำลังต่อยกัน เขาถามว่า "แกอยู่ฝั่งไหน"','ฝั่งที่อ่อนแอกว่า','ไม่อยู่ฝั่งไหนทั้งนั้น',S=>{dk(-1);say('เขาหัวเราะ "งั้นแกต้องแข็งกว่าทุกคน" คุณตื่นมาพร้อมกำหมัดแน่น','plain');},S=>say('"คนแบบนั้นตายก่อนเสมอ" เขาว่า คำนั้นติดหัวคุณทั้งวัน','plain'))],
+  bc:[ND('คุณฝันว่าโคลเวอร์สี่แฉกขนาดยักษ์บานอยู่กลางท้องฟ้า แฉกที่สี่มีปีศาจนั่งยิ้มอยู่','ปีนขึ้นไปหา','ซ่อนตัวในทุ่งหญ้า',S=>{trauma(2);say('ปีศาจหายไปก่อนคุณจะถึง เหลือแต่ความเย็นเฉียบที่ปลายนิ้ว','bad');},S=>{st('joy',2);say('ใบโคลเวอร์ร่วงลงมาคลุมตัวคุณไว้เหมือนผ้าห่ม','good');}),
+      ND('ในฝัน คุณเป็นอัศวินเวทที่ได้เหรียญดาวมากที่สุดในอาณาจักร จักรพรรดิเวทยื่นเสื้อคลุมมาให้','รับไว้','ยกให้เพื่อนที่ลำบากมาด้วยกัน',S=>{st('joy',5);say('เสื้อคลุมหนักกว่าที่คิด คุณตื่นมาอยากฝึกเพิ่มทันที','good');},S=>{st('joy',3);dk(-1);say('เพื่อนร้องไห้ คุณตื่นมาพร้อมความอบอุ่นเต็มอก','good');})],
+}).forEach(([w,L])=>{if(NDREAM[w])NDREAM[w].push(...L);else NDREAM[w]=L;});
+{const np=NDEV.play;NDEV.play=function(S){const L=NDREAM[W.id];if(!L)return null;S.flags.ndSeen=S.flags.ndSeen||[];const left=L.map((d,i)=>i).filter(i=>!S.flags.ndSeen.includes(i));if(!left.length)return null;
+  const i=pick(left);S.flags.ndSeen.push(i);const [x,a,b,fa,fb]=L[i];return{text:x,choices:[{l:a,g:'curious brave',f:fa},{l:b,g:'safe',f:fb}]};};}
+
+/* ---- 9. a dare, a contest or a lesson is not a fight: ambiguous words (ท้า, ล่า, ยิง, จัดการ...) only start a battle when the
+   event itself is violent, and asking someone to teach you to fight never does ---- */
+const VIOTX=/สู้|ต่อย|ทุบ|ฆ่า|โจร|ทำร้าย|ไททัน|คำสาป|ฮอลโลว์|อสูร|ศัตรู|รังแก|อันธพาล|นักเลง|ดาบ|ปล้น|บุก|โจมตี|ประลอง|ดวล|ชก|มวย|แก๊ง|โจรสลัด|ปีศาจ|สัตว์ร้าย|หมาป่า|หมี|เสือ|ยักษ์|ขวาง|ไล่ล่า|ลอบ|สังหาร|ตีกัน|ฝีมือต่อสู้|ฝีมือการต่อสู้|ศิลปะการต่อสู้/;
+const SOFTF=/ท้า|ล่า|ยิง|จัดการ|ลงมือ|รับภารกิจ|ขึ้นเวที|ขวาง/,HARDF=/สู้|ต่อสู้|โจมตี|ประลอง|บุก|ฟัน|ปราบ|สังหาร|ปะทะ|ลอบ|กำจัด/;
+{const akF=ask;ask=function(title,text,choices,kind){try{if(Array.isArray(choices)&&!['menu','deed'].includes(kind)){const tx=`${title||''} ${text||''}`;
+  choices=choices.map(c=>{if(!c||c.foe||!isFight(c))return c;const l=String(c.l||'');
+    if(/สอน|เรียน|ฝึก(?!ต่อสู้กับ)/.test(l)&&!/ประลอง/.test(l))return{...c,nf:1};
+    if(SOFTF.test(l)&&!HARDF.test(l)&&!VIOTX.test(tx))return{...c,nf:1};return c;});}}catch(e){}return akF.call(this,title,text,choices,kind);};}
+
+/* ---- 10. the body heals with time: wounds and illness recover month by month (faster when young and fit, slower when old
+   or when an injury is still open), so a lost fight no longer slowly turns into "dying of illness" years later ---- */
+{const mpH=monthPass;monthPass=async function(){const r=await mpH.apply(this,arguments);try{if(S&&S.alive&&!S.flags.titan&&S.st.hp<82){
+  const a=S.age,base=a<16?3:a<40?2.5:a<60?1.5:.6,fit=(S.st.fit||0)/100,inj=S.flags.inj&&S.flags.inj.m>0,cap=inj?55:a<60?85:70;
+  if(S.st.hp<cap){const g=Math.max(0,Math.round((base+fit*1.5)*(inj?.5:1)*(.6+rnd()*.8)));if(g>0)S.st.hp=Math.min(cap,S.st.hp+g);}}}catch(e){}return r;};}
+
+/* ---- 11. accidents fit the person: no heart attack from overwork for a child or a jobless twenty-year-old ---- */
+for(const X of Object.values(WORLDS))if(typeof X.accidents==='function'){const ac=X.accidents;X.accidents=function(S){const L=ac.apply(this,arguments)||[];
+  const f=L.filter(x=>!(/หัวใจวาย/.test(x)&&(S.age<35||(/ทำงาน/.test(x)&&!S.job)))&&!(/ทำงาน|ล่วงเวลา/.test(x)&&!S.job));return f.length?f:L;};}
+
+/* ---- 12. more variety: food and medicine, festival descriptions, small events, job age ---- */
+{const bF=buy;buy=function(it){if(!it||!it.eat)return bF.apply(this,arguments);const pA=ACTLAB,pR=REPCTX,v=(it.cat==='med'?'ใช้':'กิน')+it.n;ACTLAB=v;REPCTX={l:v,eat:1,med:it.cat==='med'};
+  try{return bF.apply(this,arguments);}finally{ACTLAB=pA;REPCTX=pR;}};}
+{const fe0=festivalEv;festivalEv=function(S){const r=fe0.apply(this,arguments);try{if(r&&r.text){S.flags.fsn=S.flags.fsn||{};const h=String(r.text).slice(0,30);const n=S.flags.fsn[h]||0;S.flags.fsn[h]=n+1;
+  if(n>0)r.text=`${r.t}ปีนี้${pick(['คนมากกว่าปีก่อน เสียงกลองดังไปทั้งเมือง','ฝนตกปรอยๆ แต่ไม่มีใครยอมกลับบ้าน','มีแผงขายของใหม่ที่คุณไม่เคยเห็นมาก่อน','คุณเห็นหน้าคนที่เคยมาด้วยกันเมื่อหลายปีก่อน','บรรยากาศเหมือนเดิม แต่คุณไม่ใช่คนเดิมแล้ว','เด็กๆ ในซอยตื่นเต้นกันตั้งแต่เช้า'])}`;}}catch(e){}return r;};}
+{const pf0=pickFrom;pickFrom=function(list,fallback){if(!S||!Array.isArray(list))return pf0.apply(this,arguments);S.mcn=S.mcn||{};S.mcd=S.mcd||{};const keep={};
+  for(const e of list){const n=S.mcn[e.id]||0;if(n>0&&S.mcd[e.id]!=null&&S.year-S.mcd[e.id]<3+4*n){keep[e.id]=S.mcd[e.id];S.mcd[e.id]=S.year;}}
+  let r;try{r=pf0.apply(this,arguments);}finally{for(const id in keep)if(S.mcd[id]===S.year&&!(r&&r.id===id))S.mcd[id]=keep[id];}
+  if(r&&r.id)S.mcn[r.id]=(S.mcn[r.id]||0)+1;return r;};}
+for(const X of Object.values(WORLDS))if(typeof X.isWhere==='function'){const iw=X.isWhere;X.isWhere=function(j,S){try{if(S&&j&&S.age<(['jjk','bleach','jojo','db'].includes(X.id)?20:X.id==='lookism'?19:16)&&DRINKRE.test(j.n||''))return false;}catch(e){}return iw.apply(this,arguments);};}
+{const akS=ask;ask=function(title,text,choices,kind){if(typeof text==='string')text=text.replace(/ {2,}/g,' ');return akS.call(this,title,text,choices,kind);};}
+
+/* ---- 13. scene words that hide inside other Thai words: ทะเลาะ is not the sea, หวัง is not a palace, หมอก is not a doctor,
+   พระอาทิตย์ is not a temple, วิ่งหนี is not training, ข้าวของ is not a meal ---- */
+{const FIXW=[['ทะเล(?!ทราย)','ทะเล(?!ทราย|าะ)'],['เรือ','เรือ(?!ง)'],['ทะเล','ทะเล(?!าะ)'],['พระ','พระ(?!อาทิตย์|จันทร์|ราช|เจ้า|องค์)'],['วัด','วัด(?!ฝีมือ|ใจ|ผล|ตัว|ระดับ|ความ)'],['วิ่ง','วิ่ง(?!หนี|ออก|ไป|เข้า|มา|ตาม)'],
+  ['ค้า','ค้า(?![งน])'],['ข้าว','ข้าว(?!ของ)'],['หมอ','หมอ(?!ก)'],['ฟัน','(?<!หมอ|แปรง)ฟัน(?!ผุ)'],['วัง','(?<!ห)วัง'],['ยา','(?<![พ])ยา(?![วกมย])'],['ลูก','ลูก(?!ศร|ค้า|คิด|น้อง|ธนู|บอล|หนัง)']];
+  for(const e of VKIND){let src=e[1].source;for(const [a,b] of FIXW){const re=new RegExp('(^|\|)'+a.replace(/[()?!|]/g,'\$&')+'(?=\||$)','g');src=src.replace(re,'$1'+b);}if(src!==e[1].source)try{e[1]=new RegExp(src);}catch(err){}}}
+
+/* ---- 14. the mission board trusts you step by step: higher ranks need age and a record at the rank below ---- */
+{const RKAGE={D:8,C:12,B:15,A:17,S:18},RKNEED={B:['C',1],A:['B',2],S:['A',2]};
+ const akM=ask;ask=function(title,text,choices,kind){try{if(title==='กระดานภารกิจ'&&Array.isArray(choices))choices=choices.map(c=>{const m=/^\[([DCBAS])\]/.exec(c&&c.l||'');if(!m||c.ok===false)return c;const rk=m[1];
+  if(S.age<RKAGE[rk])return{...c,ok:false,h:`ต้องอายุ ${RKAGE[rk]} ปีขึ้นไป · ${c.h||''}`};const nd=RKNEED[rk];
+  if(nd&&((S.misR&&S.misR[nd[0]])||0)<nd[1]&&!(nd[0]==='C'&&(S.misN||0)>=3))return{...c,ok:false,h:`ผู้ว่าจ้างยังไม่ไว้ใจ ต้องทำภารกิจระดับ ${nd[0]} สำเร็จก่อน ${nd[1]} ครั้ง`};return c;});}catch(e){}return akM.call(this,title,text,choices,kind);};}
+
+/* ---- 15. an event without any main character is not titled "พบตัวละครหลัก" ---- */
+{const akT=ask;ask=function(title,text,choices,kind){try{if(title==='พบตัวละครหลัก'){const ids=castsIn(String(text||''));if(!ids||!ids.length)title=/ทัพ|บุก|สงคราม|ประหาร|ระเบิด|ยกพล/.test(text||'')?'เหตุการณ์ใหญ่':'เรื่องสำคัญ';}}catch(e){}return akT.call(this,title,text,choices,kind);};}
 
 /* ===== setup ===== */
 const cfg={world:'aot',sex:'m',year:835,place:'shiganshina',vil:'konoha',name:'',edited:false,traits:null,look:null,dream:null};
