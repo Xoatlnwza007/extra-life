@@ -3579,7 +3579,7 @@ const CASTLOOK={
   floch:CL('m','#9a3b22','short','#8b6a3e',{mil:'survey',cape:1}),
   kenny:CL('m','#1c1a1f','long','#3e2731',{hat:1,hatC:'#1c1a1f'}),
 };
-const castSpec=id=>CASTLOOK[id]?{...CASTLOOK[id]}:null;
+const castSpec=id=>{if(!CASTLOOK[id])return null;const o={...CASTLOOK[id]};try{if(typeof S!=='undefined'&&S&&S.year!=null&&o.age==null&&typeof metaOf==='function'){const M=metaOf(id);if(M&&M.b!=null)o.age=Math.max(4,S.year-M.b);}}catch(e){}return o;};
 /* words that contain a character's name but mean something else */
 const NOTNAME=/(ดอก|ต้น|กลีบ|ชม|สี)ซากุระ|ซากุระ(บาน|ร่วง|สีชมพู)|ดอกไม้|ทานตะวัน/g;
 const DESC={aot:[[/เด็กชายผมทอง|ผมทอง.{0,20}หนังสือ/,'armin'],[/ตาเขียว/,'eren'],[/ผ้าพันคอ(สี)?แดง/,'mikasa'],[/ชายร่างเตี้ย|ร่างเล็ก.{0,10}(ทหาร|ดาบ)/,'levi'],[/แว่น.{0,12}(ไททัน|ทดลอง)/,'hange'],[/สาวผมทอง.{0,10}(ตัวเล็ก|ร่างเล็ก)|สาวผมทองตาฟ้า/,'historia'],[/สาวมันฝรั่ง|ขโมยมันฝรั่ง/,'sasha'],[/ร่างสูงผมทอง.{0,10}(ผู้บัญชาการ|ทหาร)/,'erwin']],
@@ -14530,6 +14530,128 @@ let USERT=0;try{for(const ev of ['pointerdown','keydown'])document.addEventListe
 VIG.rest=0;
 {const lf9=liveFrame;liveFrame=function(dt){if(!VIG.cur&&VIG.q.length&&VIG.rest>0){VIG.rest-=(dt||16);const q=VIG.q.splice(0);const r=lf9.apply(this,arguments);VIG.q.push(...q);return r;}
   const had=!!VIG.cur;const r=lf9.apply(this,arguments);if(had&&!VIG.cur)VIG.rest=1600;return r;};}
+
+
+/* --- q_where64.js --- */
+/* ===== v64 where each main character really is, year by year (lore). A cast member only shows up in a place they live in
+   or travel to at that point of their life. AOT and Naruto had no per-place rules; the other worlds already do. ===== */
+const atIn=(...pl)=>S=>pl.includes(S.place);
+const AOTWHERE={
+  /* Eren/Armin: Shiganshina until the fall (845) -> refugees near Trost -> 104th cadets at the southern camp (847-849) ->
+     Survey Corps (Trost, then Shiganshina after the 851 reclamation) -> Marley (853-854) */
+  eren:S=>{const y=S.year,p=S.place;return y<845?p==='shiganshina':y<850?p==='trost':y<853?['trost','shiganshina','mitras','outside'].includes(p):p==='liberio'||(y>=854&&p==='shiganshina');},
+  armin:S=>{const y=S.year,p=S.place;return y<845?p==='shiganshina':y<850?p==='trost':y<854?['trost','shiganshina','mitras','outside'].includes(p):y===854?['liberio','shiganshina','outside'].includes(p):['liberio','outside'].includes(p);},
+  /* Mikasa: mountain cabin outside Shiganshina, then with the Yeagers from 844; after the war she stays by the tree in Shiganshina */
+  mikasa:S=>{const y=S.year,p=S.place;return y<845?p==='shiganshina':y<850?p==='trost':y<854?['trost','shiganshina','mitras','outside'].includes(p):y===854?['liberio','shiganshina','outside'].includes(p):p==='shiganshina';},
+  /* Jean is from Trost */
+  jean:S=>{const y=S.year,p=S.place;return y<850?p==='trost':y<854?['trost','shiganshina','mitras','stohess'].includes(p):y===854?['liberio','shiganshina','outside'].includes(p):['liberio','outside'].includes(p);},
+  /* Connie from Ragako; Sasha from a hunting village in the Wall Rose forest (Ragako is the game's rural Rose village) */
+  connie:S=>{const y=S.year,p=S.place;return y<847?p==='ragako':y<850?p==='trost':y<854?['trost','shiganshina','ragako'].includes(p):y===854?['liberio','shiganshina','outside'].includes(p):['liberio','outside'].includes(p);},
+  sasha:S=>{const y=S.year,p=S.place;return y<847?p==='ragako':y<850?p==='trost':['trost','shiganshina','ragako','liberio'].includes(p)&&!(y<854&&p==='liberio');},
+  /* Historia: a farm on the Reiss lands, hidden as Christa Lenz in the 104th, queen in Mitras from late 850 */
+  historia:S=>{const y=S.year,p=S.place;return y<847?p==='ragako':y<850?p==='trost':y===850?['trost','mitras'].includes(p):['mitras','ragako'].includes(p);},
+  /* Levi: the Underground until Erwin recruits him; Survey Corps; after the war he lives in Marley */
+  levi:S=>{const y=S.year,p=S.place;return y<844?p==='underground':y<854?['trost','shiganshina','mitras','outside'].includes(p)&&!(y<851&&p==='shiganshina'):y===854?['liberio','shiganshina','outside'].includes(p):p==='liberio';},
+  hange:S=>{const y=S.year,p=S.place;return y<838?p==='stohess':y<851?['trost','mitras','stohess'].includes(p):['trost','shiganshina','mitras','liberio'].includes(p)&&!(y<854&&p==='liberio');},
+  erwin:S=>{const y=S.year,p=S.place;return y<832?p==='mitras':['trost','mitras','stohess'].includes(p);},
+  floch:S=>{const y=S.year,p=S.place;return y<851?p==='trost':['trost','shiganshina','mitras'].includes(p);},
+  /* Warriors: Liberio; on Paradis 845-850 as cadets in Trost (Annie then joins the Military Police in Stohess); Annie sleeps in crystal 850-854 */
+  annie:S=>{const y=S.year,p=S.place;return y<845?p==='liberio':y<847?p==='outside':y<850?p==='trost':y===850?p==='stohess':y<854?false:['liberio','shiganshina'].includes(p);},
+  reiner:S=>{const y=S.year,p=S.place;return y<845?p==='liberio':y<847?p==='outside':y<850?p==='trost':y===850?['trost','shiganshina'].includes(p):y<854?p==='liberio':['liberio','shiganshina'].includes(p);},
+  gabi:S=>{const y=S.year,p=S.place;return y<854?p==='liberio':y===854?['liberio','ragako','shiganshina'].includes(p):p==='liberio';},
+  zeke:S=>{const y=S.year,p=S.place;return y===850?['shiganshina','outside'].includes(p):y>=853&&y<=854?['shiganshina','liberio','outside'].includes(p):p==='liberio';},
+  kenny:S=>{const y=S.year,p=S.place;return y<840?p==='underground':['underground','mitras'].includes(p);},
+};
+for(const [id,f] of Object.entries(AOTWHERE)){const M=WORLDS.aot.castMeta[id]||NOMETA[id];if(M)M.at=f;}
+/* Naruto: village membership is already checked; these add the years someone is away from home */
+const NARWHERE={
+  naruto:S=>!(S.year>=63&&S.year<65),                 /* two and a half years training with Jiraiya */
+  tsunade:S=>S.year<38||S.year>=63,                    /* left the village after Dan and Nawaki, returned as Fifth Hokage */
+  shizune:S=>S.year<38||S.year>=63,
+  jiraiya:S=>S.year<45||[50,62,63,65].includes(S.year), /* a wanderer who comes home only for big moments */
+  sasuke:S=>!(S.year>=68&&S.year<80),                  /* the journey of atonement after the war */
+  deidara:S=>S.year<58,                                /* left Iwagakure */
+  zabuza:S=>S.year<56,haku:S=>S.year<56,               /* rogue after the failed coup */
+  kakashi:S=>true,itachi:S=>true,
+};
+for(const [id,f] of Object.entries(NARWHERE)){const M=WORLDS.naruto.castMeta[id]||NOMETA[id];if(M){const old=M.at;M.at=old?(S=>old(S)&&f(S)):f;}}
+/* Orochimaru lived in Konoha until his labs were found in 45 */
+if(NOMETA.orochimaru){delete NOMETA.orochimaru.v;NOMETA.orochimaru.at=S=>S.year<45||!!S.flags.outlaw;}
+/* ---- Jujutsu Kaisen: being a sorcerer lets you meet sorcerers, but only where they actually are ---- */
+if(WORLDS.jjk){const M=WORLDS.jjk.castMeta,sc=S=>typeof sorc==='function'&&sorc(S),sees=S=>sc(S)||(typeof seesCurse==='function'&&seesCurse(S)),P=(S,...p)=>p.includes(S.place);
+  const set=(id,f)=>{if(M[id])M[id].at=f;};
+  set('gojo',S=>S.year<2007?P(S,'jhigh','shibuya'):sc(S)?P(S,'jhigh','shibuya','shinjuku','kyoto'):P(S,'shibuya'));
+  set('geto',S=>S.year<2008?sc(S)&&P(S,'jhigh','shibuya'):(S.dark||0)>=30&&P(S,'shinjuku','shibuya','kyoto','rural'));
+  set('shoko',S=>sc(S)&&P(S,'jhigh'));
+  set('nanami',S=>S.year<2008?sc(S)&&P(S,'jhigh'):S.year<2012?P(S,'shinjuku','shibuya'):P(S,'shibuya','shinjuku')||(sc(S)&&P(S,'jhigh')));
+  set('itadori',S=>S.year<2018?P(S,'sendai'):sc(S)&&P(S,'jhigh','shibuya','shinjuku','sendai'));
+  set('megumi',S=>S.year>=2016&&sc(S)&&P(S,'jhigh','shibuya','shinjuku','sendai'));
+  set('nobara',S=>S.year<2018?P(S,'rural'):sc(S)&&P(S,'jhigh','shibuya'));
+  for(const id of ['maki','panda','inumaki'])set(id,S=>S.year>=2016&&sc(S)&&P(S,'jhigh','shibuya','kyoto'));
+  set('yuta',S=>sc(S)&&((S.year>=2016&&S.year<2018&&P(S,'jhigh','shinjuku'))||(S.year>=2018&&P(S,'jhigh','sendai','shinjuku'))));
+  set('todo',S=>P(S,'kyoto')||(sc(S)&&S.year===2018&&P(S,'shibuya')));
+  set('choso',S=>S.year===2018&&sees(S)&&P(S,'shibuya','shinjuku'));
+  for(const id of ['jogo','hanami','dagon'])set(id,S=>S.year===2018&&sees(S)&&P(S,'shibuya','shinjuku'));
+  set('mahito',S=>S.year>=2017&&S.year<=2018&&sees(S)&&P(S,'shibuya','shinjuku'));}
+/* ---- Bleach: Urahara's shop is open to anyone in Karakura ---- */
+if(WORLDS.bleach){const M=WORLDS.bleach.castMeta;if(M.urahara)M.urahara.at=S=>S.place==='karakura';}
+/* ---- One Piece: Ace and Luffy grow up near Foosha and only take to the sea at seventeen ---- */
+if(WORLDS.op){const M=WORLDS.op.castMeta;if(M.ace)M.ace.at=S=>(S.place==='foosha'&&S.year<1517)||(opSea(S)&&S.year>=1517);if(M.luffy)M.luffy.at=S=>(S.place==='foosha'&&S.year<1522)||(opSea(S)&&S.year>=1522);
+  if(M.sabo)M.sabo.at=S=>(S.place==='foosha'&&S.year<1512)||(S.year>=1522&&S.job?.id==='revo');}
+/* ---- Dragon Ball: Tien first appears at the 22nd tournament and lives as a wanderer in the mountains ---- */
+if(WORLDS.db){const M=WORLDS.db.castMeta;if(M.tien)M.tien.at=S=>S.year>=753&&['paozu','desert'].includes(S.place)||(S.year===753&&S.place==='kame');}
+/* ---- Naruto: Jiraiya is home in Konoha only in the years the story brings him back; otherwise he is in one land at a time ---- */
+if(NOMETA.jiraiya)NOMETA.jiraiya.at=S=>{const y=S.year,v=typeof vilOf==='function'?vilOf(S):'konoha';if(y<45||[50,62,63,65].includes(y))return v==='konoha';return ['ame','kiri','suna','kumo','iwa','konoha'][y%6]===v;};
+/* Jiraiya also has a world castMeta entry (it wins over NOMETA) */
+if(WORLDS.naruto.castMeta.jiraiya)WORLDS.naruto.castMeta.jiraiya.at=NOMETA.jiraiya.at;
+/* Miguel comes with Geto for the Night Parade (2017) and back with Yuta in late 2018 */
+if(WORLDS.jjk.castMeta.miguel)WORLDS.jjk.castMeta.miguel.at=S=>(S.year===2017&&['shinjuku','kyoto'].includes(S.place))||(S.year===2018&&typeof sorc==='function'&&sorc(S)&&['shinjuku','jhigh'].includes(S.place));
+
+
+/* --- r_calm65.js --- */
+/* ===== v65 calmer screen: the per-action scene director is OFF by default (players preferred the earlier top view);
+   a header toggle can turn it on. World news cards pause time, keep a gap between them, and merge news that piles up. ===== */
+const VIGON=()=>{try{return localStorage.getItem('el-vig')==='1';}catch(e){return false;}};
+{const vpz=vigPush;vigPush=function(o){if(!VIGON())return;return vpz.apply(this,arguments);};}
+try{const hb=document.querySelector('#game .hbtns');if(hb&&!document.getElementById('vigBtn')){const b=document.createElement('button');b.type='button';b.className='ghost sm';b.id='vigBtn';
+  const lab=()=>{b.textContent='ฉากการกระทำ: '+(VIGON()?'เปิด':'ปิด');};lab();b.onclick=()=>{try{localStorage.setItem('el-vig',VIGON()?'0':'1');}catch(e){}if(!VIGON()){VIG.q.length=0;VIG.cur=null;}lab();};hb.append(b);}}catch(e){}
+/* world news: one card at a time, time stands still while it is up, at least 12s between cards, and a backlog becomes one card */
+let WNLAST=0;try{const st=document.createElement('style');st.textContent='#wnews p{white-space:pre-line}';document.head.append(st);}catch(e){}
+{const ws0=wnShow;wnShow=function(it){const more=WNQ.splice(0);let card=it;if(more.length){card={...it,t:'ข่าวจากโลกหลายเรื่องติดกัน',x:[it,...more].map(n=>`• ${n.t}`).join(String.fromCharCode(10)),sc:it.sc};}
+  const wasBusy=busy;busy=true;const r=ws0.call(this,card);const d=document.getElementById('wnews');
+  const done=()=>{if(!wasBusy)busy=false;WNLAST=Date.now();};const obs=new MutationObserver(()=>{if(d.hidden){obs.disconnect();done();}});if(d)obs.observe(d,{attributes:true,attributeFilter:['hidden']});else done();return r;};}
+{const lfz=liveFrame;liveFrame=function(dt){if(!WNOPEN&&WNQ.length&&Date.now()-WNLAST<12000){const q=WNQ.splice(0);const r=lfz.apply(this,arguments);WNQ.push(...q);return r;}return lfz.apply(this,arguments);};}
+
+
+/* --- s_tier65.js --- */
+/* ===== v65 fight scale: a foe's moves match its power and the world. Thugs and civilians fight with fists, sticks and knives;
+   trained soldiers and genin use their world's basic weapons; only real fighters (power 55+) use special techniques,
+   beams or energy. Curses, titans and beasts keep their natural attacks. ===== */
+const BASICA=new Set(['punch','slash','staff','gun','bite','tstomp','odm','lkm_str','lkm_spd','lkm_end','lkm_tec','lk_combo','lk_gap']);
+const MUNDANE=[['ต่อยหมัดตรง','punch'],['เตะเข้าที่ท้อง','punch'],['ฟาดด้วยท่อนไม้','staff'],['แทงมีดสั้น','slash'],['ล็อกคอแล้วทุ่ม','punch'],['หยิบของใกล้มือขว้าง','punch']];
+const WEAPONW={
+  naruto:[['ขว้างคุไน','slash'],['ขว้างชูริเคน','slash'],['ไทจุตสึพื้นฐาน','punch'],['ฟันด้วยคุไน','slash']],
+  aot:[['ยิงปืนคาบศิลา','gun'],['ฟันใบมีดเครื่องสามมิติ','odm'],['แทงดาบปลายปืน','gun'],['ต่อยแบบทหาร','punch']],
+  op:[['ฟันดาบโค้ง','slash'],['ยิงปืนสั้น','gun'],['ฟาดกระบอง','staff'],['ต่อยเต็มแรง','punch']],
+  bleach:[['ฟันดาบวิญญาณ','slash'],['ชุนโปพุ่งฟัน','slash'],['ต่อยด้วยหมัดวิญญาณ','punch']],
+  jjk:[['ต่อยเสริมพลังคำสาปนิดหน่อย','punch'],['ฟาดอาวุธต้องสาประดับต่ำ','staff'],['เตะ','punch']],
+  heian:[['ฟันดาบทาจิ','slash'],['ยิงธนู','gun'],['แทงทวน','staff']],
+  jjedo:[['ฟันดาบคาตานะ','slash'],['แทงทวน','staff'],['ยิงปืนไฟ','gun']],
+  jojo:[['ต่อยหมัดตรง','punch'],['ฟาดด้วยไม้เบสบอล','staff'],['ยิงปืนพก','gun']],
+  db:[['หมัดศิลปะการต่อสู้','punch'],['เตะหมุนตัว','punch'],['ศอกสวน','punch'],['กระโดดถีบ','punch']],
+  lookism:[['หมัดตรง','lkm_str'],['เตะต่ำ','lk_combo'],['คอมโบข้างถนน','lk_combo']],
+  bc:[['เวทพื้นฐาน: ลูกไฟเล็ก','fire'],['เวทพื้นฐาน: ลมตัด','wind'],['ฟาดไม้กวาด','staff'],['ต่อย','punch']],
+};
+const tierPick=(L,E,intent)=>{const pool=intent==='heavy'?L.slice(-2):L;let m=pick(pool);if(m[0]===E._last&&pool.length>1)m=pool[(pool.indexOf(m)+1)%pool.length];E._last=m[0];return{n:m[0],a:ANIM[m[1]]?m[1]:'punch'};};
+{const em0=enMove;enMove=function(E,intent){const r=em0.apply(this,arguments);try{
+  const p=E.pow||0;if(E.curse||E.titan||E.beast||E.mask)return r;
+  const castPow=E.id&&CASTPOW[E.id];if(castPow&&castPow>=55&&p>=40)return r;          /* a named fighter, even young, has their style */
+  if(p>=55)return r;
+  if(p<30)return tierPick(MUNDANE,E,intent);
+  if(BASICA.has(r.a))return r;                                                     /* already a plain physical move */
+  if(W.id==='bc'&&p>=35&&['fire','wind','water','bolt'].includes(r.a))return r;    /* every Clover mage has small spells */
+  return tierPick(p<30?MUNDANE:(WEAPONW[W.id]||MUNDANE),E,intent);
+  }catch(e){return r;}};}
 
 /* ===== setup ===== */
 const cfg={world:'aot',sex:'m',year:835,place:'shiganshina',vil:'konoha',name:'',edited:false,traits:null,look:null,dream:null};
