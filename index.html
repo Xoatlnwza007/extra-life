@@ -14227,7 +14227,7 @@ function vDraw(px,c,k,lw,lh,v,t){
   else if(kind==='study'){chibi(px,lw*.52,gy,{...me,dir:-1});if(other)chibi(px,lw*.25,gy,{...other,dir:1});}
   else{const meX=lw*.4-(1-ph)*30;chibi(px,meX,gy,{...me,dir:1,f:ph<1?vN(t,260)%2:0,md:kind==='love'?'happy':undefined});
     if(other)chibi(px,lw*.58,gy,{...other,dir:-1,md:kind==='love'?'happy':undefined});
-    else if(['tavern','eat','home','market','clinic','shrine','festival','love','work','palace','town'].includes(kind)){const n=vNpc((v.label||'').length*31+7);chibi(px,lw*.58,gy,{...n,dir:-1});}}
+    else if(['tavern','eat','home','market','clinic','shrine','festival','love','work','palace','town','arena'].includes(kind)){const n=vNpc((v.label||'').length*31+7);chibi(px,lw*.58,gy,{...n,dir:-1});}}
   if(kind==='sea'&&other)chibi(px,lw*.5,gy-6,{...other,dir:-1});
   const place=v.place||((typeof VTITLE[kind]==='function'?VTITLE[kind](W):VTITLE[kind])+' · '+(typeof placeName==='function'?placeName(S):''));
   vCaption(c,k,lw,`📍 ${place}`,v.label?`คุณ: ${String(v.label).replace(/^คุณ\s*/,'')}`:'');
@@ -14516,7 +14516,7 @@ const VNEW={
   stage(px,lw,lh,gy,t,n){PA.R(px,0,0,lw,lh,'#262238');PA.R(px,0,gy-6,lw,8,'#8a5a3a');PA.R(px,0,gy-6,lw,1,'#c9a06a');const cx=Math.round(lw*.42);const c=px.c;c.save();c.setTransform(1,0,0,1,0,0);c.fillStyle='rgba(254,231,97,.18)';c.beginPath();c.moveTo((cx-4)*px.k,0);c.lineTo((cx+4)*px.k,0);c.lineTo((cx+16)*px.k,gy*px.k);c.lineTo((cx-16)*px.k,gy*px.k);c.fill();c.restore();
     for(let i=0;i<10;i++){const fl=vN(t+i*170,260)%5===0;PA.R(px,4+i*Math.round(lw/10),gy+6,6,6,'#3a3a4a');if(fl)PA.R(px,5+i*Math.round(lw/10),gy+4,3,2,'#f0ece0');}},
 };
-{const vb4=vBg;vBg=function(px,kind,lw,lh,gy,t,night){if(VNEW[kind]){try{VNEW[kind](px,lw,lh,gy,t,night);if(VEMB[W.id])VEMB[W.id](px,Math.round(lw*.85),6,t);}catch(e){}return;}return vb4.apply(this,arguments);};}
+{const vb4=vBg;vBg=function(px,kind,lw,lh,gy,t,night){if(VNEW[kind]){try{VNEW[kind](px,lw,lh,gy,t,night);if(VEMB[W.id]&&['onsen','show','stage'].includes(kind))VEMB[W.id](px,Math.round(lw*.85),6,t);}catch(e){}return;}return vb4.apply(this,arguments);};}
 Object.assign(VTITLE,{onsen:'บ่อน้ำร้อน',show:'โรงแสดง',stage:'บนเวที'});
 /* activity menus know their category: an unmatched learn/train/date/fun line falls back to the right kind */
 {const ap3=applyAct;applyAct=function(o,cat){const n0=VIG.q.length;const r=ap3.apply(this,arguments);try{const v=VIG.q[VIG.q.length-1];if(VIG.q.length>n0&&v&&v.kind==='town'){v.kind={learn:'study',train:'dojo',date:'love',fun:'festival'}[cat]||'town';}}catch(e){}return r;};}
@@ -14612,7 +14612,7 @@ if(WORLDS.jjk.castMeta.miguel)WORLDS.jjk.castMeta.miguel.at=S=>(S.year===2017&&[
 /* ===== v65 calmer screen: the per-action scene director is OFF by default (players preferred the earlier top view);
    a header toggle can turn it on. World news cards pause time, keep a gap between them, and merge news that piles up. ===== */
 const VIGON=()=>{try{return localStorage.getItem('el-vig')==='1';}catch(e){return false;}};
-{const vpz=vigPush;vigPush=function(o){if(!VIGON())return;return vpz.apply(this,arguments);};}
+{const vpz=vigPush;vigPush=function(o){if(!VIGON()&&!(o&&o.force))return;return vpz.apply(this,arguments);};}
 try{const hb=document.querySelector('#game .hbtns');if(hb&&!document.getElementById('vigBtn')){const b=document.createElement('button');b.type='button';b.className='ghost sm';b.id='vigBtn';
   const lab=()=>{b.textContent='ฉากการกระทำ: '+(VIGON()?'เปิด':'ปิด');};lab();b.onclick=()=>{try{localStorage.setItem('el-vig',VIGON()?'0':'1');}catch(e){}if(!VIGON()){VIG.q.length=0;VIG.cur=null;}lab();};hb.append(b);}}catch(e){}
 /* world news: one card at a time, time stands still while it is up, at least 12s between cards, and a backlog becomes one card */
@@ -14708,6 +14708,34 @@ if(typeof ACTICO!=='undefined')ACTICO.push([/^ความฝัน/,'💭']);
 {const rdD=render;render=function(){const r=rdD.apply(this,arguments);try{const b=document.querySelector('#acts [data-w="dreamActBtn"]');if(b&&S){const ok=S.alive&&S.age>=7;b.disabled=!ok;
   const cur=(DREAMS[W.id]||[]).find(d=>d.id===S.dream);const lab=ok?(cur?`ความฝัน: ${cur.n.length>14?cur.n.slice(0,13)+'…':cur.n}`:'ความฝัน · เลือกเส้นทาง'):'ความฝัน · อายุ 7 ปีขึ้นไป';
   const sp=b.querySelector('span');if(sp)sp.textContent=lab;else if(!b.dataset.lab||b.dataset.lab!==lab){b.dataset.lab=lab;const ic=b.textContent.match(/^\S+\s/);b.textContent=(ic&&/💭/.test(ic[0])?'💭 ':'')+lab;}b.title=cur?`ความฝันตอนนี้: ${cur.n} · กดเพื่อเปลี่ยน`:'เลือกความฝัน/เส้นทางในอนาคต';}}catch(e){}return r;};}
+
+
+/* --- v_menuvig70.js --- */
+/* ===== v70 menu scenes: everything started from ออกไปข้างนอก, ท่องเที่ยว, ทัวร์นาเมนต์, กระดานภารกิจ, ตามหาตำนาน and ฝึกฝน
+   always plays its scene in the top view (even when the general action-scene toggle is off): the trip there, each activity,
+   and the result after a fight or an event window closes ===== */
+let VIGFORCE=0;
+{const vpf=vigPush;vigPush=function(o){if(o&&VIGFORCE>0)o.force=1;return vpf.apply(this,arguments);};}
+const forceDuring=(name)=>{const f0=window[name]||eval(name);if(typeof f0!=='function')return;const w=async function(){VIGFORCE++;try{return await f0.apply(this,arguments);}finally{setTimeout(()=>{VIGFORCE=Math.max(0,VIGFORCE-1);},400);}};eval(name+'=w');};
+for(const n of ['goOut','travelGo','tourRun','missionRun','legTry'])try{forceDuring(n);}catch(e){}
+const lastLine=()=>{try{const it=(S.log[S.log.length-1]?.items||[]).filter(x=>x.k!=='pick');return it.length?String(it[it.length-1].x).slice(0,80):'';}catch(e){return '';}};
+/* results: pushed after the flow ends, so the scene plays once the fight or window has closed */
+{const tr0=tourRun;tourRun=async function(t){const r=await tr0.apply(this,arguments);try{vigPush({kind:'arena',label:`ลงแข่ง${t.n}`,line:lastLine(),place:t.n,force:1,ms:7000});}catch(e){}return r;};}
+{const mr0=missionRun;missionRun=async function(m){const r=await mr0.apply(this,arguments);try{const k=vKind(m.n+' '+(m.line||''));vigPush({kind:k==='town'?'road':k,label:`ภารกิจ: ${m.n}`,line:lastLine(),force:1,ms:7000});}catch(e){}return r;};}
+{const lt0=legTry;legTry=async function(q){const r=await lt0.apply(this,arguments);try{vigPush({kind:'ruins',label:`ตามหา${q.n}`,line:lastLine(),force:1,ms:7000});}catch(e){}return r;};}
+if(typeof miniGame==='function'){const mg0=miniGame;miniGame=async function(k,n,h){const r=await mg0.apply(this,arguments);try{vigPush({kind:'dojo',label:n,line:r>=.85?'ผลการฝึกยอดเยี่ยม':r>=.5?'ก้าวหน้าไปมาก':'ยังต้องฝึกอีกเยอะ',force:1,ms:6500});}catch(e){}return r;};}
+/* two new places: the tournament arena and ancient ruins */
+Object.assign(VNEW,{
+  arena(px,lw,lh,gy,t,n){PA.sky(px,lw,Math.round(gy*.5),skyOf(),t,n);for(let r=0;r<4;r++){const y=Math.round(gy*.42)+r*7;PA.R(px,0,y,lw,7,r%2?'#5a4a3a':'#6a5a4a');for(let i=0;i<lw;i+=5){const bob=vN(t+i*37+r*100,260)%3===0?1:0;PA.R(px,i+1,y+1-bob,3,3,['#e43b44','#4f86b8','#feae34','#63c74d','#f0ece0','#b55088'][(i/5+r)%6|0]);}}
+    for(let i=0;i<5;i++){const x=Math.round(lw*.1)+i*Math.round(lw*.2),w=Math.sin(t/300+i);PA.R(px,x,Math.round(gy*.3),1,12,'#3e2731');PA.R(px,x+1,Math.round(gy*.3)+w,8,5,['#e43b44','#4f86b8','#feae34','#63c74d','#b55088'][i]);}
+    PA.R(px,0,gy-6,lw,lh-gy+6,'#c9b48e');PA.R(px,Math.round(lw*.15),gy-8,Math.round(lw*.7),8,'#d8d0c0');PA.R(px,Math.round(lw*.15),gy-8,Math.round(lw*.7),1,'#f0ece0');PA.dith(px,Math.round(lw*.15),gy-2,Math.round(lw*.7),2,'#a8987a');
+    if(vN(t,900)%3===0)for(let i=0;i<6;i++)PA.R(px,Math.round(lw*.2)+i*Math.round(lw*.12),Math.round(gy*.38)-vN(t+i*50,120)%4,1,2,'#fee761');},
+  ruins(px,lw,lh,gy,t,n){PA.sky(px,lw,gy,n?SKYN:['#5a6a7a','#7a8a8a','#9aa8a0','#b8c0b0'],t,n);for(let i=0;i<6;i++){const x=Math.round(lw*.06)+i*Math.round(lw*.17),h=18+((i*13)%22);PA.bricks(px,x,gy-h,8,h,'#8b9bb4','#5a6988');if(i%2)PA.R(px,x-1,gy-h-2,10,2,'#a8b4c8');for(let v=0;v<3;v++)PA.R(px,x+((v*3)%8),gy-h+4+v*5,1,4,'#3e8948');}
+    PA.R(px,Math.round(lw*.42),gy-12,22,12,'#5a6988');PA.R(px,Math.round(lw*.42),gy-13,22,1,'#a8b4c8');const g=.5+.5*Math.sin(t/250);disc(px,Math.round(lw*.42)+11,gy-17,3,g>.5?'#fee761':'#feae34');for(let i=0;i<4;i++)PA.R(px,Math.round(lw*.42)+11+Math.round(Math.cos(t/300+i*1.6)*6),gy-17+Math.round(Math.sin(t/300+i*1.6)*4),1,1,'#fee761');
+    for(let i=0;i<10;i++){const x=(t/60+i*31)%(lw+20)-10;PA.R(px,x,gy-3-(i%3),12,1,'rgba(220,230,240,.35)');}PA.ground(px,lw,lh,gy,'#7a7a6a','#5a5a4a');},
+});
+Object.assign(VTITLE,{arena:'สนามประลอง',ruins:'ซากโบราณ'});
+VOUT.push('arena','ruins');
 
 /* ===== setup ===== */
 const cfg={world:'aot',sex:'m',year:835,place:'shiganshina',vil:'konoha',name:'',edited:false,traits:null,look:null,dream:null};
