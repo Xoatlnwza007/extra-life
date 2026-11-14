@@ -14653,6 +14653,21 @@ const tierPick=(L,E,intent)=>{const pool=intent==='heavy'?L.slice(-2):L;let m=pi
   return tierPick(p<30?MUNDANE:(WEAPONW[W.id]||MUNDANE),E,intent);
   }catch(e){return r;}};}
 
+
+/* --- t_doc66.js --- */
+/* ===== v66 doctor visits have a reason: the routine only goes to the doctor when you are actually unwell,
+   and every visit first says what is wrong ===== */
+const docReason=()=>{if(!S)return null;const inj=S.flags?.inj;if(inj)return`${inj.k?`แผล${inj.k}`:'แผลจากการบาดเจ็บ'}ยังไม่หาย เจ็บทุกครั้งที่ขยับ`;
+  if(S.flags?.cold)return pick(['คุณเป็นหวัด จามทั้งวัน น้ำมูกไหลไม่หยุด','คุณไอหนักจนนอนไม่หลับมาสามคืน']);
+  if(S.st.hp<35)return pick(['คุณไข้ขึ้นสูงตั้งแต่เมื่อคืน ตัวร้อนจนพูดไม่รู้เรื่อง','คุณปวดท้องจนลุกไม่ขึ้น กินอะไรก็อาเจียนออกมา','คุณหน้าซีด เวียนหัวจนเกือบเป็นลมกลางบ้าน']);
+  if(S.st.hp<50)return pick(['คุณรู้สึกครั่นเนื้อครั่นตัว ไข้ต่ำๆ มาหลายวัน','คุณเหนื่อยง่ายผิดปกติ ไอเล็กน้อยทั้งสัปดาห์','ผื่นแดงขึ้นตามแขน คันจนเกาเป็นแผล']);return null;};
+{const aw=actWeight;actWeight=function(id){const w=aw.apply(this,arguments);if(id==='doc'&&!docReason())return 0;return w;};}
+{const dd=doDoc;doDoc=function(){try{const r=docReason();say(r||'คุณไปตรวจสุขภาพประจำปี หมอบอกว่าแข็งแรงดี','plain');}catch(e){}return dd.apply(this,arguments);};}
+/* the routine never takes a healthy child to the doctor (when doc is the only option its zero weight still won) */
+let ACTAUTO=false;
+{const aa=autoAct;autoAct=function(){ACTAUTO=true;try{return aa.apply(this,arguments);}finally{ACTAUTO=false;}};}
+{const dd2=doDoc;doDoc=function(){if(ACTAUTO&&!docReason())return;return dd2.apply(this,arguments);};}
+
 /* ===== setup ===== */
 const cfg={world:'aot',sex:'m',year:835,place:'shiganshina',vil:'konoha',name:'',edited:false,traits:null,look:null,dream:null};
 function rollChar(){cfg.traits=rollTraits();cfg.look=rollLook(cfg.world,cfg.place);cfg.dream=pick(DREAMS[cfg.world]).id;}
