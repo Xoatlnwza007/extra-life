@@ -14668,6 +14668,39 @@ let ACTAUTO=false;
 {const aa=autoAct;autoAct=function(){ACTAUTO=true;try{return aa.apply(this,arguments);}finally{ACTAUTO=false;}};}
 {const dd2=doDoc;doDoc=function(){if(ACTAUTO&&!docReason())return;return dd2.apply(this,arguments);};}
 
+
+/* --- u_dpath67.js --- */
+/* ===== v67 dreams as a life path: at 7–8 the game offers a dream slot (pick one now, or open the full list), it can be changed
+   any time, and every dream gets a path the game keeps opening — success depends on the player's choices and skills ===== */
+DREAMASK.when=S=>!S.dream&&(S.age===7||S.age===8||[12,16,20,25,35].includes(S.age))&&!S.done['dask'+S.age];
+const DREAMWAIT=()=>{const iv=setInterval(()=>{if(!busy&&$('#modal').hidden&&!document.getElementById('btl')){clearInterval(iv);dreamMenu();}},300);};
+{const dp0=DREAMASK.play;DREAMASK.play=function(S){const r=dp0.apply(this,arguments);try{if(r&&r.choices)r.choices.splice(r.choices.length-1,0,{l:'ดูความฝันทั้งหมดแล้วเลือกเอง',g:'curious',close:1,f(){DREAMWAIT();}});
+  if(S.age<=8&&r)r.text=pick(['คุณอายุเจ็ดขวบแล้ว คืนหนึ่งพ่อถามว่า "โตขึ้นอยากเป็นอะไร" คุณนั่งคิดอยู่นาน','วันนี้ครูให้ทุกคนวาดรูป "ตัวเองในอนาคต" คุณจ้องกระดาษเปล่าอยู่นาน']);}catch(e){}return r;};}
+{const dm0=dreamMenu;dreamMenu=async function(){if(S&&S.age<7){toast('ยังเด็กเกินไปที่จะคิดเรื่องความฝัน รอโตอีกนิด','ความฝัน','');return;}return dm0.apply(this,arguments);};}
+/* the character card's dream line is a button */
+{const cc2=charCard;charCard=function(pf,tr,lk,dr,s){const r=cc2.apply(this,arguments);try{const el=$(dr);if(el&&s&&s===S&&s.age>=7){el.style.cursor='pointer';el.title='กดเพื่อเลือกหรือเปลี่ยนความฝัน';el.onclick=()=>dreamMenu();if(!s.dream)el.textContent='ความฝัน: ยังไม่ได้เลือก · กดที่นี่เพื่อเลือกเส้นทางในอนาคต';}}catch(e){}return r;};}
+/* a path for every dream that has none: four steps by age, themed by what the dream is about */
+const DFOCUS=[[/แข็งแกร่ง|ต่อสู้|ชนะ|นักรบ|ตำนาน|กัปตัน|อัศวิน|นินจา|ซามูไร|ฮันเตอร์|ราชา|จักรพรรดิ|คาเงะ|โจนิน|กองทัพ|ทหาร|ยมทูต/,'fight'],[/รวย|ค้า|ร้าน|ธุรกิจ|เศรษฐี|เงิน/,'trade'],
+  [/รัก|ครอบครัว|แต่งงาน|ลูก|หลาน/,'love'],[/เรียน|ความรู้|นักวิจัย|ไข|ความลับ|นักวิทยาศาสตร์|ประวัติศาสตร์|หนังสือ/,'iq'],[/ศิลป|วาด|ดนตรี|นักร้อง|นักเขียน|การ์ตูน|นางแบบ|นายแบบ|ไอดอล/,'art'],
+  [/หมอ|รักษา|แพทย์/,'medic'],[/เดินทาง|ทะเล|โลก|สำรวจ/,'travel'],[/ตัวร้าย|ครอง|มืด|ปีศาจ|ฆ่า|โจร/,'dark']];
+const dFocus=d=>{const s=(d.n||'')+(d.p||'');for(const [re,k] of DFOCUS)if(re.test(s))return k;return 'fame';};
+const DSTEPX={
+  fight:[['เด็กข้างบ้านท้าคุณวิ่งแข่งรอบหมู่บ้าน คุณรู้ว่านี่คือก้าวแรกของการเป็นคนแข็งแกร่ง','ฝึกร่างกายทุกเช้าจากวันนี้'],['ผู้ฝึกสอนฝีมือดีเปิดรับศิษย์ คุณยืนต่อแถวกับเด็กโตกว่าหลายคน','ขอเป็นศิษย์'],['การแข่งขันใหญ่เปิดรับสมัคร คนที่ชนะจะมีชื่อเสียงไปทั่ว','ลงแข่ง'],['ชื่อของคุณเริ่มถูกพูดถึง คู่ต่อสู้ตัวจริงมาท้าถึงหน้าบ้าน','รับคำท้า']],
+  trade:[['คุณเห็นว่าขนมที่ตลาดหนึ่งถูกกว่าอีกตลาดครึ่งหนึ่ง','ลองซื้อมาขายต่อ'],['พ่อค้าแก่ข้างตลาดกำลังหาเด็กฝึกงาน','ขอทำงานกับเขา'],['มีห้องแถวว่างหัวมุมถนน ทำเลดีมาก','เปิดร้านของตัวเอง'],['พ่อค้ารายใหญ่เสนอร่วมหุ้นขยายกิจการ','ขยายกิจการ']],
+  love:[['คุณเห็นพ่อแม่จับมือกันตอนดูพระอาทิตย์ตก แล้วคิดว่าอยากมีแบบนั้นบ้าง','จำภาพนั้นไว้ในใจ'],['งานเทศกาลปีนี้คึกคัก คนหนุ่มสาวมาเที่ยวกันเยอะ','ชวนคนที่แอบชอบไปเดินงาน'],['คนรักของคุณยิ้มให้คุณทุกเช้า','พูดเรื่องอนาคตด้วยกัน'],['บ้านเริ่มคับแคบเพราะมีคนรักและเสียงเด็ก','ทำให้บ้านเป็นที่ที่ทุกคนอยากกลับ']],
+  iq:[['คุณเจอหนังสือเก่าเล่มหนึ่งในกองของเหลือใช้','อ่านจนจบในคืนเดียว'],['ครูบอกว่าคุณถามคำถามที่ไม่มีใครเคยถาม','ขอให้ครูสอนพิเศษ'],['ห้องสมุดใหญ่ในเมืองหลวงเปิดรับผู้ช่วย','ไปสมัคร'],['งานวิจัยของคุณพร้อมจะเปิดเผยต่อทุกคน','นำเสนอต่อหน้าคนทั้งเมือง']],
+  art:[['คุณวาดรูปบนพื้นดินด้วยกิ่งไม้จนคนเดินผ่านหยุดดู','วาดต่อทุกวัน'],['ศิลปินเร่ร่อนเห็นผลงานของคุณ','ขอให้เขาสอน'],['มีงานแสดงผลงานในเมือง','ส่งผลงานเข้าร่วม'],['ผลงานของคุณมีคนขอซื้อ','สร้างผลงานชิ้นเอก']],
+  medic:[['คุณช่วยห่อแผลให้เพื่อนที่หกล้มได้เรียบร้อยกว่าผู้ใหญ่','ขอยืมตำราสมุนไพรของหมอ'],['หมอในเมืองต้องการผู้ช่วย','ไปเป็นผู้ช่วยหมอ'],['โรคระบาดเล็กๆ เกิดขึ้นในหมู่บ้าน','อาสาดูแลคนป่วย'],['ผู้คนเรียกคุณว่าหมอแล้ว','เปิดที่รักษาของตัวเอง']],
+  travel:[['คุณยืนมองถนนที่ทอดออกไปนอกเมือง ไม่รู้ว่ามันไปสิ้นสุดที่ไหน','เดินตามถนนไปให้ไกลที่สุดในวันเดียว'],['คาราวานพ่อค้าหาคนช่วยงานระหว่างทาง','ขอติดไปด้วย'],['มีคนเล่าถึงดินแดนที่ไม่มีใครกลับมาเล่าซ้ำ','ออกเดินทางไปที่นั่น'],['แผนที่ของคุณเกือบเต็มแล้ว เหลืออีกที่เดียว','ไปให้ถึงที่สุดท้าย']],
+  dark:[['เด็กเกเรในซอยยกย่องคุณเพราะคุณไม่กลัวใคร','ยอมรับตำแหน่งหัวโจก'],['คนแปลกหน้าเสนองานที่ได้เงินดีแต่ผิดกฎหมาย','รับงาน'],['คนในเงามืดเริ่มเรียกคุณว่า "นาย"','ขยายอิทธิพล'],['ทั้งเมืองรู้ชื่อคุณ แต่ไม่มีใครกล้าพูดออกมา','ก้าวขึ้นเป็นผู้ที่ทุกคนกลัว']],
+  fame:[['คุณช่วยงานส่วนรวมของหมู่บ้านจนผู้ใหญ่ชม','อาสาทำงานที่ไม่มีใครอยากทำ'],['มีปัญหาใหญ่ที่ไม่มีใครแก้ได้ในเมือง','ลองแก้ปัญหานั้นด้วยตัวเอง'],['คนเริ่มมาขอความช่วยเหลือจากคุณ','รับฟังและช่วยทุกคน'],['ชื่อของคุณถูกพูดถึงไปไกลกว่าที่คิด','ใช้ชื่อเสียงทำสิ่งที่ยิ่งใหญ่กว่าเดิม']],
+};
+const DSTEPF={fight:S=>{st('fit',3);skill('fight',4);return chance(.55+fitb(250));},trade:S=>{skill('trade',4);const ok=chance(.5+(S.sk?.trade||0)/200);mon(ok?R(8,25):-R(3,8));return ok;},
+  love:S=>{skill('charm',3);st('joy',4);return S.age<17||!!S.partner||chance(.5);},iq:S=>{st('iq',3);return chance(.45+(S.st.iq||0)/200);},art:S=>{skill('art',5);return chance(.45+(S.sk?.art||0)/200);},
+  medic:S=>{skill('medic',5);return chance(.45+(S.sk?.medic||0)/200);},travel:S=>{S.flags.trips=(S.flags.trips||0)+1;st('joy',4);return true;},dark:S=>{dk(6);heat(6);return chance(.6);},fame:S=>{fm(4);return chance(.6);}};
+for(const L of Object.values(DREAMS)){if(!Array.isArray(L))continue;for(const d of L){if(DPATH[d.id])continue;const k=dFocus(d),X=DSTEPX[k];
+  DPATH[d.id]=X.map(([x,y],i)=>ST(S=>S.age>=[8,13,18,24][i],x,y,k==='dark'?'dark brave':'brave curious',S=>{const ok=DSTEPF[k](S);say(ok?'คุณก้าวเข้าใกล้ความฝันไปอีกขั้น':'ครั้งนี้ยังไม่สำเร็จ แต่ทางยังไม่ปิด','plain');return ok;}));}}
+
 /* ===== setup ===== */
 const cfg={world:'aot',sex:'m',year:835,place:'shiganshina',vil:'konoha',name:'',edited:false,traits:null,look:null,dream:null};
 function rollChar(){cfg.traits=rollTraits();cfg.look=rollLook(cfg.world,cfg.place);cfg.dream=pick(DREAMS[cfg.world]).id;}
