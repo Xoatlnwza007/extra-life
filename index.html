@@ -14657,7 +14657,7 @@ const tierPick=(L,E,intent)=>{const pool=intent==='heavy'?L.slice(-2):L;let m=pi
 /* --- t_doc66.js --- */
 /* ===== v66 doctor visits have a reason: the routine only goes to the doctor when you are actually unwell,
    and every visit first says what is wrong ===== */
-const docReason=()=>{if(!S)return null;const inj=S.flags?.inj;if(inj)return`${inj.k?`แผล${inj.k}`:'แผลจากการบาดเจ็บ'}ยังไม่หาย เจ็บทุกครั้งที่ขยับ`;
+const docReason=()=>{if(!S)return null;const inj=S.flags?.inj;if(inj){const k=String(inj.k||'จากการบาดเจ็บ');return`${/^(แผล|บาดเจ็บ)/.test(k)?k:'แผล'+k}ยังไม่หาย เจ็บทุกครั้งที่ขยับ`;}
   if(S.flags?.cold)return pick(['คุณเป็นหวัด จามทั้งวัน น้ำมูกไหลไม่หยุด','คุณไอหนักจนนอนไม่หลับมาสามคืน']);
   if(S.st.hp<35)return pick(['คุณไข้ขึ้นสูงตั้งแต่เมื่อคืน ตัวร้อนจนพูดไม่รู้เรื่อง','คุณปวดท้องจนลุกไม่ขึ้น กินอะไรก็อาเจียนออกมา','คุณหน้าซีด เวียนหัวจนเกือบเป็นลมกลางบ้าน']);
   if(S.st.hp<50)return pick(['คุณรู้สึกครั่นเนื้อครั่นตัว ไข้ต่ำๆ มาหลายวัน','คุณเหนื่อยง่ายผิดปกติ ไอเล็กน้อยทั้งสัปดาห์','ผื่นแดงขึ้นตามแขน คันจนเกาเป็นแผล']);return null;};
@@ -14736,6 +14736,34 @@ Object.assign(VNEW,{
 });
 Object.assign(VTITLE,{arena:'สนามประลอง',ruins:'ซากโบราณ'});
 VOUT.push('arena','ruins');
+
+
+/* --- w_fate70.js --- */
+/* ===== v70 fate after a lost fight: when losing would kill you, the outcome is rolled — a main character who is really
+   around (lore location) steps in, the winner spares you for a reason, you survive some other way, or you die ===== */
+let LOSTTO=null;
+{const bt9=battle;battle=function(E,o){const p=bt9.apply(this,arguments);try{p.then(r=>{if(r&&r.r==='lose')LOSTTO={E,t:Date.now()};});}catch(e){}return p;};}
+const HEROES={aot:['levi','mikasa','erwin','hange','eren','jean'],naruto:['kakashi','gai','naruto','jiraiya','tsunade','iruka','gaara','killerb','sasuke'],op:['luffy','zoro','sanji','shanks','ace','garp','koby','smoker'],
+  bleach:['ichigo','rukia','renji','byakuya','kenpachi','urahara','yoruichi','toshiro','chad','uryu'],jjk:['gojo','itadori','megumi','nanami','todo','maki','yuta','nobara'],jojo:['jotaro','josuke','okuyasu','koichi','giorno','bucciarati','polnareff','joseph','avdol'],
+  heian:['michinaga'],jjedo:[],db:['goku','krillin','piccolo','gohan','vegeta','tien','yamcha','roshi','trunks'],lookism:['vasco','zack','jay','hyungseok','gun','goo','jake','eli','gapryong','taesoo'],
+  bc:['asta','yuno','noelle','yami','luck','magna','mereoleona','fuegoleon','william','julius']};
+const HEROACT={levi:'ลอยลงมาจากหลังคาแล้วฟันขาดในพริบตาเดียว',mikasa:'พุ่งเข้ามาด้วยเครื่องเคลื่อนย้ายสามมิติ',kakashi:'ปรากฏตัวพร้อมเสียงจิโดริ "ขอโทษที่มาช้า หลงทางในเส้นทางแห่งชีวิตน่ะ"',gai:'เตะลอยมาจากไหนไม่รู้ "พลังแห่งวัยหนุ่มสาว!"',
+  naruto:'ร่างแยกนับสิบโผล่มาล้อมศัตรูไว้',jiraiya:'คางคกยักษ์ตกลงมาทับศัตรูทั้งตัว',luffy:'แขนยางยืดพุ่งมาชกศัตรูกระเด็นไปไกล',zoro:'ฟันดาบสามเล่มตัดผ่านศัตรูโดยไม่หันมามอง',sanji:'เตะศัตรูกระเด็นแล้วจุดบุหรี่ต่อ',
+  shanks:'แค่ปล่อยฮาคิราชันย์ ศัตรูก็หมดสติล้มลง',ichigo:'ฟันศัตรูขาดด้วยดาบใหญ่ "ไม่เป็นไรใช่ไหม"',kenpachi:'หัวเราะลั่นแล้วฟันศัตรูทิ้งเพราะอยากสู้ต่อเอง',gojo:'ยืนอยู่ข้างคุณตั้งแต่เมื่อไหร่ไม่รู้ ศัตรูหายไปในพริบตา',
+  itadori:'ต่อยศัตรูกระเด็นแล้วยื่นมือมาดึงคุณขึ้น',jotaro:'"โอระโอระโอระ!" ศัตรูปลิวหายไปกับกำแพง',josuke:'ซ่อมแผลของคุณให้หายในพริบตา',goku:'ปรากฏตัวด้วยชุนคันอิโด "ไหวไหม!"',piccolo:'ลำแสงทะลุศัตรูตกลงมาจากฟ้า',
+  vasco:'ต่อยศัตรูล้มทั้งยืน "อย่ารังแกคนอ่อนแอ!"',gun:'ปัดศัตรูออกเหมือนปัดแมลง แล้วเดินจากไปเฉยๆ',asta:'ดาบดำยักษ์ฟันเวทของศัตรูขาด "ฉันไม่ยอมให้ใครตายต่อหน้าหรอก!"',yami:'ฟันพระจันทร์มืดผ่าศัตรูขาดสองท่อน'};
+const SPARE=[['อีกฝ่ายมองคุณนิ่งๆ แล้วเก็บอาวุธ "ไม่คุ้มที่จะฆ่า"','spare'],['เสียงเด็กร้องไห้ดังมาจากข้างหลังคุณ อีกฝ่ายลังเลแล้วถอยไป','spare'],['ยามรักษาการณ์วิ่งมาพอดี ศัตรูหนีไปก่อนจะลงมือ','spare'],
+  ['อีกฝ่ายรีบไปทำเรื่องที่สำคัญกว่า ปล่อยคุณนอนอยู่ตรงนั้น','spare'],['คุณขอชีวิตจนอีกฝ่ายหัวเราะ แล้วปล่อยไปเพื่อให้คุณเล่าเรื่องความแข็งแกร่งของมันต่อ','spare'],['อีกฝ่ายจำคุณได้ว่าเคยช่วยครอบครัวเขาไว้','spare']];
+const ESCAPE=['คุณแกล้งตายจนอีกฝ่ายเดินจากไป','คุณกลิ้งตกลงไปในแม่น้ำ กระแสน้ำพาคุณไปไกลจนพ้น','ชาวบ้านมาเจอคุณหมดสติข้างทาง แล้วพาไปรักษา','คุณคลานหนีเข้าไปในซอกแคบที่อีกฝ่ายตามไม่ได้','ฝนตกหนักจนอีกฝ่ายมองไม่เห็นคุณ'];
+function loseFate(cause){const L=LOSTTO;if(!L||Date.now()-L.t>8000||!S||!S.alive)return false;LOSTTO=null;const E=L.E||{},monster=!!(E.curse||E.titan||E.beast||E.mask);
+  let heroes=[];try{heroes=(HEROES[W.id]||[]).filter(id=>CAST[W.id][id]&&castHere(id)&&!(E.id===id));}catch(e){}
+  const r=rnd();const pRes=heroes.length?.32:0,pSpare=monster?0:.26,pEsc=.2;
+  const wound=()=>{st('hp',-R(10,18));S.st.hp=Math.max(5,S.st.hp);trauma(8);S.flags.inj={k:'บาดเจ็บสาหัสจากการต่อสู้',m:R(2,4)};};
+  if(r<pRes){const id=pick(heroes),n=CAST[W.id][id];wound();bond(id,15);fm(3);say(`${n} ${HEROACT[id]||'โผล่มาขวางไว้ทันเวลา'}`,'good');remember(`${n} ช่วยชีวิตคุณ`,`ตอนที่คุณแพ้${E.n||'ศัตรู'}`,'help',3);return true;}
+  if(r<pRes+pSpare){const [x]=pick(SPARE);wound();say(`${E.n||'อีกฝ่าย'}: ${x}`,'bad');remember('รอดมาได้อย่างหวุดหวิด',x,'grief',2);return true;}
+  if(r<pRes+pSpare+pEsc){wound();say(pick(ESCAPE),'bad');remember('หนีรอดจากความตาย','','flee',2);return true;}
+  return false;}
+{const lv9=live;live=function(p,cause){if(LOSTTO&&Date.now()-LOSTTO.t<8000&&S&&S.alive){const pp=Math.min(.99,Math.max(.01,p+(typeof TECH!=='undefined'&&TECH?TECH.live:0)));if(chance(pp))return true;if(loseFate(cause))return true;die(cause);return false;}return lv9.apply(this,arguments);};}
 
 /* ===== setup ===== */
 const cfg={world:'aot',sex:'m',year:835,place:'shiganshina',vil:'konoha',name:'',edited:false,traits:null,look:null,dream:null};
