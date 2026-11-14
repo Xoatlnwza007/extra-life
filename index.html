@@ -14700,6 +14700,14 @@ const DSTEPF={fight:S=>{st('fit',3);skill('fight',4);return chance(.55+fitb(250)
   medic:S=>{skill('medic',5);return chance(.45+(S.sk?.medic||0)/200);},travel:S=>{S.flags.trips=(S.flags.trips||0)+1;st('joy',4);return true;},dark:S=>{dk(6);heat(6);return chance(.6);},fame:S=>{fm(4);return chance(.6);}};
 for(const L of Object.values(DREAMS)){if(!Array.isArray(L))continue;for(const d of L){if(DPATH[d.id])continue;const k=dFocus(d),X=DSTEPX[k];
   DPATH[d.id]=X.map(([x,y],i)=>ST(S=>S.age>=[8,13,18,24][i],x,y,k==='dark'?'dark brave':'brave curious',S=>{const ok=DSTEPF[k](S);say(ok?'คุณก้าวเข้าใกล้ความฝันไปอีกขั้น':'ครั้งนี้ยังไม่สำเร็จ แต่ทางยังไม่ปิด','plain');return ok;}));}}
+/* ---- the dream is chosen from a ความฝัน button in the action bar (no event needed), usable from age 7, changeable any time ---- */
+DREAMASK.when=()=>false;
+try{const hb=document.getElementById('dreamBtn');if(hb)hb.remove();}catch(e){}
+if(typeof WACTS!=='undefined'&&!WACTS.some(a=>a[0]==='dreamActBtn'))WACTS.splice(0,0,['dreamActBtn','ความฝัน',()=>dreamMenu()]);
+if(typeof ACTICO!=='undefined')ACTICO.push([/^ความฝัน/,'💭']);
+{const rdD=render;render=function(){const r=rdD.apply(this,arguments);try{const b=document.querySelector('#acts [data-w="dreamActBtn"]');if(b&&S){const ok=S.alive&&S.age>=7;b.disabled=!ok;
+  const cur=(DREAMS[W.id]||[]).find(d=>d.id===S.dream);const lab=ok?(cur?`ความฝัน: ${cur.n.length>14?cur.n.slice(0,13)+'…':cur.n}`:'ความฝัน · เลือกเส้นทาง'):'ความฝัน · อายุ 7 ปีขึ้นไป';
+  const sp=b.querySelector('span');if(sp)sp.textContent=lab;else if(!b.dataset.lab||b.dataset.lab!==lab){b.dataset.lab=lab;const ic=b.textContent.match(/^\S+\s/);b.textContent=(ic&&/💭/.test(ic[0])?'💭 ':'')+lab;}b.title=cur?`ความฝันตอนนี้: ${cur.n} · กดเพื่อเปลี่ยน`:'เลือกความฝัน/เส้นทางในอนาคต';}}catch(e){}return r;};}
 
 /* ===== setup ===== */
 const cfg={world:'aot',sex:'m',year:835,place:'shiganshina',vil:'konoha',name:'',edited:false,traits:null,look:null,dream:null};
