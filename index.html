@@ -8999,7 +8999,7 @@ function battle(E,o={}){return new Promise(done=>{try{if(typeof document==='unde
     const exE=Math.round((1-it)*110),exM=-Math.round((1-it)*110);const gone=endFx&&endFx.r==='win'&&now-endFx.t0>350;
     if(!gone&&!(now<flashE&&(now/80|0)%2)){c.save();if(endFx&&endFx.r==='win')c.globalAlpha=Math.max(0,1-(now-endFx.t0)/350);
       if(E.titan)titanBody(px,186+shE+exE,96,96,E.n==='ไททัน'?{}:TLOOK.attack);else if(E.biju&&typeof bijuBody==='function')bijuBody(px,180+shE+exE,96,70,E.biju,t);else if(E.curse||E.beast)curseBlob(px,178+shE+exE,93,30+bob,t,E.beast?(E.bcol||'#5a7a3a'):E.mask?'#e8e8e8':'#4a3a5a');
-      else chibi(p2,Math.round((178+shE+exE-(now<edash?Math.round(Math.sin((1-(edash-now)/450)*3.1416)*80):0))/2),46,{...(E.spec||{}),dir:-1,pose:'arm',md:'angry'});c.restore();}
+      else{const ex=Math.round((178+shE+exE-(now<edash?Math.round(Math.sin((1-(edash-now)/450)*3.1416)*80):0))/2);const ep=(typeof enPoseNow==='function')?enPoseNow(now,edash):'arm';chibi(p2,ex,46-(ep==='idle'?Math.round(Math.abs(Math.sin(now/400))):0),{...(E.spec||{}),dir:-1,pose:ep==='idle'?'':ep,md:'angry'});if(typeof enLimb==='function')enLimb(p2,ex,46,now,edash);}c.restore();}
     if(charge||combo>=5)aura(64,86,30,combo>=5?'254,231,97':'139,211,255',.45+.15*Math.sin(t/120));
     if(o.ally){const ax=now<adash?Math.round(Math.sin((1-(adash-now)/450)*3.1416)*100):0;chibi(p2,Math.round((30+exM+ax)/2),55,{...(o.ally.spec||{}),dir:1,pose:'arm',md:'angry'});}
     const dx=now<dash?Math.round(Math.sin((1-(dash-now)/450)*3.1416)*80):0;
@@ -11010,7 +11010,7 @@ Object.assign(CASTANIM,{kitae:'lkm_str',jichang:'lk_combo',jinrang:'lkm_spd',gon
 /* ===================== LOOKISM fights are fists, feet and martial arts: attacks dash in and land as impacts (flash, shock lines,
    Korean SFX), never beams. A few sword masters (Goo Kim, Lee Bangho, Musashi) are the exception. Also: heights from the lore for
    every world, the Yamazaki unconscious state (Black Eyes) with control training, and the regional kings you can learn from or overthrow ===================== */
-const BTMELEE=()=>!!(W&&W.id==='lookism');
+const BTMELEE=()=>!!(W&&W.id==='lookism')||(typeof CURMVP!=='undefined'&&CURMVP);
 const LKT={x:166,y:30};
 const lkHit=(px,x,y,r,col,a=1)=>{const n=10;for(let i=0;i<n;i++){const an=i/n*6.283,l=r*(.6+((i*7)%5)/8);for(let s=0;s<l;s+=1.5)px(x+Math.cos(an)*(r*.35+s),y+Math.sin(an)*(r*.35+s)*.8,1.5,1.5,col.replace('A',(a*(1-s/l)).toFixed(2)));}disc(px,x,y,Math.max(1,Math.round(r*.35)),`rgba(255,255,255,${(.9*a).toFixed(2)})`);};
 const lkFist=(px,x,y,skin)=>{px(x-3,y-2,6,5,skin||'#e8b796');px(x-3,y-2,6,1,'rgba(0,0,0,.35)');px(x+3,y-1,1,3,'rgba(0,0,0,.35)');};
@@ -14764,6 +14764,22 @@ function loseFate(cause){const L=LOSTTO;if(!L||Date.now()-L.t>8000||!S||!S.alive
   if(r<pRes+pSpare+pEsc){wound();say(pick(ESCAPE),'bad');remember('หนีรอดจากความตาย','','flee',2);return true;}
   return false;}
 {const lv9=live;live=function(p,cause){if(LOSTTO&&Date.now()-LOSTTO.t<8000&&S&&S.alive){const pp=Math.min(.99,Math.max(.01,p+(typeof TECH!=='undefined'&&TECH?TECH.live:0)));if(chance(pp))return true;if(loseFate(cause))return true;die(cause);return false;}return lv9.apply(this,arguments);};}
+
+
+/* --- x_melee71.js --- */
+/* ===== v71 melee you can see: fists, kicks, blades, sticks, grabs and throws make the foe dash in and act out the move ===== */
+var CURMVP=false;let CURMV=null,CURMVT=0;
+const MVTYPE=n=>/เตะ|ถีบ|เข่า/.test(n)?'kick':/ล็อก|ทุ่ม|รัด|คว้า|ปล้ำ|กอด/.test(n)?'grab':/ขว้าง|ปา|โยน/.test(n)?'throw':/มีด|ดาบ|ฟัน|แทง|เฉือน|ใบมีด|ทวน|คุไน/.test(n)?'blade':/ไม้|กระบอง|ฟาด|เบสบอล|พลอง|ไม้กวาด/.test(n)?'stick':/ต่อย|หมัด|ศอก|ชก|ตบ|กำปั้น|รุม/.test(n)?'punch':null;
+{const emv=enMove;enMove=function(E,intent){const r=emv.apply(this,arguments);try{const ty=MVTYPE(r.n);CURMV=ty?{ty,n:r.n}:null;CURMVT=performance.now();CURMVP=!!ty&&!E.titan&&!E.curse;setTimeout(()=>{CURMVP=false;},0);}catch(e){}return r;};}
+function enPoseNow(now,edash){if(now<edash&&CURMV)return CURMV.ty==='kick'?'':CURMV.ty==='grab'?'hold':'arm';if(CURMV&&now-CURMVT<1500&&now>=edash&&edash>0&&now-edash<250)return 'arm';return 'idle';}
+function enLimb(px,x,gy,now,edash){try{if(!CURMV||now>=edash)return;const k=1-(edash-now)/450,ty=CURMV.ty;
+  if(ty==='kick'){px(x-9,gy-10,8,2,'#3a3a44');px(x-11,gy-11,3,3,'#262b44');if(k>.4&&k<.8)for(let i=0;i<3;i++)px(x-14-i*2,gy-12+i*2,1,1,'#f0ece0');}
+  else if(ty==='punch'){px(x-11,gy-18,3,3,'#e8b796');px(x-12,gy-18,1,3,'#181425');if(k>.4&&k<.8){px(x-15,gy-19,2,1,'#f0ece0');px(x-15,gy-16,2,1,'#f0ece0');}}
+  else if(ty==='blade'){px(x-14,gy-19,9,1,'#c0cbdc');px(x-6,gy-19,2,2,'#5a3e2a');if(k>.3&&k<.85)for(let a=0;a<6;a++)px(x-12-Math.cos(a/5*1.6)*8,gy-24+a*2,1,1,'rgba(240,240,255,.85)');}
+  else if(ty==='stick'){for(let i=0;i<9;i++)px(x-6-i,gy-26+Math.round(i*(k*1.4)),2,1,'#8a5a3a');}
+  else if(ty==='grab'){const s=Math.round(Math.sin(now/40));px(x-10+s,gy-18,4,2,'#e8b796');px(x-10+s,gy-14,4,2,'#e8b796');}
+  else if(ty==='throw'){const tx=x-8-Math.round(k*70);px(tx,gy-20+Math.round(Math.sin(k*3.14)*-6),3,3,'#8b9bb4');}
+}catch(e){}}
 
 /* ===== setup ===== */
 const cfg={world:'aot',sex:'m',year:835,place:'shiganshina',vil:'konoha',name:'',edited:false,traits:null,look:null,dream:null};
