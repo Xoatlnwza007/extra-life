@@ -564,7 +564,7 @@ function castNear(S,minAge=10){
     if(W.id==='naruto'&&(m.vil||'konoha')!==vilOf(S))return false;
     return !S.flags.outlaw;});
 }
-function castLove(S){const M=W.castMeta||{};return castNear(S,17).filter(id=>bd(id)>=35&&!S.done['love_'+id]&&S.partner?.cast!==id&&Math.abs((S.year-M[id].b)-S.age)<=8);}
+function castLove(S){const M=W.castMeta||{};return castNear(S,17).filter(id=>loveOK(cSex(id),id)&&bd(id)>=35&&!S.done['love_'+id]&&S.partner?.cast!==id&&Math.abs((S.year-M[id].b)-S.age)<=8);}
 const CASTMEETS=[
   {id:'m_hang',w:5,when:S=>S.age>=10&&castNear(S).length>0,play(S){const id=pick(castNear(S)),n=CAST[W.id][id],pl=pick(W.hangV?.[vilOf(S)]||W.hangPlaces);return{text:`คุณบังเอิญเจอ ${n} ที่${pl}`,choices:[
     {l:'ชวนคุยเรื่องสัพเพเหระ',g:'kind love',f(S){bond(id,R(8,14));st('joy',3);say(`คุณกับ ${n} คุยกันนานกว่าที่คิด`,'good');}},
@@ -717,10 +717,10 @@ const GEN=[
   {id:'pet',once:1,w:1,when:S=>S.age>=6&&S.age<=60,play(S){S.pet=pick(['เจ้าด่าง','เจ้าหางงอ','เจ้าก้อนถ่าน','เจ้าขนปุย']);st('joy',7);say(`คุณรับลูกสุนัขจรมาเลี้ยง ตั้งชื่อว่า${S.pet}`,'good');}},
   {id:'petDie',once:1,w:1,when:S=>S.pet&&S.age>=20,play(S){st('joy',-8);say(`${S.pet} จากไปอย่างสงบในวัยชรา`,'bad');S.pet=null;if(S.own)S.own.items=S.own.items.filter(i=>i!=='dog');}},
   {id:'festival',w:2,when:S=>S.age>=4&&!S.flags.titan,play(S){const t=pick(W.festivals);scene('festive',JP()?['fireworks']:['lanterns'],t);st('joy',4);
-    if(!S.partner&&S.age>=17&&chance(has('romantic')?.45:.18)){S.partner={n:W.mkName(S.sex==='m'?'f':'m'),married:0,b:S.birth+R(-3,3)};say(`ใน${t} คุณได้พบกับ ${S.partner.n} และเริ่มคบหากัน`,'good');}
+    if(!S.partner&&S.age>=17&&chance(has('romantic')?.45:.18)){S.partner={sx:(_ps=pSex()),n:W.mkName(_ps),married:0,b:S.birth+R(-3,3)};say(`ใน${t} คุณได้พบกับ ${S.partner.n} และเริ่มคบหากัน`,'good');}
     else say(`คุณไปเที่ยว${t}`,'good');}},
-  {id:'crush',once:1,w:2,when:S=>S.age>=13&&S.age<=18&&!S.partner,play(S){const n=W.mkName(S.sex==='m'?'f':'m');return{text:`คุณแอบชอบ ${n} มาทั้งปี`,choices:[
-    {l:'สารภาพรัก',g:'love brave',f(S){if(chance((S.st.look+S.st.joy)/200)){S.partner={n,married:0,b:S.birth+R(-1,1)};say(`${n} ตอบตกลง`,'good');st('joy',12);}else{say(`${n} ปฏิเสธอย่างสุภาพ`,'bad');st('joy',-8);}}},
+  {id:'crush',once:1,w:2,when:S=>S.age>=13&&S.age<=18&&!S.partner,play(S){const csx=pSex(),n=W.mkName(csx);return{text:`คุณแอบชอบ ${n} มาทั้งปี`,choices:[
+    {l:'สารภาพรัก',g:'love brave',f(S){if(chance((S.st.look+S.st.joy)/200)){S.partner={n,sx:csx,married:0,b:S.birth+R(-1,1)};say(`${n} ตอบตกลง`,'good');st('joy',12);}else{say(`${n} ปฏิเสธอย่างสุภาพ`,'bad');st('joy',-8);}}},
     {l:'เก็บไว้ในใจ',g:'safe home',f(S){say('ความรู้สึกนั้นค่อยๆ จางไป');}},
   ]};}},
   {id:'hurt',w:1,when:S=>S.age>=8&&S.age<=65,play(S){st('hp',-R(5,14));say(pick(W.hurtTxt),'bad');}},
@@ -731,7 +731,7 @@ const GEN=[
     {l:'ยังไม่พร้อม',g:'safe rebel',f(S){if(chance(.4)){say(`${n} ตัดสินใจเลิกรา`,'bad');S.partner=null;st('joy',-10);}else say(`${n} บอกว่าจะรอ`);}},
   ]};}},
   {id:'kid',w:3,when:S=>S.partner?.married&&S.age>=19&&S.age<=44&&S.kids.length<30&&!S.kids.some(k=>k.y>=S.year-1),play(S){return{text:`คุณกับ ${S.partner.n} คุยกันเรื่องมีลูก`,choices:[
-    {l:'มีลูก',g:'love home kind',f(S){const k=mkKid(pick(['m','f']));S.kids.push(k);mon(-6);st('joy',10);scene('dawn',[],`${kidRel(k)} ${k.n} ลืมตาดูโลก`);say(`${kidRel(k)}ของคุณ ${k.n} ลืมตาดูโลก`,'good');remember(`${kidRel(k)} ${k.n} ลืมตาดูโลก`,S.partner?`ลูกของคุณกับ ${S.partner.n}`:'','baby',3);if(S.partner?.cast){fm(5);say(`${k.n} มีสายเลือดของ ${S.partner.n} อยู่ในตัว คนทั้งเมืองแห่มาดูหน้าเด็ก`,'good');}}},
+    {l:'มีลูก',g:'love home kind',f(S){const k=mkKid(pick(['m','f']));S.kids.push(k);mon(-6);st('joy',10);scene('dawn',[],`${kidRel(k)} ${k.n} ลืมตาดูโลก`);say(kidLine(k),'good');remember(`${kidRel(k)} ${k.n} ลืมตาดูโลก`,S.partner?`ลูกของคุณกับ ${S.partner.n}`:'','baby',3);if(S.partner?.cast){fm(5);say(`${k.n} มีสายเลือดของ ${S.partner.n} อยู่ในตัว คนทั้งเมืองแห่มาดูหน้าเด็ก`,'good');}}},
     {l:'รอไปก่อน',g:'safe curious',f(){say('คุณตกลงกันว่าจะรอให้ชีวิตลงตัวกว่านี้');}},
   ]};}},
   {id:'kidSick',w:1,when:S=>S.kids.some(k=>k.alive&&S.year-k.y<6),play(S){const k=S.kids.find(k=>k.alive&&S.year-k.y<6);return{text:`${kidRel(k)} ${k.n} ไข้ขึ้นสูงไม่ลด`,choices:[
@@ -995,7 +995,7 @@ const FOLLOW={
   ]};},
   letter2(S){const k=R(0,3);
     if(k===0&&!S.partner)return{t:'จดหมายปริศนา',text:'ใต้สะพาน คนที่รออยู่คือคนที่คุณเห็นหน้าทุกวันในตลาด เขาบอกว่าแอบชอบคุณมานานแล้ว',choices:[
-      {l:'ลองคบกันดู',g:'love',f(S){S.partner={n:W.mkName(S.sex==='m'?'f':'m'),married:0,b:S.birth+R(-3,3),love:55};st('joy',10);liveAct('heart');say(`คุณเริ่มคบกับ ${S.partner.n}`,'good');}},
+      {l:'ลองคบกันดู',g:'love',f(S){S.partner={sx:(_ps=pSex()),n:W.mkName(_ps),married:0,b:S.birth+R(-3,3),love:55};st('joy',10);liveAct('heart');say(`คุณเริ่มคบกับ ${S.partner.n}`,'good');}},
       {l:'ปฏิเสธอย่างนุ่มนวล',g:'safe kind',f(){say('ทั้งคู่เดินกลับบ้านคนละทาง');}},
     ]};
     if(k===1)return{t:'จดหมายปริศนา',text:'คนที่รออยู่ใต้สะพานเป็นชายแก่ เขาบอกว่าเป็นญาติของปู่ และอยากมอบของสิ่งหนึ่งให้ก่อนตาย',then(S){const g=R(15,40);mon(g);st('joy',5);say(`เขายื่นกล่องไม้เก่าๆ ให้ ข้างในมีเงิน ${fmt(g)} กับรูปถ่ายครอบครัวที่คุณไม่เคยเห็น`,'good');}};
@@ -1902,7 +1902,7 @@ const NARUTO={
     {id:'summit',at:()=>R(86,95),t:'สนธิสัญญาห้าแคว้นฉบับใหม่',play(S){side(this.t,'ห้าคาเงะลงนามสนธิสัญญาฉบับใหม่ ภารกิจระดับ S ลดลงเหลือแทบศูนย์');st('joy',2);}},
     {id:'cent',at:()=>100,t:'ครบรอบ 100 ปีโคโนฮะ',play(S){scene('festive',['fireworks','lanterns'],'เทศกาลครบรอบ 100 ปีโคโนฮะ');
       return{text:'หมู่บ้านใบไม้มีอายุครบหนึ่งร้อยปี ทั้งหมู่บ้านประดับโคมไฟ และจะจุดดอกไม้ไฟเหนือหน้าผาโฮคาเงะตลอดคืน',choices:[
-        {l:'ไปเที่ยวงานทั้งคืน',g:'love curious',f(S){st('joy',8);if(!S.partner&&S.age>=17&&chance(.4)){S.partner={n:W.mkName(S.sex==='m'?'f':'m'),married:0,b:S.birth+R(-3,3)};say(`ใต้ดอกไม้ไฟ คุณได้พบกับ ${S.partner.n}`,'good');}else say('ดอกไม้ไฟรูปใบไม้บานกลางฟ้า คนทั้งหมู่บ้านปรบมือ','good');}},
+        {l:'ไปเที่ยวงานทั้งคืน',g:'love curious',f(S){st('joy',8);if(!S.partner&&S.age>=17&&chance(.4)){S.partner={sx:(_ps=pSex()),n:W.mkName(_ps),married:0,b:S.birth+R(-3,3)};say(`ใต้ดอกไม้ไฟ คุณได้พบกับ ${S.partner.n}`,'good');}else say('ดอกไม้ไฟรูปใบไม้บานกลางฟ้า คนทั้งหมู่บ้านปรบมือ','good');}},
         {l:'ดูจากหลังคาบ้าน',g:'home',f(S){st('joy',4);say('คุณนั่งดูดอกไม้ไฟกับครอบครัวบนหลังคา');}},
       ]};
     }},
@@ -2754,7 +2754,7 @@ const ACTS=[
 const minOf=a=>typeof a.min==='function'?a.min():a.min;
 function actOpts(cat){return(W.acts[cat]||[]).filter(o=>localOK({play:o.l+' '+[].concat(o.txt||'').join(' ')})&&S.age>=(o.min||0)&&(!o.when||o.when(S))&&(cat!=='date'||(o.find?!S.partner:!!S.partner)));}
 function findPartner(bonus){
-  if(chance((S.st.look+S.st.joy+(S.sk?.charm||0))/260+bonus)){S.partner={n:W.mkName(S.sex==='m'?'f':'m'),married:0,b:S.birth+R(-3,3),love:45};st('joy',8);say(`คุณได้พบกับ ${S.partner.n} และเริ่มคบหากัน`,'good');liveAct('heart');}
+  if(chance((S.st.look+S.st.joy+(S.sk?.charm||0))/260+bonus)){S.partner={sx:(_ps=pSex()),n:W.mkName(_ps),married:0,b:S.birth+R(-3,3),love:45};st('joy',8);say(`คุณได้พบกับ ${S.partner.n} และเริ่มคบหากัน`,'good');liveAct('heart');}
   else{st('joy',-3);say(pick(['ทั้งคืนไม่มีใครเข้ามาคุยด้วย','คนที่คุณแอบชอบมีคนรักอยู่แล้ว','นัดเจอกันแล้ว แต่อีกฝ่ายไม่มา']),'bad');}
 }
 const CATANIM={learn:'book',train:'run',date:'heart',fun:'note'};
@@ -3066,7 +3066,7 @@ function paintSet(w,h,moods,fx,y,rows=72){
   const c=off.getContext('2d');c.scale(lw/w,lh/h);
   const dark=['night','fire','festive','red'].includes(mood);
   const sil=a=>dark?`rgba(5,7,12,${a})`:`rgba(18,24,21,${a})`;
-  const g=c.createLinearGradient(0,0,0,h);g.addColorStop(0,SKY[mood][0]);g.addColorStop(1,SKY[mood][1]);c.fillStyle=g;c.fillRect(0,0,w,h);
+  const g=c.createLinearGradient(0,0,0,h);g.addColorStop(0,(SKY[mood]||SKY.day)[0]);g.addColorStop(1,(SKY[mood]||SKY.day)[1]);c.fillStyle=g;c.fillRect(0,0,w,h);
   const rr=rng(hash(y));
   if(dark&&mood!=='fire'){c.fillStyle='#ffffff';for(let i=0;i<34;i++){c.fillRect(Math.floor(rr()*lw)*u,Math.floor(rr()*lh*.5)*u,u,u);}}
   if(fx.includes('redmoon')){c.fillStyle='#c4141c';c.beginPath();c.arc(w*.72,h*.32,h*.2,0,7);c.fill();c.strokeStyle='rgba(30,0,0,.75)';c.lineWidth=2;for(const k of [.55,.85])c.beginPath(),c.arc(w*.72,h*.32,h*.2*k,0,7),c.stroke();c.fillStyle='rgba(30,0,0,.8)';for(let i=0;i<9;i++){const a=i/9*Math.PI*2;c.beginPath();c.arc(w*.72+Math.cos(a)*h*.14,h*.32+Math.sin(a)*h*.14,2.4,0,7);c.fill();}}
@@ -3692,7 +3692,7 @@ function wantActors(){
   const hairNow=(h,age)=>age>=75?'#e8e8e6':age>=60?'#a9a9a6':h;
   const mk=(id,age,sex,hair,skin,outfit,works,ex)=>out.push({id,age,sex,hair:hairNow(hair,age),skin,out:outfit,works,...ex});
   if(S.alive&&!S.flags.titan)mk('me',S.age,S.sex,S.look.hair[1],S.look.skin,OUTFIT[S.job?.id]||(W.cloth||(W.id==='aot'?'#8b7762':'#a0705a')),!!S.job||(S.age>=6&&S.age<15),{me:1});
-  if(S.partner){const r=rr(S.partner.n),ph=pk(r,HAIRS);mk('pa',yr-(S.partner.b??S.birth),S.sex==='m'?'f':'m',W.castMeta?.[S.partner.cast]?.h||ph,pk(r,LOOKS.skin),pk(r,OUTS),r()<.6,{visit:!S.partner.married});}
+  if(S.partner){const r=rr(S.partner.n),ph=pk(r,HAIRS);mk('pa',yr-(S.partner.b??S.birth),ptnSx(),W.castMeta?.[S.partner.cast]?.h||ph,pk(r,LOOKS.skin),pk(r,OUTS),r()<.6,{visit:!S.partner.married});}
   for(const kd of S.kids)if(kd.alive&&!kd.m&&yr-kd.y<24&&yr>=kd.y){const r=rr(kd.n+kd.y),age=yr-kd.y;mk('k'+kd.n+kd.y,age,kd.sx,r()<.5?S.look.hair[1]:pk(r,HAIRS),r()<.5?S.look.skin:pk(r,LOOKS.skin),pk(r,OUTS),(age>=6&&age<18)||(age>=18&&r()<.7));}
   if(S.age<18&&!outlawNow()){
     for(const p of par()){const r=rr(p.n);mk('par'+p.role,S.age+p.off,p.role==='แม่'?'f':'m',pk(r,HAIRS),S.look.skin,pk(r,OUTS),r()<.75);}
@@ -3865,7 +3865,7 @@ let rsT=0;window.addEventListener('resize',()=>{clearTimeout(rsT);rsT=setTimeout
 const MEMK=['canon','pivot','power','story','surprise','fest','meet','mile','side'],MEMPRI={canon:3,pivot:3,power:3,story:2,surprise:2,meet:2,mile:2,side:2,fest:1};
 const POSE_BY_TAG=[['dark','dark'],['love','love'],['hero','fight'],['brave','fight'],['kind','help'],['safe','flee'],['home','home']];
 function poseOf(c,kind){const g=c?.g||'';for(const [t,p] of POSE_BY_TAG)if(g.includes(t))return p;return kind==='power'?'power':'stand';}
-function memOf(t,x,pose,pri){const pw=powersOf(S);return{y:S.year,a:S.age,mo:S.mo||0,t,x,pose,pri,place:S.place,origin:S.origin,mood:S.mood,fx:[...(S.fx||[])],look:{hair:S.look.hair[1],skin:S.look.skin},out:OUTFIT[S.job?.id]||null,sex:S.sex,pa:S.partner?{h:W.castMeta?.[S.partner.cast]?.h||'#6b4a2f',sx:S.sex==='m'?'f':'m',st:CASTSTYLE[S.partner.cast],cast:S.partner.cast}:null,pw:S.lastPw||pw[pw.length-1]||null,spec:meSpec(),biju:S.biju,shift:S.flags.shiftId,casts:castsIn(x||''),cast:castIn((x||'')+' '+(/^(เรื่อง|พบตัวละคร)/.test(t)?'':t)),summon:S.summon};}
+function memOf(t,x,pose,pri){const pw=powersOf(S);return{y:S.year,a:S.age,mo:S.mo||0,t,x,pose,pri,place:S.place,origin:S.origin,mood:S.mood,fx:[...(S.fx||[])],look:{hair:S.look.hair[1],skin:S.look.skin},out:OUTFIT[S.job?.id]||null,sex:S.sex,pa:S.partner?{h:W.castMeta?.[S.partner.cast]?.h||'#6b4a2f',sx:ptnSx(),st:CASTSTYLE[S.partner.cast],cast:S.partner.cast}:null,pw:S.lastPw||pw[pw.length-1]||null,spec:meSpec(),biju:S.biju,shift:S.flags.shiftId,casts:castsIn(x||''),cast:castIn((x||'')+' '+(/^(เรื่อง|พบตัวละคร)/.test(t)?'':t)),summon:S.summon};}
 function remember(t,x,pose,pri=2,ctx){if(!S)return;S.mem=S.mem||[];const mm=memOf(t,x,pose,pri);if(EVSC&&!['power','death','dark','titan','baby','grief','flee'].includes(pose))mm.sc=EVSC;if(ctx)mm.ctx=String(ctx).slice(0,140);S.mem.push(mm);if(S.mem.length>90){const i=S.mem.findIndex((m,i)=>i>0&&m.pri<2);S.mem.splice(i>0?i:1,1);}}
 const AURA={sharingan:'#e43b44',mangekyo:'#a22633',rinnegan:'#b8a0e0',byakugan:'#ffffff',tenseigan:'#2ce8f5',wood:'#3e8948',sage:'#f77622',sageSnake:'#b55088',jinchuriki:'#f77622',bijumode:'#feae34',rasengan:'#0099db',chidori:'#2ce8f5',gates:'#63c74d',karma:'#3a4466',ackerman:'#e43b44',titanShifter:'#ffffff',ice:'#c0cbdc',blackbolt:'#262b44',explode:'#fee761',sand:'#e4c08a',puppet:'#0099db',hydro:'#2ce8f5'};
 const EYEC={sharingan:'#e43b44',mangekyo:'#e43b44',rinnegan:'#b8a0e0',byakugan:'#ffffff',tenseigan:'#2ce8f5',sage:'#f77622'};
@@ -3995,7 +3995,7 @@ function scenePose(m){
 const INDOOR=['dream','tavern','news','sick','birth','bedDeath','school','eat'];
 /* an interior: back wall, a window onto the sky, the floor; Konoha has shoji and tatami, the walls have plaster and planks */
 function room(px,lw,lh,m,t){
-  const mod=MODERN(),nar=JP()&&!mod,fl=Math.round(lh*.8),wall=mod?'#e6e2d8':nar?'#e8d7b0':'#c9b48e',beam=mod?'#b8b4ac':nar?'#8a5a3a':'#5a3e2a',floor=mod?'#a88a68':nar?'#c9b26a':'#8a5a3a',night=['night','grief'].includes(m.mood)||m.pose==='bedDeath';
+  const mod=MODERN(),nar=JP()&&!mod,fl=Math.round(lh*.8),wall=(INDECO&&S?.deco?.wall)||(mod?'#e6e2d8':nar?'#e8d7b0':'#c9b48e'),beam=mod?'#b8b4ac':nar?'#8a5a3a':'#5a3e2a',floor=(INDECO&&S?.deco?.floor)||(mod?'#a88a68':nar?'#c9b26a':'#8a5a3a'),night=['night','grief'].includes(m.mood)||m.pose==='bedDeath';
   px(0,0,lw,fl,wall);for(let x=6;x<lw;x+=nar?16:20)px(x,0,1,fl,shade(wall,.88));
   px(0,0,lw,3,beam);px(0,fl-2,lw,2,beam);px(0,fl,lw,lh-fl,floor);if(mod)modernRoomFx(px,lw,fl,t);
   if(nar)for(let x=0;x<lw;x+=24)px(x,fl,1,lh-fl,shade(floor,.78));else for(let y=fl+3;y<lh;y+=3)px(0,y,lw,1,shade(floor,.85));
@@ -4396,7 +4396,7 @@ function pRefs(){
 }
 function pOf(ref){
   if(ref.t==='cast'){const id=ref.id,M=metaOf(id)||{b:S.year-30},age=S.year-M.b;return{ref,id,n:CAST[W.id][id],short:shortN(id),age,rel:'ตัวละครหลัก',sx:FEM.has(id)?'f':'m',alive:!killed(id)&&!(M.d&&S.year>M.d&&S.partner?.cast!==id),here:castHere(id),pow:agePow(CASTPOW[id]||50,age)};}
-  if(ref.t==='mate'){const o=S.partner;if(!o)return null;return{ref,o,n:o.n,short:o.n.split(' ')[0],age:S.year-(o.b??S.birth),rel:o.married?'คู่ชีวิต':'คนรัก',sx:S.sex==='m'?'f':'m',alive:true,here:true,mate:1,id:o.cast,pow:o.cast?agePow(CASTPOW[o.cast]||50,S.year-(o.b??S.birth)):agePow(ninjaPow(),S.year-(o.b??S.birth))};}
+  if(ref.t==='mate'){const o=S.partner;if(!o)return null;return{ref,o,n:o.n,short:o.n.split(' ')[0],age:S.year-(o.b??S.birth),rel:o.married?'คู่ชีวิต':'คนรัก',sx:ptnSx(),alive:true,here:true,mate:1,id:o.cast,pow:o.cast?agePow(CASTPOW[o.cast]||50,S.year-(o.b??S.birth)):agePow(ninjaPow(),S.year-(o.b??S.birth))};}
   const o=ref.t==='par'?S.fam[ref.r]:ref.t==='sib'?S.sibs[ref.i]:ref.t==='kid'?S.kids[ref.i]:S.npcs?.[ref.i];if(!o)return null;
   const age=ref.t==='par'?S.age+o.off:ref.t==='sib'?S.year-o.by:ref.t==='kid'?S.year-o.y:30;
   const rel=ref.t==='par'?o.role:ref.t==='sib'?sibRel(o):ref.t==='kid'?kidRel(o):o.d;
@@ -4488,7 +4488,7 @@ function pActs(p){
   if(p.ref.t==='par'&&a>=20)add(`ให้เงิน${p.rel}`,`${fmt(6)} · ความสัมพันธ์++`,'kind home',S=>{mon(-6);pAdd(p,R(6,10));st('joy',3);say(`${p.rel}รับเงินด้วยมือสั่นๆ แล้วบอกว่าภูมิใจในตัวคุณ`,'good');},S.money>=6);
   if(p.kid&&p.age>=5&&p.age<20&&a>=18)add('สอนลูก','ลูกได้ทักษะจากคุณ','kind home',S=>{p.o.tut=(p.o.tut||0)+1;pAdd(p,R(4,8));const top=Object.entries(S.sk||{}).sort((x,y)=>y[1]-x[1])[0];say(top?`คุณสอนทักษะ${W.skL[top[0]]}ให้${p.n} ลูกตั้งใจฟังทุกคำ`:`คุณสอน${p.n}อ่านเขียน`,'good');});
   /* romance */
-  const lovable=!fam&&!p.mate&&a>=15&&p.age>=15&&Math.abs(p.age-a)<=12;
+  const lovable=!fam&&!p.mate&&a>=15&&p.age>=15&&Math.abs(p.age-a)<=12&&loveOK(p.sx,p.id);
   if(lovable)add(S.partner?`แอบนัดเดท${p.short}`:`ชวน${p.short}ไปเดท`,S.partner?`นอกใจ ${S.partner.n}`:b>=25?'มีลุ้น':'ยังไม่สนิทพอ อาจโดนปฏิเสธ','love',S=>courtP(p),true,'love');
   if(p.mate){
     add('ออกเดท','ความรัก++','love',S=>{pAdd(p,R(6,10));st('joy',R(4,7));skill('charm',R(1,2));say(pick([`คุณกับ${p.short}ไปดูพระอาทิตย์ตกด้วยกัน`,`${p.short}จับมือคุณไว้ตลอดทางกลับบ้าน`,`คุณทำอาหารให้${p.short} ไหม้ไปครึ่งหนึ่งแต่${p.short}กินหมด`]),'good');liveAct('heart');});
@@ -4496,7 +4496,7 @@ function pActs(p){
       if(chance(((S.partner.love??50)-20)/60)){S.partner.married=1;mon(-10);st('joy',14);scene('festive',['lanterns'],`งานแต่งงานกับ ${p.n}`);say(`${p.short}ร้องไห้แล้วพยักหน้า คุณแต่งงานกับ${p.n}`,'good');remember(`แต่งงานกับ ${p.n}`,'คุณเป็นคนขอเอง','love',3);if(S.partner.cast){fm(15);say(`ข่าวงานแต่งของคุณกับ ${p.n} กระจายไปทั่ว ประวัติศาสตร์ไม่มีวันเหมือนเดิม`,'good');}}
       else{pAdd(p,-6);st('joy',-6);say(`${p.short}บอกว่า "ขอเวลาอีกหน่อยนะ"`,'bad');}});
     if(S.partner.married&&a>=19&&a<=44&&S.kids.length<30&&!S.kids.some(k=>k.y===S.year))add('คุยเรื่องมีลูก','อาจได้ลูกเพิ่ม','love home kind',S=>{
-      if(chance(.55)){const k=mkKid(pick(['m','f']));S.kids.push(k);mon(-6);st('joy',10);scene('dawn',[],`${kidRel(k)} ${k.n} ลืมตาดูโลก`);say(`${kidRel(k)}ของคุณ ${k.n} ลืมตาดูโลก`,'good');remember(`${kidRel(k)} ${k.n} ลืมตาดูโลก`,`ลูกของคุณกับ ${p.n}`,'baby',3);if(S.partner.cast){fm(5);say(`${k.n} มีสายเลือดของ ${p.n}`,'good');}}
+      if(chance(.55)){const k=mkKid(pick(['m','f']));S.kids.push(k);mon(-6);st('joy',10);scene('dawn',[],`${kidRel(k)} ${k.n} ลืมตาดูโลก`);say(kidLine(k),'good');remember(`${kidRel(k)} ${k.n} ลืมตาดูโลก`,`ลูกของคุณกับ ${p.n}`,'baby',3);if(S.partner.cast){fm(5);say(`${k.n} มีสายเลือดของ ${p.n}`,'good');}}
       else say('ยังไม่มีข่าวดี แต่คุณสองคนก็มีความสุข','plain');});
     add('ขอเลิกรา','จบความสัมพันธ์','rebel selfish',S=>{say(`คุณบอกเลิก${p.n} ${p.short}เก็บของออกจากบ้านไปเงียบๆ`,'bad');if(S.partner.married)S.flags.divorced=1;S.partner=null;st('joy',-10);});
   }
@@ -4520,8 +4520,8 @@ function courtP(p){
   startLove(p);
 }
 function startLove(p){
-  if(p.id){S.partner={n:p.n,cast:p.id,married:0,b:metaOf(p.id)?.b??S.birth,love:60};S.done['love_'+p.id]=1;fm(8);say(`${p.n} ตอบตกลง คุณคบหากับตัวละครหลักของเรื่อง`,'good');remember(`คบหากับ ${p.n}`,'วันที่อีกฝ่ายตอบตกลง','love',3);}
-  else{S.partner={n:p.o?.n||p.n,married:0,b:S.year-p.age,love:55};if(p.ref.t==='npc')p.o.mate=1;say(`${p.n} ตอบตกลง คุณสองคนเริ่มคบหากัน`,'good');remember(`คบหากับ ${p.n}`,'','love',2);}
+  if(p.id){S.partner={sx:p.sx,n:p.n,cast:p.id,married:0,b:metaOf(p.id)?.b??S.birth,love:60};S.done['love_'+p.id]=1;fm(8);say(`${p.n} ตอบตกลง คุณคบหากับตัวละครหลักของเรื่อง`,'good');remember(`คบหากับ ${p.n}`,'วันที่อีกฝ่ายตอบตกลง','love',3);}
+  else{S.partner={sx:p.sx,n:p.o?.n||p.n,married:0,b:S.year-p.age,love:55};if(p.ref.t==='npc')p.o.mate=1;say(`${p.n} ตอบตกลง คุณสองคนเริ่มคบหากัน`,'good');remember(`คบหากับ ${p.n}`,'','love',2);}
   st('joy',10);liveAct('heart');
 }
 function betrayP(p,b){
@@ -4697,7 +4697,7 @@ const TOWN=[
       {l:'ปิดตู้แล้วไปแจ้ง',g:'kind hero',f(S){fm(1);say('หัวหน้าพยาบาลชมคุณ และสอนวิธีห้ามเลือดด้วยจักระให้','good');skill('medic',2);}},
     ]}:void say(pick(['คุณเฝ้าไข้นินจาที่กลับจากภารกิจทั้งคืน','คุณช่วยทำแผลให้เด็กที่ตกต้นไม้','ผู้ป่วยชราจับมือคุณแล้วเล่าเรื่องสงครามครั้งที่สอง']),'good');}},
   {w:'naruto',n:'ร้านเหล้าข้างทาง',d:'ฟังข่าว พบคนใหม่ อาจมีเรื่อง',min:18,c:2,go(S){st('joy',3);return oneOf(
-    ()=>{if(!S.partner&&chance(.4)){const n=W.mkName(S.sex==='m'?'f':'m');S.partner={n,married:0,b:S.birth+R(-4,4),love:45};say(`คุณคุยถูกคอกับ ${n} จนร้านปิด แล้วนัดเจอกันอีก`,'good');liveAct('heart');}else say('คุณนั่งดื่มเงียบๆ ฟังนินจารุ่นพี่เล่าเรื่องภารกิจ','plain');},
+    ()=>{if(!S.partner&&chance(.4)){const n=W.mkName(_ps=pSex());S.partner={sx:_ps,n,married:0,b:S.birth+R(-4,4),love:45};say(`คุณคุยถูกคอกับ ${n} จนร้านปิด แล้วนัดเจอกันอีก`,'good');liveAct('heart');}else say('คุณนั่งดื่มเงียบๆ ฟังนินจารุ่นพี่เล่าเรื่องภารกิจ','plain');},
     ()=>({text:'นินจาเมาคนหนึ่งชนโต๊ะคุณจนเหล้าหก แล้วหัวเราะใส่หน้า',choices:[
       {l:'ต่อยเลย',g:'rebel brave',f(S){if(chance(.4+S.st.fit/200)){st('joy',3);say('เขาล้มคว่ำทั้งโต๊ะ ทั้งร้านปรบมือ','good');}else{st('hp',-R(5,10));say('เขาเมาแต่ยังเป็นนินจา คุณโดนอัดกลับ','bad');}}},
       {l:'ยิ้มแล้วสั่งแก้วใหม่ให้เขา',g:'kind',f(S){mon(-1);say('เขาเลิกหัวเราะ แล้วเล่าเรื่องเพื่อนที่ตายในภารกิจให้คุณฟังทั้งคืน','plain');}},
@@ -4839,7 +4839,7 @@ const TOWN=[
   );}},
   {w:'aot',n:'โรงเตี๊ยมและร้านเหล้า',d:'ทหารรักษาการณ์ ข่าวลือ เรื่องวุ่น',min:16,c:2,go(S){st('joy',3);return oneOf(
     ()=>say(S.year<845?'ทหารรักษาการณ์ดื่มกันตั้งแต่บ่าย "ไททันไม่ได้เข้ามาร้อยปีแล้ว จะกลัวอะไร"':S.year<850?'คนในร้านพูดถึงไททันมหึมาด้วยเสียงสั่น ไม่มีใครดื่มจนเมาอีกแล้ว':S.year<854?'คนในร้านลือกันว่ามีชาติอื่นอยู่อีกฝั่งทะเล และพวกเขาเกลียดเรา':'ทุกโต๊ะเถียงกันเรื่องเอเรน เยเกอร์ ไม่มีใครเห็นตรงกัน','quiet'),
-    ()=>{if(!S.partner&&chance(.4)){const n=W.mkName(S.sex==='m'?'f':'m');S.partner={n,married:0,b:S.birth+R(-4,4),love:45};say(`คุณกับ ${n} คุยกันจนเจ้าของร้านไล่ แล้วนัดเจอกันอีก`,'good');liveAct('heart');}else say('คุณนั่งฟังเพลงจากนักดนตรีพเนจรจนดึก','good');},
+    ()=>{if(!S.partner&&chance(.4)){const n=W.mkName(_ps=pSex());S.partner={sx:_ps,n,married:0,b:S.birth+R(-4,4),love:45};say(`คุณกับ ${n} คุยกันจนเจ้าของร้านไล่ แล้วนัดเจอกันอีก`,'good');liveAct('heart');}else say('คุณนั่งฟังเพลงจากนักดนตรีพเนจรจนดึก','good');},
     ()=>({text:'ทหารสารวัตรเมาแล้วรีดไถเงินจากเด็กเสิร์ฟ',choices:[
       {l:'เข้าไปขวาง',g:'hero brave',f(S){if(chance(.45+S.st.fit/250)){fm(2);say('สารวัตรเมาเกินกว่าจะสู้ไหว เขาเดินโซเซออกไป','good');}else{st('hp',-R(6,12));dk(-2);say('คุณโดนพานท้ายปืนฟาดหน้า แต่เด็กเสิร์ฟปลอดภัย','bad');}}},
       {l:'ก้มหน้าดื่มต่อ',g:'safe',f(){say('ทุกคนในร้านก้มหน้าเหมือนคุณ');}},
@@ -7395,7 +7395,7 @@ const HEIAN={
       {l:'ไม่เข้าใกล้ราโชมอนหลังพลบค่ำ',g:'safe',f(){}},
     ]};},sc:'hn_rashomon'},
     {id:'hn_three',once:1,w:3,when:S=>S.age>=16&&!S.partner,play(S){return{text:'ตามธรรมเนียม ถ้าคุณไปหาคนที่ชอบติดกันสามคืน แล้วได้กินโมจิคืนที่สามด้วยกัน ก็นับว่าแต่งงานกันแล้ว คืนนี้คือคืนที่สาม',choices:[
-      {l:'ไปให้ครบสามคืน',g:'love brave',f(S){S.partner={n:pick(NAMES.heian[S.sex==='m'?'f':'m']),married:1,b:S.year-R(16,22),love:65};st('joy',12);say(`คุณกับ${S.partner.n}กินโมจิคืนที่สามด้วยกัน ตั้งแต่คืนนั้นคุณสองคนเป็นสามีภรรยา`,'good');}},
+      {l:'ไปให้ครบสามคืน',g:'love brave',f(S){S.partner={sx:(_ps=pSex()),n:pick(NAMES.heian[_ps]),married:1,b:S.year-R(16,22),love:65};st('joy',12);say(`คุณกับ${S.partner.n}กินโมจิคืนที่สามด้วยกัน ตั้งแต่คืนนั้นคุณสองคนเป็นสามีภรรยา`,'good');}},
       {l:'ไม่ไปคืนที่สาม',g:'safe',f(S){st('joy',-3);say('อีกฝ่ายส่งกลอนเศร้าๆ มาให้คุณหนึ่งบท','plain');}},
     ]};},sc:'hn_court'},
   ],
@@ -8924,7 +8924,7 @@ const CASTANIM={naruto:'rasengan',sasuke:'chidori',kakashi:'chidori',itachi:'fir
   luffy:'punch',zoro:'threeswords',sanji:'punch',ace:'fire',akainu:'fire',aokiji:'ice',kizaru:'bolt',whitebeard:'punch',mihawk:'slash',shanks:'slash',
   ichigo:'whitebeam',rukia:'ice',byakuya:'bankai',kenpachi:'slash',aizen:'bankai',ulquiorra:'redball',grimmjow:'redball',uryu:'arrows',
   eren:'titan',reiner:'titan',bertholdt:'titan',annie:'titan',zeke:'titan',levi:'odm',mikasa:'odm'};
-const ENAN={rasengan:'กระสุนวงจักร',chidori:'จิโดริ',fire:'คาถาไฟ',sand:'ทรายพันธนาการ',palms:'ฝ่ามืออ่อนโยน',gates:'แปดประตู',repulse:'ชินระเทนเซย์',susanoo:'ซูซาโนะโอะ',water:'คาถาน้ำ',clay:'ระเบิดดินเหนียว',puppetA:'หุ่นเชิด',curses:'คำสาปบงการ',wind:'คาถาลม',purple:'สีม่วง',slashes:'แยกส่วน',dogs:'สุนัขอสูร',rika:'ริกะ',swapclap:'สลับตำแหน่ง',ratio:'อัตราส่วน 7:3',speech:'วาจาสาป',nails:'หุ่นฟาง',bloodbeam:'ลำแสงเลือด',staff:'อาวุธต้องสาป',standrush:'สแตนด์รัวหมัด',standability:'พลังสแตนด์',punch:'หมัด',threeswords:'สามดาบ',bolt:'สายฟ้า',slash:'ฟันดาบ',whitebeam:'เก็ตสึงะ',bankai:'บังไค',redball:'เซโร่',arrows:'ธนูควินซี',titan:'ร่างไททัน',odm:'เครื่องเคลื่อนย้าย',tstomp:'ตะปบ',cero:'เซโร่',tendril:'หนวดคำสาป',gun:'ยิง',cursed:'พลังคำสาป'};
+const ENAN={rasengan:'กระสุนวงจักร',chidori:'จิโดริ',fire:'คาถาไฟ',sand:'ทรายพันธนาการ',palms:'ฝ่ามืออ่อนโยน',gates:'แปดประตู',repulse:'ชินระเทนเซย์',susanoo:'ซูซาโนะโอะ',water:'คาถาน้ำ',clay:'ระเบิดดินเหนียว',puppetA:'หุ่นเชิด',curses:'คำสาปบงการ',wind:'คาถาลม',purple:'สีม่วง',slashes:'แยกส่วน',dogs:'สุนัขอสูร',rika:'ริกะ',swapclap:'สลับตำแหน่ง',ratio:'อัตราส่วน 7:3',speech:'วาจาสาป',nails:'หุ่นฟาง',bloodbeam:'ลำแสงเลือด',staff:'อาวุธต้องสาป',standrush:'สแตนด์รัวหมัด',standability:'พลังสแตนด์',punch:'หมัด',threeswords:'สามดาบ',bolt:'สายฟ้า',slash:'ฟันดาบ',whitebeam:'เก็ตสึกะ',bankai:'บังไค',redball:'เซโร่',arrows:'ธนูควินซี',titan:'ร่างไททัน',odm:'เครื่องเคลื่อนย้าย',tstomp:'ตะปบ',cero:'เซโร่',tendril:'หนวดคำสาป',gun:'ยิง',cursed:'พลังคำสาป'};
 function enAnim(E){if(E.id&&CASTANIM[E.id]&&ANIM[CASTANIM[E.id]])return CASTANIM[E.id];if(E.titan)return'tstomp';if(E.mask)return'cero';if(E.curse)return'tendril';
   const n=E.n||'';if(W.id==='jojo')return'standrush';if(W.id==='naruto')return /แยกตัว/.test(n)?'bolt':'fire';if(W.id==='op')return /ทหารเรือ/.test(n)?'gun':'slash';if(W.id==='aot')return'gun';if(W.id==='bleach')return'slash';if(['jjk','heian','jjedo'].includes(W.id))return'cursed';return'punch';}
 Object.assign(ANIM,{
@@ -9053,9 +9053,9 @@ function battle(E,o={}){return new Promise(done=>{try{if(typeof document==='unde
     if(stM.stun>0){stM.stun--;say2('คุณตัวชา ขยับไม่ได้ไปหนึ่งตา!');hud();setTimeout(()=>enemyTurn(),900);return;}menu();};
   const enemyTurn=(mul=1)=>{if(en<=0||lock||!d.isConnected)return;if(dots())return;
     if(stE.stun>0){stE.stun--;say2(`${E.n} ตัวชา ขยับไม่ได้ไปหนึ่งตา`);hud();setTimeout(nextRound,800);return;}
-    const an=enAnim(E),heavy=intent==='heavy',stt=intent==='status'?estat:null;mul*=heavy?2.1:stt?.8:1;if(phase>1)mul*=1.25;const now=performance.now();
-    banner={n:`${E.n} · ${heavy?'ท่าหนัก ':''}${ENAN[an]||'โจมตี'}`,col:'#e43b44',t0:now,end:now+1500,big:heavy};fx={who:'en',anim:an,col:E.titan?'#c4875e':E.curse?'#68386c':'#e43b44',t0:now,end:now+1100,k:1.6};if(typeof BTMELEE==='function'&&BTMELEE())edash=now+450;
-    if(heavy)zoom={t0:now,end:now+1100,a:.1,x:120,y:70};say2(`${E.n} ${heavy?'ปล่อยท่าที่รวบรวมพลังไว้!':'โจมตี!'}${guard?'':' (กด "หลบ!" ตอนวงแหวนเป็นสีเขียว)'}`);if(unc){qte={ok:chance(.3)?1:0,done:1};}else if(!guard)startQte(heavy?260:400);
+    const mv=enMove(E,intent),an=mv.a,heavy=intent==='heavy',stt=intent==='status'?estat:null;mul*=heavy?2.1:stt?.8:1;if(phase>1)mul*=1.25;const now=performance.now();
+    banner={n:`${E.n} · ${heavy?'ท่าหนัก ':''}${mv.n}`,col:'#e43b44',t0:now,end:now+1500,big:heavy};fx={who:'en',anim:an,col:E.titan?'#c4875e':E.curse?'#68386c':'#e43b44',t0:now,end:now+1100,k:1.6};if(typeof BTMELEE==='function'&&BTMELEE())edash=now+450;
+    if(heavy)zoom={t0:now,end:now+1100,a:.1,x:120,y:70};say2(`${E.n} ${heavy?'ปล่อยท่าไม้ตาย':'ใช้'} ${mv.n}!${guard?'':' (กด "หลบ!" ตอนวงแหวนเป็นสีเขียว)'}`);if(unc){qte={ok:chance(.3)?1:0,done:1};}else if(!guard)startQte(heavy?260:400);
     setTimeout(()=>enemyHit(mul,stt,heavy),1000);};
   const enemyHit=(mul,stt,heavy)=>{if(en<=0||lock||!d.isConnected)return;let dmg=Math.round((6+E.pow*.24-myPow()*.08)*(.75+Math.random()*.5)*mul);dmg=Math.max(3,Math.min(heavy?60:42,dmg));if(typeof btModIn==='function')dmg=btModIn(dmg,heavy);const crit=!heavy&&chance(.1);if(crit)dmg=Math.round(dmg*1.6);
     let note='',cd=0;const dodged=qte&&qte.ok===1;hideQte();qte=null;const now=performance.now();
@@ -9385,7 +9385,7 @@ TECHDEF.op.push(
   T('ryuo','ริวโอ: ปล่อยฮาคิเกราะทะลุ',S=>hp_('haki_arm')&&(S.sk?.fight||0)>=55,{chant:'ฮาคิเกราะขั้นสูงที่ไหลออกไปนอกร่าง ทำลายจากข้างใน',anim:'ryuo',col:'#181425',lv:.4}),
   T('kingcoat','เคลือบฮาคิราชันย์',S=>hp_('haki_king')&&(S.fame||0)>=60,{chant:'ห่อหมัดด้วยฮาคิราชันย์ สายฟ้าสีดำแตกออกโดยไม่ต้องแตะตัวกัน',anim:'king',col:'#e43b44',lv:.48}));
 TECHDEF.bleach.push(
-  T('getsuga','เก็ตสึงะ เทนโช',S=>hp_('bl_shikai')||hp_('bl_bankai'),{chant:'เหวี่ยงดาบปล่อยพลังวิญญาณเป็นคลื่นจันทร์เสี้ยว',anim:'getsuga',col:'#5fcde4',lv:.34}),
+  T('getsuga','เก็ตสึกะ เทนโช',S=>hp_('bl_shikai')||hp_('bl_bankai'),{chant:'เหวี่ยงดาบปล่อยพลังวิญญาณเป็นคลื่นจันทร์เสี้ยว',anim:'getsuga',col:'#5fcde4',lv:.34}),
   T('sokatsui','ทางทำลายที่ 33: เปลวไฟน้ำเงินร่วงหล่น',S=>hp_('bl_kido'),{chant:'"จงตกลงมาเถิด เปลวไฟน้ำเงิน..." ฝ่ามือปล่อยไฟสีน้ำเงินกวาดทุกอย่าง',anim:'sokatsui',col:'#0099db',lv:.26}),
   T('kuro','ทางทำลายที่ 90: โลงศพดำ',S=>hp_('bl_kido')&&(S.sk?.gear||0)>=60,{chant:'"ความขุ่นมัวที่รั่วไหล ภาชนะแห่งความบ้าคลั่ง..." โลงสีดำปิดรอบศัตรูแล้วแหลกละเอียด',full:'ร่ายบทเต็มของโลงศพดำ พลังที่แท้จริงที่แม้แต่ไอเซ็นยังชม',anim:'kurohitsugi',col:'#68386c',lv:.44,hp:4}),
   T('senbon','ซากุระพันกลีบ',S=>hp_('bl_bankai')&&S.flags.zanType==='petal',{chant:'"บังไค... เซ็มบงซากุระ คาเงะโยชิ" ใบมีดนับพันล้านปลิวดุจกลีบซากุระ',anim:'petals',col:'#f6a0b8',lv:.5}),
@@ -10008,7 +10008,7 @@ function ambushFoe(){const y=S.year,wid=W.id;
 async function ambush(){if(busy||!S||!S.alive)return;busy=true;try{S.amb=0;const [n,f,pw,line]=ambushFoe();say(`ถูกซุ่มโจมตี! ${line}`,'bad');
   const r=await battle(fE(n,f,pw),{lethal:true,title:'ถูกซุ่มโจมตี'});
   if(r.r==='win'){mon(R(1,3));fm(1);skill('fight',R(1,3));say(`คุณจัดการ${n}ได้ ชาวบ้านแถวนั้นปรบมือให้`,'good');}
-  else if(r.r==='lose'){if(pw>myPow()+15&&!live(.8,`ถูก${n}ซุ่มสังหาร`))return;st('hp',-R(8,14));say(`คุณถูก${n}ทำร้ายจนสลบ ฟื้นขึ้นมาอีกทีของมีค่าก็หายไปหมด`,'bad');mon(-1);}
+  else if(r.r==='lose'){if(pw>myPow()+15&&!live(.8,`ถูก${n} ซุ่มสังหาร`))return;st('hp',-R(8,14));say(`คุณถูก${n}ทำร้ายจนสลบ ฟื้นขึ้นมาอีกทีของมีค่าก็หายไปหมด`,'bad');mon(-1);}
   else if(r.r==='flee')say(`คุณหนีพ้น${n}มาได้`,'plain');else if(r.r==='talk')say(`คุณพูดจนกระทั่ง${n}ยอมปล่อยคุณไป`,'plain');}finally{busy=false;render();}}
 {const mp0=monthPass;monthPass=async function(){const r=await mp0.apply(this,arguments);try{if(S&&S.alive&&S.age>=12&&!S.amb){const risky=S.job?.mil||isFight({l:S.job?.n||''});if(chance(.022+(risky?.018:0)))S.amb=1;}}catch(e){}return r;};}
 setInterval(()=>{try{if(S&&S.alive&&S.amb&&!busy&&!(typeof BT!=='undefined'&&BT.on)&&$('#modal').hidden&&!$('#game').hidden&&!document.getElementById('mg'))ambush();}catch(e){}},1200);
@@ -10463,7 +10463,7 @@ ARC('naruto',67,[
 ]);
 
 /* ---------------- Attack on Titan: Trost and the Return to Shiganshina in steps ---------------- */
-ARCWHO.aot=S=>isMil(S);
+ARCWHO.aot=S=>isMil(S)&&(S.year>=854||(paradis(S)&&S.job?.id!=='mlsoldier'));
 ARC('aot',850,[
   {id:'tr_2',mo:1,t:'ทรอสต์: แก๊สหมด',mood:'fire',cap:'หลังคาเมืองทรอสต์',
    n:'ไททันมหึมาเตะประตูทรอสต์พังอีกครั้ง หน่วยฝึกที่ 104 ต้องเข้าแนวรบ เอเรนถูกกลืนกินต่อหน้าอาร์มิน ทหารที่เหลือติดอยู่บนหลังคาเพราะแก๊สในถังหมด และกองเสบียงถูกไททันเจ็ดตัวล้อม',
@@ -10743,7 +10743,7 @@ const LK={
     {id:'lk_mhs',once:1,w:4,when:S=>S.year>=2014&&S.place==='seoul'&&S.age>=14&&S.age<=20,play(S){return{text:'นักเรียนใหม่ที่สูงและหล่อจนทั้งโรงเรียนหันมอง เดินมาขอยืมปากกาคุณ เขาดูประหม่ากว่าที่หน้าตาบอก',choices:[
       {l:'ให้ยืมแล้วชวนคุย',g:'kind',f(S){bond('hyungseok',14);say('เขาเล่าว่าเพิ่งย้ายมา และทำงานร้านสะดวกซื้อตอนกลางคืน','good');}},{l:'มองเขาแบบระวัง',g:'safe',f(S){say('ไม่กี่วันต่อมาเขาเป็นคนดังที่สุดในโรงเรียน','plain');}}]};}},
     {id:'lk_mvasco',once:1,w:3,when:S=>S.year>=2014&&S.place==='seoul'&&S.age>=14,play(S){return{text:'ชายร่างยักษ์ผมตั้งหยุดหน้าคุณ "นายรังแกเด็กหรือเปล่า? บอกมาตรงๆ"',choices:[
-      {l:'บอกว่าไม่',g:'kind',f(S){bond('vasco',10);say('เขายิ้มกว้างแล้วชวนไปกินซุปเลือดหมู','good');}},{l:'ท้ากลับ',g:'brave',f(S){if(live(.95,'ถูกหมัดของวาสโก')){skill('fight',3);st('hp',-10);bond('vasco',6);say('หมัดเดียวของเขาทำให้คุณนอนสองวัน แต่เขาจำชื่อคุณได้','plain');}}}]};}},
+      {l:'บอกว่าไม่',g:'kind',f(S){bond('vasco',10);say('เขายิ้มกว้างแล้วชวนไปกินซุปเลือดหมู','good');}},{l:'ท้ากลับ',g:'brave',f(S){if(S.alive){skill('fight',3);st('hp',-10);bond('vasco',6);say('หมัดเดียวของเขาทำให้คุณนอนสองวัน แต่เขาจำชื่อคุณได้','plain');}}}]};}},
   ],
   pivots:{},
   quiet:['ปีที่ไม่มีแก๊งไหนตีกันจนเป็นข่าว','โซลสงบจนน่าสงสัย','ทุกแก๊งรอดูว่าใครจะขยับก่อน'],
@@ -11105,7 +11105,7 @@ function faceGeneric(seed,age,sex,hair,skin,out){const a={id:seed,age,sex,hair:f
 function faceSpecOf(ref){try{const rr=s=>rng(hash(s)),pk=(r,a)=>a[Math.floor(r()*a.length)],yr=S.year;
   if(ref.t==='cast')return castAt(ref.id,yr);
   if(ref.t==='me'){const a=LIVE.actors.get('me');return a?{...actorSpec(a),age:S.age}:faceGeneric('me',S.age,S.sex,S.look.hair[1],S.look.skin,OUTFIT[S.job?.id]||W.cloth||'#a0705a');}
-  if(ref.t==='mate'){const o=S.partner;if(!o)return null;if(o.cast&&castSpec(o.cast))return castAt(o.cast,yr);const r=rr(o.n);return faceGeneric('pa',yr-(o.b??S.birth),S.sex==='m'?'f':'m',W.castMeta?.[o.cast]?.h||pk(r,HAIRS),pk(r,LOOKS.skin),pk(r,OUTS));}
+  if(ref.t==='mate'){const o=S.partner;if(!o)return null;if(o.cast&&castSpec(o.cast))return castAt(o.cast,yr);const r=rr(o.n);return faceGeneric('pa',yr-(o.b??S.birth),ptnSx(o),W.castMeta?.[o.cast]?.h||pk(r,HAIRS),pk(r,LOOKS.skin),pk(r,OUTS));}
   if(ref.t==='kid'){const kd=S.kids[ref.i];if(!kd)return null;const r=rr(kd.n+kd.y);return faceGeneric('k',yr-kd.y,kd.sx,r()<.5?S.look.hair[1]:pk(r,HAIRS),r()<.5?S.look.skin:pk(r,LOOKS.skin),pk(r,OUTS));}
   if(ref.t==='par'){const p=S.fam[ref.r];if(!p)return null;const r=rr(p.n);return faceGeneric('p',S.age+p.off,ref.r==='mom'?'f':'m',pk(r,HAIRS),S.look.skin,pk(r,OUTS));}
   if(ref.t==='sib'){const s=S.sibs[ref.i];if(!s)return null;const r=rr(s.n);return faceGeneric('s',yr-s.by,s.sx,r()<.6?S.look.hair[1]:pk(r,HAIRS),S.look.skin,pk(r,OUTS));}
@@ -11516,7 +11516,7 @@ const TMODEN={on:'เปิด',min:'ย่อ',off:'ปิด'};
     const x=document.createElement('button');x.type='button';x.className='tx';x.textContent='✕';x.setAttribute('aria-label','ปิดการแจ้งเตือน');x.onclick=e=>{e.stopPropagation();d.remove();toastAll();};d.append(x);
     let sx=null;d.addEventListener('pointerdown',e=>{sx=e.clientX;});d.addEventListener('pointerup',e=>{if(sx!=null&&Math.abs(e.clientX-sx)>40){d.remove();toastAll();}sx=null;});
     const max=m==='min'?1:3;const items=[...box.querySelectorAll('.toast')];items.slice(max).forEach(n=>n.remove());
-    if(m==='min')setTimeout(()=>{d.remove();toastAll();},4500);}
+    if(m==='min')setTimeout(()=>{d.remove();toastAll();},7000);}
     toastAll();}catch(e){}return r;};}
 function toastAll(){try{const box=$('#toasts');if(!box)return;let a=box.querySelector('.tall');const n=box.querySelectorAll('.toast').length;
   if(n>=2&&!a){a=document.createElement('button');a.type='button';a.className='tall';a.textContent='ปิดทั้งหมด';a.onclick=()=>{box.querySelectorAll('.toast').forEach(t=>t.remove());a.remove();};box.append(a);}
@@ -12310,11 +12310,11 @@ function HM(w,o){if(!WORLDS[w])return;addCanon(w,[{id:o.id,y:o.y,mo:o.mo,t:o.t,m
     {l:o.stay||'ปล่อยให้เป็นไปตามประวัติศาสตร์',g:'safe',f(S){say(o.fate,'bad');}}]};}}]);}
 const castOK=id=>{try{return!castGone(id);}catch(e){return true;}};
 /* Attack on Titan */
-HM('aot',{id:'hm_erwin',y:850,mo:9,who:'erwin',t:'คืนก่อนศึกชิกันชินา: ความฝันของผู้บัญชาการ',when:S=>S.age>=15&&castOK('erwin')&&(S.job?.id==='survey'||S.job?.mil),
+HM('aot',{id:'hm_erwin',y:850,mo:9,who:'erwin',t:'คืนก่อนศึกชิกันชินา: ความฝันของผู้บัญชาการ',when:S=>S.age>=15&&castOK('erwin')&&paradis(S)&&S.job?.id!=='mlsoldier'&&(S.job?.id==='survey'||S.job?.mil),
   text:'เออร์วินนั่งอยู่คนเดียวในห้องแผนที่ แขนข้างเดียวกำปากกาแน่น "ถ้าแผนนี้ต้องมีคนนำหน้าทหารใหม่วิ่งเข้าใส่ห่าหิน ฉันจะไปเอง" ทุกคนรู้ว่าพรุ่งนี้เขาจะไม่ได้กลับมา',
   save:{l:'อาสานำทหารใหม่บุกแทนผู้บัญชาการ',g:'brave hero',foe:['ไททันวานร',90,'t'],p:.3,d:'ถูกหินของไททันวานรบดขยี้ระหว่างนำทหารบุก',s:'คุณนำทหารใหม่วิ่งฝ่าห่าหินแทนเขา เออร์วินรอดไปเห็นห้องใต้ดินของบ้านเยเกอร์ด้วยตาตัวเอง',m:'นำบุกแทนเออร์วิน'},
   help:{l:'บอกเขาว่าให้ทิ้งความฝัน',s:'เขาเงียบไปนาน แล้วยิ้มเศร้าๆ "ขอบใจ แต่ฉันต้องไป"'},fate:'เช้าวันรุ่งขึ้น เออร์วินนำทหารใหม่บุกเข้าใส่ห่าหิน และไม่ได้กลับมา'});
-HM('aot',{id:'hm_sasha',y:854,mo:3,who:'sasha',t:'เรือเหาะกลับจากเลแบรีโอ',when:S=>S.age>=15&&castOK('sasha')&&(S.job?.mil||S.job?.id==='survey'),
+HM('aot',{id:'hm_sasha',y:854,mo:3,who:'sasha',t:'เรือเหาะกลับจากเลแบรีโอ',when:S=>S.age>=15&&castOK('sasha')&&S.job?.id!=='mlsoldier'&&!S.flags.cand&&(S.job?.mil||S.job?.id==='survey'),
   text:'ทุกคนบนเรือเหาะกำลังโล่งใจ ซาช่าหัวเราะเสียงดังที่สุด คุณเห็นเด็กหญิงผมสั้นในเครื่องแบบมาร์เลย์คลานขึ้นมาจากช่องเก็บของพร้อมปืนในมือ',
   save:{l:'พุ่งเข้าไปผลักซาช่าให้พ้นแนวกระสุน',g:'brave hero',p:.55,d:'ถูกกระสุนของกาบีบนเรือเหาะ',s:'กระสุนเฉียดไหล่คุณไป ซาช่าล้มลงแต่ยังหายใจ เธอบ่นว่าหิวทั้งที่เลือดยังไหล',m:'ช่วยซาช่าบนเรือเหาะ'},
   help:{l:'ตะโกนเตือนทุกคน',s:'เสียงของคุณจมหายไปในเสียงใบพัด'},fate:'เสียงปืนดังขึ้น ซาช่าล้มลง คำสุดท้ายของเธอคือ "เนื้อ…"'});
@@ -12848,6 +12848,942 @@ TK('lookism',{id:'genking',w:3,when:S=>S.year>=2012&&(S.sk?.fight||0)>=88,
   else{mon(R(5,12));fm(1);say(`เงินเดือนของ${T.n}เข้าบัญชีแล้ว พร้อมงานที่ไม่เคยหมด`,'plain');}}}catch(e){}return r;};}
 /* the title shows in the status line of every world */
 for(const w of Object.keys(WORLDS)){const X=WORLDS[w],sx=X.statusX;X.statusX=S=>(sx?sx(S):'')+(S.flags.title?` · ${S.flags.title.n}`:'');}
+
+
+/* --- a_fix62.js --- */
+/* ===== v62 core fixes: child survival, romance & orientation, anti-repeat, action scenes, Lookism beauty path ===== */
+var _ps='f';
+/* --- 1. children are pulled out of mass-casualty events by adults (players kept dying before 16 in AOT) --- */
+const RESCUE={
+  aot:['ทหารกองประจำการคว้าคอเสื้อคุณขึ้นหลังม้าได้ทันเสี้ยววินาที','ชายร่างใหญ่ในชุดกองประจำการอุ้มคุณวิ่งไปถึงเรืออพยพลำสุดท้าย','แม่ของเพื่อนบ้านลากคุณเข้าไปในท่อระบายน้ำ แล้วปิดปากคุณไว้จนเงาไททันเดินผ่านไป'],
+  naruto:['หน่วยอันบุหน้ากากสัตว์โผล่มาคว้าตัวคุณออกไปทันเวลา','จูนินคนหนึ่งใช้คาถาสับเปลี่ยนร่างแทนที่คุณด้วยท่อนไม้','ครูในสถาบันนินจากระโดดมาบังคุณไว้ด้วยหลังของเขา'],
+  op:['ทหารเรือหน้าใหม่ช้อนตัวคุณขึ้นจากน้ำทั้งที่ตัวเองก็ยืนแทบไม่ไหว','โจรสลัดแก่ขาเดียวคว้าเอวคุณแล้วกระโดดลงเรือเล็ก','แม่ค้าปลาในท่าเรือดึงคุณเข้าไปซ่อนใต้แผงทันเวลา'],
+  bleach:['ยมทูตหน่วยที่สี่ห่อตัวคุณด้วยคิโดรักษาก่อนจะหมดลมหายใจ','เด็กสาวผมสีส้มกางโล่สีทองบังคุณไว้','ชายใส่หมวกลายทางกับไม้เท้าปรากฏตัว แล้วคุณก็ไปตื่นที่ร้านขายของแปลกๆ'],
+  jjk:['ผู้ใช้คุณไสยจากโรงเรียนเทคนิคลากคุณออกนอกม่านทันเวลา','ชายใส่แว่นดำสูทเรียบเข้ามาฟันคำสาปที่กำลังจะกินคุณ','ทีมจัดการหลังเหตุการณ์ของอิจิจิพาคุณขึ้นรถออกไป'],
+  heian:['พระธุดงค์ร่ายคาถาป้องกันรอบตัวคุณไว้ได้ทัน','ซามูไรของตระกูลฟุจิวาระอุ้มคุณขึ้นหลังม้าหนีออกจากเมือง'],
+  jjedo:['ชาวบ้านในชุมชนดึงคุณเข้าไปซ่อนในโกดังข้าว','นักพรตเร่ร่อนขว้างยันต์ไล่คำสาปออกไป'],
+  jojo:['ผู้ใช้สแตนด์ใจดีคนหนึ่งดึงคุณออกไปโดยที่คุณไม่เห็นด้วยซ้ำว่าเขาทำอย่างไร','ชายในหมวกกะลาสีบังคุณไว้แล้วพูดว่า "ยาเระ ยาเระ ดาเซะ"'],
+  db:['ชายหัวโล้นตัวเล็กใช้ไทโยเคนแล้วอุ้มคุณหนี','ลูกบอลพลังลูกหนึ่งพุ่งมาเบี่ยงทิศการโจมตีออกไปได้พอดี'],
+  lookism:['พี่ชายร่างยักษ์ผมตั้งเข้ามาบังคุณ "อย่าแตะเด็กนะ!"','เจ้าของร้านไก่ทอดลากคุณเข้าครัวแล้วล็อกประตู'],
+};
+{const l0=live;live=function(p,cause){
+  if(!S||S.age>=16||!S.alive)return l0.apply(this,arguments);
+  const pp=Math.min(.99,Math.max(.01,p+(typeof TECH!=='undefined'&&TECH?TECH.live:0)));
+  if(chance(pp))return true;
+  if(chance(S.age<13?.72:.62)){say(pick(RESCUE[W.id]||['ผู้ใหญ่คนหนึ่งคว้าตัวคุณออกมาได้ทัน']),'good');trauma(8);st('hp',-R(5,12));if(typeof liveAct==='function')liveAct('heal');return true;}
+  die(cause);return false;};}
+
+/* --- 2. romance follows lore and the player's own orientation --- */
+const NOROM=new Set(['luffy','piccolo','panda','jogo','hanami','dagon','rika','frieza','cell','buu','beerus','mahito','sukuna','kenjaku','uraume','aizen','dio','kira','diavolo','pucci','tengen','kenpachi','yorozu']);
+for(const id of ['nami','robin','makino','vivi','rukia','orihime','yoruichi','rangiku','nobara','maki','shoko','riko','rika','yukako','reimi','uro','uraume','yorozu'])FEM.add(id);
+const cSex=id=>(CASTLOOK[id]&&CASTLOOK[id].sex)||(FEM.has(id)?'f':'m');
+const oppSx=()=>S.sex==='m'?'f':'m';
+function pSex(){const o=S&&S.ori;return o==='gay'?S.sex:o==='bi'?(chance(.5)?'m':'f'):oppSx();}
+function loveOK(sx,id){if(id&&NOROM.has(id))return false;if(!S)return true;if(!sx)return true;const same=sx===S.sex,o=S.ori||'straight';return o==='gay'?same:o==='bi'?true:!same;}
+function ptnSx(o){o=o||S.partner;if(!o)return oppSx();return o.sx||(o.cast?cSex(o.cast):oppSx());}
+const sameCouple=()=>!!S.partner&&ptnSx()===S.sex;
+function kidLine(k){return sameCouple()?`คุณกับ${S.partner.n}รับ ${k.n} มาเป็น${kidRel(k)}บุญธรรม บ้านหลังนี้มีเสียงหัวเราะของเด็กแล้ว`:`${kidRel(k)}ของคุณ ${k.n} ลืมตาดูโลก`;}
+const OLDERA=['aot','naruto','op','bleach','heian','jjedo'];
+const ORIEV={id:'ori62',once:1,when:S=>!S.ori&&S.age>=14&&S.age<=17&&chance(.55),play(S){return{text:pick(['เพื่อนๆ เริ่มพูดถึงคนที่แอบชอบกันทั้งวัน คุณนั่งฟังแล้วถามตัวเองเงียบๆ ว่าใจคุณเต้นแรงเวลาอยู่ใกล้ใคร','คืนหนึ่งคุณนอนไม่หลับ คิดถึงคนคนหนึ่งที่ยิ้มให้คุณวันนี้ แล้วก็เพิ่งรู้ตัวว่าหัวใจคุณเอนไปทางไหน']),choices:[
+  {l:'ใจคุณเต้นแรงกับเพศตรงข้าม',g:'love',f(S){S.ori='straight';say('คุณรู้ใจตัวเองแล้ว และไม่มีอะไรต้องคิดมาก','plain');}},
+  {l:'ใจคุณเต้นแรงกับเพศเดียวกัน',g:'love brave',f(S){S.ori='gay';st('joy',4);say(OLDERA.includes(W.id)?'ในยุคนี้ไม่ค่อยมีใครพูดเรื่องนี้ออกมาดังๆ แต่คุณรู้ว่าความรู้สึกนี้คือตัวคุณจริงๆ':'คุณค้นข่าวอ่านเรื่องราวของคนที่รู้สึกเหมือนกัน แล้วก็โล่งใจว่าคุณไม่ได้อยู่คนเดียว','good');}},
+  {l:'คุณรู้สึกได้กับทุกเพศ',g:'love curious',f(S){S.ori='bi';st('joy',3);say('สำหรับคุณ สิ่งที่ทำให้ใจเต้นคือตัวคนคนนั้น ไม่ใช่เพศ','good');}},
+  {l:'ยังไม่แน่ใจ ขอเวลาอีกหน่อย',g:'safe',f(S){S.flags.oriLater=S.year+3;say('ไม่มีใครเร่งคุณได้ คุณยังมีเวลาอีกเยอะ','plain');}},
+]};}};
+const ORILATER={id:'ori62b',once:1,when:S=>!S.ori&&S.flags.oriLater&&S.year>=S.flags.oriLater,play(S){S.flags.oriLater=0;return ORIEV.play(S);}};
+const OUTEV={id:'out62',once:1,when:S=>['gay','bi'].includes(S.ori)&&S.age>=17&&S.age<=30&&chance(.35),play(S){const old=OLDERA.includes(W.id),pa=par();return{text:`คุณอยากให้คนที่รักรู้ว่าคุณเป็นใครจริงๆ ${pa.length?'พ่อแม่ยังไม่รู้':'แต่คนที่คุณอยากบอกที่สุดไม่อยู่แล้ว'}`,choices:[
+  ...(pa.length?[{l:'เปิดใจกับพ่อแม่',g:'brave love home',f(S){S.flags.out=1;if(chance(old?.55:.75)){st('joy',12);say(`${pa[0].role}เงียบไปนาน แล้วกอดคุณ "ลูกก็ยังเป็นลูกของพ่อแม่เหมือนเดิม"`,'good');remember('เปิดใจกับครอบครัว','พวกเขากอดคุณไว้','love',3);}else{st('joy',-8);say(`${pa[0].role}ไม่พูดกับคุณหลายเดือน แต่ก่อนสิ้นปีก็เคาะประตูมาพร้อมอาหารที่คุณชอบ`,'plain');S.flags.outLate=1;}}}]:[]),
+  {l:'บอกเพื่อนสนิทคนเดียวก่อน',g:'kind',f(S){S.flags.out=1;st('joy',6);say('เพื่อนของคุณยักไหล่ "รู้มาตั้งนานแล้ว นึกว่าจะไม่บอกซะอีก"','good');}},
+  {l:'เก็บไว้เป็นเรื่องส่วนตัว',g:'safe',f(S){say('ไม่ใช่ทุกเรื่องที่ต้องประกาศ คุณใช้ชีวิตแบบที่คุณสบายใจ','plain');}},
+]};}};
+for(const w of Object.values(WORLDS)){if(!w.miles)w.miles=[];w.miles.push(ORIEV,ORILATER,OUTEV);}
+
+/* --- 3. fewer repeats: events seen in the last 2 years are much less likely to come up again --- */
+{const w0=wpick;wpick=function(a){
+  if(!S||!Array.isArray(a)||a.length<2||!a.every(e=>e&&e.id&&typeof e.play==='function'))return w0.apply(this,arguments);
+  S.mcd=S.mcd||{};const ws=a.map(e=>(e.w||1)*(S.mcd['w_'+e.id]>=S.year-2?.12:1));let t=ws.reduce((x,y)=>x+y,0),r=rnd()*t,pickd=a[a.length-1];
+  for(let i=0;i<a.length;i++){r-=ws[i];if(r<=0){pickd=a[i];break;}}S.mcd['w_'+pickd.id]=S.year;return pickd;};}
+
+/* --- 4. every choice shows the action it describes: the label decides the scene pose --- */
+const ACTPOSE=[
+  [/แต่งงาน|ขอแต่ง/,'wedding'],[/งานศพ|ไว้อาลัย/,'funeral'],[/คลอด|ลูก.*เกิด/,'birth'],[/หาหมอ|รักษา|พยาบาล|ดูแล.*ป่วย|ห้ามเลือด/,'sick'],
+  [/สารภาพ|จีบ|เดท|กอด|จูบ|ขอคบ/,'love'],[/กิน|อาหาร|ข้าว|ราเมง|บาร์บีคิว|ไก่ทอด|ขนม|ทำครัว|ทำอาหาร/,'eat'],
+  [/ดื่ม|ร้านเหล้า|สาเก|เบียร์/,'tavern'],[/เรียน|สอบ|อ่าน|ติว|ห้องสมุด|หนังสือ/,'school'],[/ตลาด|ซื้อ|ขาย|ค้า|ต่อราคา|แผง/,'market'],
+  [/ตกปลา|จับปลา/,'fish'],[/ไร่|ทำนา|ปลูก|เก็บเกี่ยว|เลี้ยงสัตว์/,'farm'],[/วาด|ศิลปะ|ระบายสี|แกะสลัก/,'drawing'],
+  [/เทศกาล|งานวัด|ดอกไม้ไฟ|ฉลอง/,'festival'],[/ชมดอกไม้|ซากุระ/,'hanami'],[/ฝึก|ซ้อม|วิ่งรอบ|ยกน้ำหนัก/,'training'],
+  [/ประลอง|ท้า|ต่อย|สู้|บุก|ปราบ|ฟัน|โจมตี|ล้ม/,'fight'],[/หนี|วิ่ง|ถอย|หลบ|ซ่อน/,'flee'],[/ช่วย|พาไป|อุ้ม|แบก|ปกป้อง/,'help'],
+  [/ทำงาน|รับงาน|กะดึก|ช่วยร้าน|รับจ้าง/,'work'],[/ปราศรัย|เทศน์|ประกาศ|พูดต่อหน้า/,'speech'],[/ขี่ม้า|ม้า/,'horse'],[/รถไฟ/,'train'],
+  [/แมว|หมา|สุนัข|นก|สัตว์/,'animal'],[/เด็กๆ|เล่นกับ|ไล่จับ/,'kids'],[/เพื่อนบ้าน|เคาะประตู/,'neighbor'],[/ขโมย|ลอบ|วางยา|ฆ่า|หักหลัง/,'dark'],
+  [/ฝัน/,'dream'],[/ข่าว|หนังสือพิมพ์|จดหมาย/,'news'],[/นอน|พักผ่อน|อยู่บ้าน|กลับบ้าน/,'home'],[/หิมะ/,'snow'],
+];
+{const p0=poseOf;poseOf=function(c,kind){const r=p0.apply(this,arguments);if(!c||!c.l||kind==='power')return r;
+  for(const [re,p] of ACTPOSE)if(re.test(c.l)&&typeof POSES[p]==='function')return p;return r;};}
+
+/* --- 5. Lookism: a clear way to raise looks and charm, and a model career --- */
+if(WORLDS.lookism){const A=WORLDS.lookism.acts;
+  A.fun.push({l:'สกินแคร์และพอกหน้าแบบเกาหลี',c:2,st:{look:[1,3]},sk:{charm:[1,2]},a:'heal',txt:'หน้าคุณใสขึ้นจนเพื่อนถามว่าไปทำอะไรมา'});
+  A.learn.push({l:'เรียนแต่งตัวกับสไตลิสต์',c:4,min:13,sk:{charm:[3,6],art:[1,2]},st:{look:[1,2]},txt:'สไตลิสต์บอกว่า "ความมั่นใจคือเสื้อผ้าชิ้นแรก" แล้วจับคุณเปลี่ยนชุดสิบรอบ'});
+  A.learn.push({l:'ฝึกเดินแบบและโพสท่า',c:3,min:13,sk:{charm:[3,5]},txt:'คุณเดินบนเส้นเทปกลางห้องจนส้นเท้าพอง แต่ท่าเดินเริ่มมีออร่า'});
+  A.train.push({l:'เข้ายิมปั้นหุ่น',c:3,st:{fit:[1,3],look:[1,3]},sk:{charm:[1,2]},a:'run',txt:'เทรนเนอร์ในยิมบอกว่าหุ่นดีคือครึ่งหนึ่งของหน้าตา'});
+  if(typeof GO==='function')GO('lookism','เอเจนซี่นางแบบในกังนัม','ที่ที่หน้าตาคือทุนและเสน่ห์คือรายได้',[
+    ['ไปแคสติ้งนางแบบ/นายแบบ','brave',{charm:2,look:1},['แมวมองมองคุณตั้งแต่หัวจรดเท้า "กลับมาใหม่เมื่อพร้อมกว่านี้"','ช่างภาพบอกให้คุณยิ้มน้อยลงแล้วมองเลนส์เหมือนมองคนที่เกลียด'],{rare:[.15,'เอเจนซี่ยื่นสัญญาฝึกหัดให้คุณ ถ้าเสน่ห์ถึงหกสิบห้าก็สมัครงานนายแบบ/นางแบบได้แล้ว']}],
+    ['ถ่ายรูปลงโซเชียล','curious',{charm:2,fame:1},['รูปของคุณได้ไลก์มากกว่าปกติสามเท่า','มีคนคอมเมนต์ว่าคุณหน้าเหมือนนายแบบในร่างที่สองของใครบางคน']],
+  ],{min:13,c:2});
+}
+
+/* --- 6. AOT ambushes follow the era: no titans before the walls fall or after the Rumbling ends all titan power --- */
+{const af2=ambushFoe;ambushFoe=function(){if(W.id!=='aot')return af2.apply(this,arguments);const y=S.year;
+  if(y>854)return pick([['กลุ่มเยเกอริสต์หัวรุนแรง','',R(28,46),'ชายสวมปลอกแขนเยเกอริสต์ล้อมคุณไว้ "แกเป็นพวกเอาใจคนนอกเกาะใช่ไหม"'],['โจรปล้นท่าเรือ','',R(18,34),'คนกลุ่มหนึ่งกระชากกระเป๋าคุณที่ท่าเรือ']]);
+  if(S.place==='liberio')return['ทหารมาร์เลย์ขี้เมา','',R(24,40),'ทหารมาร์เลย์สองนายหาเรื่องชาวเอลเดียในเขตกักกัน'];
+  return af2.apply(this,arguments);};}
+
+
+/* --- b_foes62.js --- */
+/* ===== v62 lore movesets: every foe picks its own techniques each turn; the last move is its signature (used on heavy turns) ===== */
+const EMV={
+  /* Attack on Titan */
+  eren:[['หมัดไททันจู่โจม','titan'],['หมัดแข็งตัว','harden'],['เสียงคำรามพิกัด','scream'],['หอกผลึกพุ่งจากพื้น','crystalspike']],
+  levi:[['ฟันวนหมุนตัว','levispin'],['ใบมีดคู่เฉือนท้ายทอย','odm'],['ทิ้งระเบิดควันแล้วฟัน','odm'],['พายุใบมีดของลีไว','levispin']],
+  mikasa:[['ใบมีดคู่','odm'],['ฟันวนกลางอากาศ','levispin'],['หอกฟ้าผ่า','cannon'],['สังหารแบบแอคเคอร์แมน','levispin']],
+  annie:[['เตะต่ำล้มเข่า','tstomp'],['เตะแข็งตัว','harden'],['เตะหมุนตัว','tstomp'],['เสียงกรีดร้องเรียกไททัน','scream']],
+  reiner:[['พุ่งชนด้วยเกราะ','tstomp'],['หมัดหุ้มเกราะ','harden'],['ล็อกคอทุ่ม','tstomp'],['พุ่งชนเต็มแรงไททันเกราะ','harden']],
+  zeke:[['ขว้างก้อนหิน','rockthrow'],['ขว้างกรวดเป็นห่า','rockthrow'],['คำรามสั่งไททันไร้สติ','scream'],['ห่ากระสุนหินถล่มทุ่ง','rockthrow']],
+  kenny:[['ลูกซองคู่','shotgun'],['ยิงตะขอแล้วถีบ','odm'],['ฟันมีดสั้นจากหลังเสา','odm'],['ลูกซองระยะประชิด','shotgun']],
+  floch:[['ยิงปืนไรเฟิล','gun'],['ใบมีดเครื่องสามมิติ','odm'],['ยิงหอกฟ้าผ่า','cannon']],
+  gabi:[['ยิงปืนไรเฟิล','gun'],['ขว้างระเบิด','cannon'],['ซุ่มยิงจากหลังคา','gun']],
+  /* Naruto */
+  naruto:[['คาถาแยกเงาพันร่าง','rasengan'],['กระสุนวงจักร','rasengan'],['คาถาเซียน','rasengan'],['กระสุนวงจักรดาวกระจาย','rasengan']],
+  sasuke:[['คาถาไฟลูกใหญ่','fire'],['จิโดริ','chidori'],['เนตรวงแหวนลวงตา','genjutsu'],['คิรินสายฟ้าฟาด','chidori']],
+  itachi:[['เปลวไฟอามาเทราสึ','fire'],['สึคุโยมิ','genjutsu'],['แยกร่างอีกา','genjutsu'],['ซูซาโนะโอะ','susanoo']],
+  orochimaru:[['งูพันธนาการ','tendril'],['ดาบคุซานางิจากปาก','slash'],['ลอกคราบคืนชีพ','tendril'],['คาถาแปดหัวงู (ยามาตะ)','tendril']],
+  gaara:[['ทรายพันธนาการ','sand'],['โลงทราย','sand'],['โล่ทรายสมบูรณ์','sand'],['ฝังศพทราย','sand']],
+  obito:[['คามุยดูดมิติ','genjutsu'],['ทะลุผ่านร่าง','genjutsu'],['ไฟของอุจิวะ','fire'],['จับเวลาคามุย','genjutsu']],
+  kakashi:[['คาถาแยกร่างเงา','bolt'],['ไรคิริ','chidori'],['ลอกเลียนวิชาด้วยเนตรวงแหวน','genjutsu'],['ไรคิริเต็มกำลัง','chidori']],
+  jiraiya:[['ผมเข็มพิษ','tendril'],['กระสุนวงจักร','rasengan'],['คาถาไฟน้ำมันคางคก','fire'],['โหมดเซียนคางคก','rasengan']],
+  tsunade:[['หมัดพันกิโล','punch'],['ส้นเท้าทลายพื้น','punch'],['ร่างร้อยแปดตราฟื้นฟู','punch']],
+  gai:[['ลมหมุนใบไม้','gates'],['เปิดประตูที่หก','gates'],['ช้างยามเย็น (เซกิโซ)','gates'],['ยากาย ท่าราตรีประตูที่แปด','gates']],
+  lee:[['ลมหมุนใบไม้','gates'],['ดอกบัวด้านหน้า','gates'],['เปิดประตูที่ห้า','gates']],
+  neji:[['แปดทิศ หกสิบสี่ฝ่ามือ','palms'],['แปดทิศ กระแสวน (ไคเท็น)','palms'],['แปดทิศ หนึ่งร้อยยี่สิบแปดฝ่ามือ','palms']],
+  hinata:[['หมัดอ่อนโยน (จูเคน)','palms'],['ฝ่ามือคู่สิงห์','palms'],['แปดทิศ หกสิบสี่ฝ่ามือพิทักษ์','palms']],
+  nagato:[['ชินระเทนเซย์','repulse'],['บันโชเท็นอิน','repulse'],['ดูดวิญญาณ','genjutsu'],['ชิบาคุเทนเซย์','repulse']],
+  konan:[['กระดาษพันธนาการ','paperdoll'],['ห่ากระดาษคมมีด','paperdoll'],['ทะเลกระดาษหกร้อยล้านแผ่น','paperdoll']],
+  deidara:[['ดินเหนียวระเบิด C1','clay'],['นกดินระเบิด C2','clay'],['ระเบิดนาโน C4','clay'],['ศิลปะคือระเบิด','clay']],
+  zabuza:[['คาถาซ่อนกายในสายหมอก','water'],['ดาบตัดหัวฟัน','slash'],['คาถาวารีมังกร','water']],
+  haku:[['เข็มเซ็มบง','slash'],['กระจกน้ำแข็งมาร','frostbind'],['เข็มพันเล่ม','frostbind']],
+  shikamaru:[['เงาพันธนาการ','tendril'],['เงารัดคอ','tendril'],['แผนสองร้อยตา','tendril']],
+  killerb:[['ดาบเจ็ดเล่มแร็ป','slash'],['หมัดหนวดปลาหมึก','punch'],['ระเบิดหางสัตว์','bijuu']],
+  /* One Piece */
+  luffy:[['หนังยางปืนกล','punch'],['หนังยางขวานยักษ์','punch'],['เกียร์ 2','punch'],['คิงคองกัน','punch']],
+  zoro:[['สามดาบ โอนิกิริ','threeswords'],['ปืนใหญ่ร้อยแปดปอนด์','threeswords'],['อสุระ เก้าดาบ','threeswords']],
+  sanji:[['คอนกาส ช็อต','punch'],['ขาปีศาจ (เดียเบิลจัมบ์)','fire'],['เตะชุดเนื้อ (ปาร์ตี้ตาเท็ด)','punch']],
+  nami:[['คลิมาแทค ธันเดอร์โบลต์','bolt'],['เมฆพายุ','bolt'],['ซูส ฟ้าผ่าเทพ','bolt']],
+  robin:[['ฮานะ ฮานะ แขนบานสะพรั่ง','petals'],['แคลทช์','petals'],['กิกันเตสโก มาโน','petals']],
+  smoker:[['หมัดควันขาว','df_cloud'],['จิตเตะหินไคโร','slash'],['ควันขาวห่อร่าง','df_cloud']],
+  garp:[['กำปั้นแห่งความรัก','punch'],['ขว้างลูกปืนใหญ่ด้วยมือ','cannon'],['กาแลกซีอิมแพค','punch']],
+  ace:[['หมัดอัคคี','fire'],['หิ่งห้อยไฟ','fire'],['เพลิงพิพากษา (เอ็นเทย์)','fire']],
+  shanks:[['ฮาคิราชันย์กดดัน','ryuo'],['ฟันห่อฮาคิ','airblade'],['คามุซาริ','airblade']],
+  law:[['รูม','ratio'],['แชมเบิลส์','swapclap'],['แกมมาไนฟ์','slash']],
+  koby:[['โซรุ ก้าวไร้เงา','punch'],['ชิกัน ปืนนิ้ว','gun'],['หมัดฮาคิเกราะ','ryuo']],
+  sabo:[['กรงเล็บมังกร','punch'],['หมัดไฟเปลวมังกร','fire'],['หมัดเพลิง (ฮิเคน)','fire']],
+  franky:[['ฟรานกี้ไฟร์บอล','cannon'],['ปืนใหญ่ข้อมือ','cannon'],['เรดิคัลบีม','cannon']],
+  /* Bleach */
+  ichigo:[['เก็ตสึกะ เท็นโช','getsuga'],['ชุนโปไล่ฟัน','slash'],['หน้ากากฮอลโลว์','cero'],['เก็ตสึกะ เท็นโชสีดำ','getsuga']],
+  byakuya:[['เซ็มบงซากุระ','petals'],['ฮาโดที่ 4 เบียคุไร','bolt'],['เซ็มบงซากุระ คาเงโยชิ','petals']],
+  kenpachi:[['ฟันเต็มแรงไม่มีท่า','slash'],['หัวเราะขณะฟัน','slash'],['เคนโด้ฟันเดียวทลายตึก','slash']],
+  toshiro:[['เฮียวรินมารุ','frostbind'],['บังไค ไดกุเร็น เฮียวรินมารุ','frostbind'],['เฮียวริว เซ็นคะ','frostbind']],
+  aizen:[['เคียวกะ ซุยเก็ตสึ สะกดจิต','genjutsu'],['คุโรฮิทสึงิ','kurohitsugi'],['ฮาโดที่ 33 โซคัตสึย','sokatsui'],['ดาบเดียวผ่าร่าง','slash']],
+  renji:[['ซาบิมารุ','slash'],['ฮิโคตสึ ไทโฮ','cero'],['ฮิฮิโอ ซาบิมารุ','cero']],
+  rukia:[['โซเดะ โนะ ชิรายูกิ','frostbind'],['ฮาโดที่ 33 โซคัตสึย','sokatsui'],['ระบำแรก ซึกิชิโระ','frostbind']],
+  yoruichi:[['ชุนโค','bolt'],['เตะเร็วเกินตา','punch'],['หมัดเทพสายฟ้า','bolt']],
+  urahara:[['เบนิฮิเมะ','slash'],['ชิบุกิ เบนิฮิเมะ','cero'],['ฮาโดที่ 63 ไรโคโฮ','kurohitsugi']],
+  uryu:[['ลิคท์ เรเกน','arrows'],['ซีเลชไนเดอร์','arrows'],['ห่าธนูวิญญาณ','arrows']],
+  chad:[['บราโซ เดเรชา เด กิกันเต','punch'],['บราโซ อิซกิเอร์ดา เดล ดิอาโบล','cero'],['ลา มูเออร์เต','punch']],
+  /* Jujutsu Kaisen */
+  gojo:[['อาโอ (สีน้ำเงิน)','purple'],['อากะ (สีแดง)','redball'],['มุเก็น ไร้ขีดจำกัด','purple'],['มุราซากิ (สีม่วง)','purple']],
+  sukuna:[['ไค (ตัด)','slashes'],['ฮาจิ (ผ่า)','slashes'],['ฟูกะ ธนูเพลิง','fire'],['อาณาเขต วิหารมารร้าย','slashes']],
+  geto:[['ปล่อยคำสาปที่เก็บไว้','curses'],['คำสาปพันธนาการ','curses'],['คำสาปขั้นพิเศษ','curses'],['อุซึมากิ','curses']],
+  mahito:[['เปลี่ยนรูปวิญญาณ','tendril'],['ร่างกลายพันธุ์ทะลัก','tendril'],['แตะวิญญาณ','tendril'],['อาณาเขต ร่างพุทธะเปลี่ยนรูป','tendril']],
+  jogo:[['ลาวาพุ่งจากพื้น','fire'],['แมลงไฟ','fire'],['ดาวตกภูเขาไฟ','fire'],['อาณาเขต เตาเผาภูเขาไฟ','fire']],
+  hanami:[['รากไม้พันธนาการ','tendril'],['ดอกไม้ดูดพลัง','petals'],['ต้นไม้ปีศาจ','tendril']],
+  dagon:[['ฝูงปลาคำสาป','water'],['ชิกิงามิน้ำ','water'],['อาณาเขตชายหาดไร้ขอบ','water']],
+  toji:[['มีดอินเวิร์ทสเปียร์','slash'],['กระบองยูอุน','staff'],['หอกอามะ โนะ ซาคาโฮโกะ','staff']],
+  nanami:[['อัตราส่วน 7:3','ratio'],['ล่วงเวลา','ratio'],['ทลาย (คุดาคิ)','ratio']],
+  todo:[['บูกี้วูกี้ ตบมือสลับที่','swapclap'],['แบล็กแฟลช','punch'],['บูกี้วูกี้','swapclap']],
+  itadori:[['หมัดเบี่ยงเบน','punch'],['แบล็กแฟลช','punch'],['เตะหมุนตัว','punch'],['แบล็กแฟลชต่อเนื่อง','punch']],
+  megumi:[['สุนัขอสูร (เกียวคุเคน)','dogs'],['นูเอะ','bolt'],['กามะ กบพันธนาการ','tendril'],['อัญเชิญมาโฮรากะ','dogs']],
+  nobara:[['ตะปูหุ่นฟาง (ฮาริ)','nails'],['ตะปูระเบิด (ฮาซะ)','nails'],['สั่นพ้อง (เคียวเมย์)','nails']],
+  maki:[['หอกพลังคำสาป','staff'],['เคลื่อนที่ไร้พลังคำสาป','staff'],['ดาบมังกรของโทจิ','slash']],
+  yuta:[['ริกะ ลงมา','rika'],['ดาบพลังคำสาปเต็มเปี่ยม','slash'],['ลอกเลียนวาจาสาป','speech'],['ความรักบริสุทธิ์ ลำแสงคำสาป','rika']],
+  inumaki:[['วาจาสาป "หยุด"','speech'],['วาจาสาป "ระเบิด"','speech'],['วาจาสาป "ตาย"','speech']],
+  choso:[['เลือดทะลวง','bloodbeam'],['ซุปเปอร์โนวา','bloodbeam'],['เลือดทะลวงเต็มกำลัง','bloodbeam']],
+  kenjaku:[['แรงโน้มถ่วงกดทับ','repulse'],['ปล่อยคำสาปของเกะโท','curses'],['อาณาเขตของเคนจาคุ','curses']],
+  uraume:[['น้ำแข็งพันธนาการ','frostbind'],['หอกน้ำแข็ง','frostbind'],['ภูเขาน้ำแข็งบีบอัด','frostbind']],
+  kashimo:[['สายฟ้าไม้พลอง','bolt'],['ประจุไฟฟ้ารั่ว','bolt'],['สัตว์อสูรอำพัน','bolt']],
+  ishigori:[['ปืนใหญ่พลังคำสาป','cannon'],['กระสุนพลังคำสาปต่อเนื่อง','cannon'],['ปืนใหญ่กรานิตเต็มกำลัง','cannon']],
+  yorozu:[['ร่างโครงสร้างเหลว','construct'],['ทรงกลมสมบูรณ์','construct'],['แมลงเกราะ','construct']],
+  /* JoJo */
+  jotaro:[['สตาร์แพลทินัม โอระโอระ','standrush'],['ดีดลูกเหล็กด้วยนิ้ว','standability'],['เดอะเวิลด์ หยุดเวลา','timestop']],
+  dio:[['มุดะมุดะมุดะ','standrush'],['มีดขว้างนับร้อย','standability'],['โรดโรลเลอร์ดะ!','standability'],['เดอะเวิลด์','timestop']],
+  josuke:[['เครซี่ไดมอนด์ โดราราร่า','standrush'],['ซ่อมเศษแก้วพุ่งกลับ','standability'],['ซ่อมแล้วกลายเป็นหิน','standability']],
+  kira:[['คิลเลอร์ควีน ระเบิดสัมผัส','standability'],['ชีเออร์ฮาร์ทแอทแทค','standability'],['ไบท์ซาดัสต์','standability']],
+  giorno:[['โกลด์เอ็กซ์พีเรียนซ์ มุดะ','standrush'],['ให้ชีวิตแก่สิ่งของ','standability'],['โกลด์เอ็กซ์พีเรียนซ์ เรเควียม','standability']],
+  bucciarati:[['สติกกี้ฟิงเกอร์ส อาริอาริ','standrush'],['ซิปเปิดร่าง','standability'],['ซิปแยกร่างหนี','standability']],
+  diavolo:[['คิงคริมสันลบเวลา','timestop'],['เอพิทาฟทำนายอนาคต','standability'],['หมัดทะลุอก','standrush']],
+  pucci:[['ไวท์สเนก ดึงดิสก์','standability'],['ซีมูน','standability'],['เมดอินเฮฟเว่นเร่งเวลา','timestop']],
+  polnareff:[['ซิลเวอร์แชริออต แทงรัว','standrush'],['ถอดเกราะซิลเวอร์แชริออต','standrush'],['ร่างแยกเงาดาบ','standability']],
+  avdol:[['เมจิเชี่ยนเรด','fire'],['ตรวจจับชีวิตเปลวไฟ','fire'],['ครอสไฟร์เฮอริเคน','fire']],
+  kakyoin:[['เอเมอรัลด์สแปลช','standability'],['ไฮโรแฟนท์กรีน พันธนาการ','tendril'],['เอเมอรัลด์สแปลช รัศมี 20 เมตร','standability']],
+  joseph:[['ฮามอนโอเวอร์ไดรฟ์','ripplecut'],['แฮร์มิตเพอร์เพิล','tendril'],['ประโยคต่อไปของแกคือ...','ripplecut']],
+  okuyasu:[['เดอะแฮนด์ ลบพื้นที่','standability'],['ดึงคู่ต่อสู้เข้าหา','standability'],['ลบทุกอย่างในเส้นทาง','standability']],
+  koichi:[['เอคโค่ส์ แอ็ค 2','standability'],['เอคโค่ส์ แอ็ค 3 ฟรีซ','standability']],
+  rohan:[['เฮฟเว่นส์ดอร์','standability'],['เขียนคำสั่งลงหน้าคน','standability']],
+  jolyne:[['สโตนฟรี โอราโอรา','standrush'],['ร่างกลายเป็นเส้นด้าย','tendril'],['ตาข่ายด้ายรัด','tendril']],
+  /* Dragon Ball */
+  goku:[['คาเมฮาเมฮา','kamehameha'],['ไคโอเคน','kaioken'],['ซูเปอร์ไซย่า','ssj'],['เก็นกิดามะ','genkidama']],
+  vegeta:[['ปืนกาลิค','galick'],['บิ๊กแบงแอทแทค','kiblast'],['ซูเปอร์ไซย่า','ssj'],['ไฟนอลแฟลช','galick']],
+  piccolo:[['มาคังโคซัปโปะ','makanko'],['แขนยืดจับ','punch'],['กระสุนพลังเป็นห่า','kiblast'],['ลำแสงทะลวงสะดือ','makanko']],
+  gohan:[['มาเซ็นโกะ','masenko'],['คาเมฮาเมฮาพ่อลูก','kamehameha'],['ซูเปอร์ไซย่าสอง','ssj2']],
+  krillin:[['ไคเอ็นซัง จานตัด','kienzan'],['ไทโยเค็น','taiyoken'],['คาเมฮาเมฮา','kamehameha']],
+  tien:[['คิโคโฮ','kikoho'],['ตาที่สาม','kiblast'],['คิโคโฮสี่ร่าง','kikoho']],
+  frieza:[['เดธบีม','kiblast'],['ไคเอ็นซัง','kienzan'],['เดธบอล','kiblast'],['ทำลายดาวเคราะห์','kiblast']],
+  cell:[['คาเมฮาเมฮาของเซล','kamehameha'],['ดูดพลังด้วยหาง','tendril'],['ระเบิดตัวเองทั้งดาว','kiblast']],
+  buu:[['ลำแสงช็อกโกแลต','candybeam'],['ร่างยางยืดกลืนกิน','tendril'],['คำรามทะลุมิติ','kiblast']],
+  beerus:[['ฮาไค','kiblast'],['ดีดหน้าผาก','punch'],['ทรงกลมแห่งการทำลาย','kiblast']],
+  raditz:[['ดับเบิลซันเดย์','kiblast'],['หมัดไซย่า','punch'],['ลูกบอลพลังระยะใกล้','kiblast']],
+  a18:[['ลำแสงพลังจากมือ','kiblast'],['เตะไม่รู้เหนื่อย','punch'],['พลังงานไม่มีวันหมด','kiblast']],
+  trunks:[['ดาบฟันกลางอากาศ','slash'],['เบิร์นนิ่งแอทแทค','kiblast'],['ฟันขาดกลางลำตัว','slash']],
+  roshi:[['คาเมฮาเมฮาต้นฉบับ','kamehameha'],['หมัดเมาเหล้า','punch'],['มาฟูบะ','kiblast']],
+  /* Lookism */
+  hyungseok:[['ก๊อปท่าในพริบตา','lk_copy'],['ร่างกายจำท่า','lk_copy'],['อุลตร้าอินสติงก์','lk_ui']],
+  zack:[['หมัดมวยหนัก','lkm_str'],['ฟุตเวิร์คคอมโบ','lk_combo'],['เคาน์เตอร์ครอส','lk_combo']],
+  jay:[['คาลี','lk_gap'],['มีดฝึกแทงต่อเนื่อง','lk_combo'],['ล็อกข้อต่อ','lk_combo']],
+  vasco:[['ซิสเตมา','lk_combo'],['ชนเต็มแรง','lkm_str'],['หมัดชิ้นใหญ่ของจัสติส','lkm_str']],
+  johan:[['ลอกเลียนท่าทั้งหมด','lk_copy'],['ท่าเต้นที่ไม่มีใครอ่านออก','lk_combo'],['ตาพระเจ้า','lk_copy']],
+  eli:[['ร่างสัตว์ป่า','lkm_spd'],['เท้าเหยียบไล่ต้อน','lk_combo'],['สัญชาตญาณสัตว์ร้าย','lkm_spd']],
+  jake:[['ใจนักเลงเจียงตง','lkm_end'],['หมัดดิบไร้ศิลปะ','lkm_str'],['หมัดหนักจากหัวใจ','lkm_str']],
+  gun:[['คาราเต้ซ้ายโหด','lkm_str'],['สายเลือดยามาซากิ','lk_ui'],['คาราเต้ขั้นสุด','lkm_tec']],
+  goo:[['ดาบปากกา','slash'],['ท่าดาบที่ไม่มีใครเห็น','slash'],['ดาบปากกา ขั้นที่สอง','slash']],
+  gapryong:[['หมัดเดียวทลายแก๊ง','lkm_str'],['สัญชาตญาณนักสู้','lk_ui'],['หมัดของคิม กัปรยอง','lk_gap']],
+  james:[['ร่างกายหยุดเวลา','lk_ui'],['ลอกเลียนตำนาน','lk_copy'],['หมัดของยูอิ','lkm_str']],
+  taesoo:[['หมัดตรงทะลวง','lkm_str'],['พุ่งชนเต็มกำลัง','lkm_str'],['หมัดของราชาโซล','lkm_str']],
+  logan:[['ต่อยอัดแบบไม่ยั้ง','lkm_str'],['ปล้ำทุ่ม','lk_combo'],['หมัดของกษัตริย์โรงเรียน','lkm_str']],
+  samuel:[['ตีลังกาเตะ','lk_combo'],['เกมโกงของวอร์คเกอร์','lk_combo'],['หมัดของผู้อยู่เหนือทุกคน','lkm_str']],
+  warren:[['มวยไทย ศอกกลับ','lkm_str'],['เข่าลอย','lk_combo'],['ศอกไทยจากเงา','lkm_str']],
+  shingen:[['หมัดตระกูลยามาซากิ','lkm_str'],['ข่มด้วยจิต','lk_ui'],['พลังแห่งยามาซากิ','lk_ui']],
+  /* Heian */
+  michinaga:[['ยันต์ป้องกันราชวัง','construct'],['คาถาผนึกปีศาจ','construct']],
+  tengen:[['ม่านผนึกทั่วเมือง','construct'],['ม่านปฏิเสธ','construct']],
+};
+/* nameless foes: matched by name, then by type flags, per world */
+const EMVN=[
+  [/วานร/,'zeke'],[/ไททันเกราะ/,'reiner'],[/ไททันหญิง/,'annie'],[/ไททันมหึมา|โคลอสซัส/,[['ไอน้ำแผดเผา','steamblast'],['เตะกำแพง','tstomp'],['ระเบิดร่างเปลวไฟ','steamblast']]],
+  [/ไททันจู่โจม/,'eren'],[/ไททันขากรรไกร/,[['ขากรรไกรงับเหล็ก','bite'],['ปีนกระโจนเร็ว','tstomp'],['งับแตกเกราะ','bite']]],
+  [/ไททันรถถัง|ไททันแบก/,[['ปืนกลบนหลัง','gun'],['ปืนใหญ่ติดหลัง','cannon']]],
+  [/สารวัตรทหาร|หน่วยต่อต้านมนุษย์/,'kenny'],[/เยเกอริสต์/,'floch'],[/มาร์เลย์|ทหารเอลเดีย/,[['ยิงปืนไรเฟิล','gun'],['ขว้างระเบิดมือ','cannon'],['ปืนต่อต้านไททัน','cannon']]],
+  [/มาดาระ/,[['ไฟพันธนาการมังกร','fire'],['ป่าไม้พันธนาการ','tendril'],['ซูซาโนะโอะสมบูรณ์','susanoo'],['อุกกาบาตตก','rockthrow']]],
+  [/เพน|อากัตสึกิ|แสงอุษา/,'nagato'],[/คาบูโตะ/,'orochimaru'],[/อันบุ|หน่วยลับ|นักล่าค่าหัว|โออินิน/,[['ขว้างคุไนสามเล่ม','slash'],['คาถาสับเปลี่ยนร่าง','genjutsu'],['ระเบิดยันต์','fire'],['ดาบทันโตะจากเงา','slash']]],
+  [/คิซารุ/,[['เตะแสง','bolt'],['ยาซากานิ โนะ มากาทามะ','bolt'],['อามะ โนะ มุราคุโมะ','bolt']]],[/อาคาอินุ|ซากาซึกิ/,[['หมัดแมกม่า (ไดฟุนกะ)','fire'],['ห่าภูเขาไฟ','fire'],['อินุงามิ กุเร็น','fire']]],
+  [/อาโอคิยิ|คุซัน/,[['ไอซ์เอจ','frostbind'],['ดาบน้ำแข็ง','frostbind']]],[/หนวดขาว/,[['ระเบิดแผ่นดินไหว','rumbling'],['ดาบนาจินาตะ','slash']]],
+  [/ไคโด/,[['ลมหายใจโบโระ','fire'],['ไรเม ฮักไค','ryuo'],['ฮาคิราชันย์ห่อกระบอง','bolt']]],[/ทหารเรือ|นาวิกโยธิน|ผู้พันเรือ/,[['ยิงปืนคาบศิลา','gun'],['ฟันดาบ','slash'],['ยิงปืนใหญ่ข้างเรือ','cannon']]],
+  [/โจรสลัด|ลูกเรือ/,[['ฟันดาบโค้ง','slash'],['ยิงปืนสั้น','gun'],['เหวี่ยงสมอ','punch']]],[/นักล่าค่าหัว/,[['ยิงปืนลูกโม่','gun'],['ฟันดาบยาว','slash'],['ตาข่ายจับ','tendril']]],
+  [/ยฮาบัค|ยูฮาบัค/,[['ธนูวิญญาณมหาศาล','arrows'],['เดอะออลไมตี้','genjutsu'],['ดาบเงาวิญญาณ','slash']]],[/ควินซี/,'uryu'],
+  [/เมโนส|กิลเลียน/,[['เซโร่ขนาดยักษ์','cero'],['กินฮอลโลว์','bite']]],[/อารันคาร์|เอสปาด้า/,[['เซโร่','cero'],['โซนิโด','slash'],['เรซูเรกซิออน','cero'],['เซโร่ออสคูรัส','cero']]],
+  [/ฮอลโลว์/,[['ตะปบกรงเล็บ','bite'],['คำรามกินวิญญาณ','scream'],['เซโร่','cero']]],[/หน่วยลับ|ออนมิทสึ|ซอยฟง/,[['ชุนโปไล่หลัง','slash'],['ซุยเซ็มบาจิ ผึ้งมรณะ','slash'],['ชุนโค','bolt']]],
+  [/ฮิงุรุมะ/,[['ค้อนตัดสิน','staff'],['ดาบประหาร','slash'],['อาณาเขตการตัดสินประหาร','construct']]],[/นาโอยะ/,[['วิชาฉายภาพ 24 เฟรม','punch'],['พุ่งเร็วเสียง','punch'],['อาณาเขตครรภ์ของแม่ชี','construct']]],
+  [/คำสาป|ผี|ปีศาจ/,[['หนวดคำสาปรัด','tendril'],['กรีดร้องกัดกร่อน','scream'],['กลืนกิน','bite'],['พลังคำสาปทะลัก','cursed']]],
+  [/ผู้ใช้คุณไสย|นักไสยเวท|ผู้ประหาร/,[['หมัดเสริมพลังคำสาป','punch'],['ปล่อยชิกิงามิ','dogs'],['วิชาประจำตัว','cursed'],['ขยายอาณาเขต','construct']]],
+  [/ปาสซีโอเน่|ผู้ใช้สแตนด์|มือปืน/,[['สแตนด์รัวหมัด','standrush'],['ความสามารถของสแตนด์','standability'],['ยิงจากเงา','gun']]],
+  [/เรดริบบอน|หุ่นยนต์|ไซบอร์ก/,[['ปืนเลเซอร์','kiblast'],['หมัดเหล็ก','punch'],['จรวดหลัง','cannon']]],[/ไซย่า/,'raditz'],
+  [/ตำรวจ|นักสืบ/,[['กระบองตำรวจ','staff'],['ล็อกกุญแจมือ','punch'],['ยิงปืนเตือน','gun']]],
+  [/แก๊ง|นักเลง|เจ้าพ่อ|ลูกน้อง/,[['หมัดตรงข้างถนน','lkm_str'],['ไม้เบสบอล','staff'],['รุมกระทืบ','lk_combo']]],
+  [/ซามูไร|ทหารโชกุน|องครักษ์/,[['ฟันดาบซามูไร','slash'],['แทงทวน','staff'],['ยิงธนูม้าวิ่ง','arrows']]],
+];
+const EMVW={
+  aot:{t:[['ตะปบ','tstomp'],['งับ','bite'],['ทิ้งตัวทับ','tstomp'],['กลืนทั้งตัว','bite']],h:[['ยิงปืนคาบศิลา','gun'],['ฟันใบมีดเครื่องสามมิติ','odm'],['แทงดาบปลายปืน','gun']]},
+  naruto:{h:[['ขว้างคุไน','slash'],['คาถาไฟ','fire'],['คาถาน้ำ','water'],['คาถาลม','wind'],['ระเบิดยันต์','fire']],b:[['ตะปบ','bite'],['พุ่งชน','bite'],['คำราม','scream']]},
+  op:{h:[['ฟันดาบโค้ง','slash'],['ยิงปืนสั้น','gun'],['หมัดฮาคิ','punch'],['ยิงปืนใหญ่','cannon']],b:[['งับ','bite'],['ฟาดหาง','bite'],['ดำดิ่งพุ่งชน','bite']]},
+  bleach:{h:[['ฟันดาบวิญญาณ','slash'],['คิโดสามสิบเอ็ด','sokatsui'],['ชุนโปไล่ฟัน','slash'],['ปลดปล่อยดาบ','slash']],m:[['ตะปบ','bite'],['เซโร่','cero'],['คำรามกินวิญญาณ','scream']]},
+  jjk:{c:[['หนวดคำสาป','tendril'],['กลืนกิน','bite'],['กรีดร้อง','scream'],['พลังคำสาปทะลัก','cursed']],h:[['หมัดเสริมพลังคำสาป','punch'],['อาวุธต้องสาป','staff'],['วิชาประจำตัว','cursed']]},
+  heian:{c:[['หนวดคำสาป','tendril'],['กลืนกิน','bite'],['พลังคำสาปทะลัก','cursed']],h:[['ฟันดาบทาจิ','slash'],['ยิงธนู','arrows'],['ยันต์ไสยเวท','cursed']]},
+  jjedo:{c:[['หนวดคำสาป','tendril'],['กลืนกิน','bite'],['พลังคำสาปทะลัก','cursed']],h:[['ฟันดาบคาตานะ','slash'],['แทงทวน','staff'],['ยิงปืนไฟ','gun']]},
+  jojo:{h:[['สแตนด์รัวหมัด','standrush'],['ความสามารถของสแตนด์','standability'],['จู่โจมจากมุมมืด','standrush']]},
+  db:{h:[['หมัดคิ','punch'],['ลูกบอลพลัง','kiblast'],['เตะกลางอากาศ','punch'],['ลำแสงพลังเต็มแรง','kiblast']],b:[['งับ','bite'],['ฟาดหาง','bite'],['พ่นไฟ','fire']]},
+  lookism:{h:[['หมัดตรง','lkm_str'],['เตะต่ำ','lk_combo'],['คอมโบข้างถนน','lk_combo'],['หมัดหนักเต็มแรง','lkm_str']]},
+};
+function enMove(E,intent){
+  const an0=enAnim(E);let L=null;const nm=E.n||'';
+  if(E.id&&EMV[E.id])L=EMV[E.id];
+  if(!L)for(const [re,v] of EMVN)if(re.test(nm)){L=typeof v==='string'?EMV[v]:v;break;}
+  if(!L){const g=EMVW[W.id]||{};L=(E.titan&&g.t)||(E.curse&&(g.c||g.m))||(E.mask&&(g.m||g.c))||(E.beast&&g.b)||g.h||null;}
+  if(!L||!L.length)return{n:ENAN[an0]||'โจมตี',a:an0};
+  let m;
+  if(intent==='heavy'||L.length===1)m=L[L.length-1];
+  else{const pool=L.slice(0,-1);m=pick(pool);if(m[0]===E._last&&pool.length>1)m=pool[(pool.indexOf(m)+1)%pool.length];}
+  E._last=m[0];
+  const a=ANIM[m[1]]?m[1]:(ANIM[an0]?an0:'punch');
+  return{n:m[0],a};
+}
+
+
+/* --- c_crime62.js --- */
+/* ===== v62 crime & pursuit: lore hunters come after you, you can fight, flee, hide, bribe or surrender;
+   prison is a place you live in (work, friends, appeals, bullies, a break-out plan) ===== */
+const LAWX={
+  aot:{u:S=>S.place==='liberio'?'ทหารมาร์เลย์':S.year>=854?'กลุ่มเยเกอริสต์':'สารวัตรทหาร',f:S=>S.place==='liberio'?['ทหารมาร์เลย์',48]:S.year>=854?['เยเกอริสต์',55]:['สารวัตรทหาร',45],
+    e:S=>S.year>=846&&S.year<=850?['หน่วยต่อต้านมนุษย์ของเคนนี่',82]:S.year>=854?['ฟลอค ฟอร์สเตอร์',62]:null,
+    j:S=>S.place==='liberio'?'คุกของมาร์เลย์ในเลแบรีโอ':'คุกใต้ดินในกำแพงซีน่า',alt:['หนีลงเมืองใต้ดิน','ผู้คนที่นั่นไม่ถามชื่อใคร'],
+    jl:['ผู้คุมโยนขนมปังขึ้นราผ่านลูกกรง','นักโทษห้องข้างๆ เล่าว่าเขาถูกจับเพราะพูดถึงโลกนอกกำแพง','น้ำหยดจากเพดานหินทั้งคืน']},
+  naruto:{u:S=>S.flags.outlaw?'นินจาหน่วยล่าตัว':'หน่วยอันบุ',f:S=>S.flags.outlaw?['นินจาหน่วยล่าตัว (โออินิน)',55]:['หน่วยอันบุ',52],
+    e:S=>castOK('kakashi')&&S.year>=64&&S.year<=90?['ฮาตาเกะ คาคาชิ',90]:null,
+    j:()=>'คุกปราสาทโฮซึกิ',alt:['ใช้คาถาแปลงร่างแล้วเดินผ่านด่าน','นินจาที่ตามล่ามองข้ามคุณไปแค่ครึ่งวินาที'],
+    jl:['ผู้คุมปราสาทโฮซึกิใช้ตราผนึกจักระกับนักโทษทุกคน','เสียงชายคนหนึ่งในห้องขังลึกสุดกรีดร้องเหมือนสัตว์ป่า ผู้คุมเรียกเขาว่าจูโกะ','งานประจำวันคือขุดหินจนมือแตก']},
+  op:{u:S=>'ทหารเรือ',f:S=>(S.flags.bounty||0)>=1e8?['สโมคเกอร์',82]:['นาวาโทแห่งกองทัพเรือ',52],
+    e:S=>(S.flags.bounty||0)>=3e8?['พลเรือเอกคิซารุ',96,'b']:null,
+    j:()=>'อิมเพลดาวน์',alt:['กระโดดเรือหนีลงทะเล','กระแสน้ำพาคุณไปเกยหาดเกาะเล็กๆ'],
+    jl:['ชั้นที่สองของอิมเพลดาวน์ สัตว์ประหลาดเดินตรวจทุกชั่วโมง','ความร้อนจากชั้นห้าทะลุพื้นขึ้นมา','ผู้คุมพูดถึงชายหมวกฟางที่บุกเข้ามาเมื่อปีก่อนด้วยเสียงสั่น']},
+  bleach:{u:S=>soul(S)?'หน่วยลับออนมิทสึคิโด':'ตำรวจ',f:S=>soul(S)?['หน่วยลับออนมิทสึคิโด',60]:['ตำรวจคาราคุระ',25],
+    e:S=>soul(S)&&S.year>=1990?['ซอยฟง',88]:null,
+    j:S=>soul(S)?'รังหนอนแมกก็อต':'สถานีตำรวจคาราคุระ',alt:['หนีผ่านเซ็นไคมอนไปโลกมนุษย์','ร่างวิญญาณของคุณลอยหายไปในรุ่งเช้า'],
+    jl:['ในรังหนอนแมกก็อต ไม่มีใครรู้ว่าตัวเองถูกขังมากี่ปี','ชายผมยาวในห้องข้างๆ ยิ้มทั้งวันและนับดาบในหัว','เรอัทสึของคุณถูกผนึกจนแขนขาหนักเหมือนหิน']},
+  jjk:{u:S=>sorc(S)||S.job?.id==='cuser'?'เบื้องบนของวงการไสยศาสตร์':'ตำรวจ',f:S=>sorc(S)||S.job?.id==='cuser'?['ผู้ใช้คุณไสยที่เบื้องบนส่งมา',66]:['ตำรวจนครบาลโตเกียว',28],
+    e:S=>(sorc(S)||S.job?.id==='cuser')&&(S.flags.kills||0)>=2?['ผู้ประหารของเบื้องบน',84]:null,
+    j:S=>sorc(S)?'ห้องกักกันใต้โรงเรียนไสยศาสตร์':'เรือนจำโตเกียว',alt:['ซ่อนพลังคำสาปแล้วกลืนไปกับฝูงชนชิบุยะ','ไม่มีใครในรถไฟสายยามาโนเตะสนใจคุณ'],
+    jl:['ยันต์ผนึกติดเต็มผนังห้องกักกัน','ทุกคืนจะมีคำสาประดับสี่มาเคาะประตูให้คุณได้ยิน','ผู้คุมเป็นผู้ใช้คุณไสยที่ไม่ยอมพูดชื่อตัวเอง']},
+  heian:{u:S=>hsorc(S)||hdark(S)?'นักไสยศาสตร์แห่งราชสำนัก':'เคบิอิชิ (ตำรวจหลวง)',f:S=>hsorc(S)||hdark(S)?['นักไสยศาสตร์แห่งราชสำนัก',62]:['เคบิอิชิ ตำรวจหลวง',40],
+    e:S=>(S.flags.kills||0)>=3?['นักรบของตระกูลฟุจิวาระ',78]:null,
+    j:()=>'คุกของกรมเคบิอิชิ',alt:['หนีขึ้นภูเขาทางเหนือของเกียวโต','พระฤาษีในภูเขาแบ่งข้าวให้คุณโดยไม่ถามอะไร'],
+    jl:['ผู้คุมจุดธูปกันวิญญาณทุกเย็น','ข่าวลือว่าสุคุนะเคยกินคนทั้งคุกในคืนเดียว','เสียงขลุ่ยจากวังลอยมาตามลม']},
+  jjedo:{u:S=>S.year<1603?'ซามูไรของไดเมียว':S.year<1868?'โอคัปปิกิ (ตำรวจเอโดะ)':'ตำรวจเมจิ',f:S=>S.year<1603?['ซามูไรของไดเมียว',50]:S.year<1868?['โอคัปปิกิกับลูกน้อง',40]:['ตำรวจเมจิ',42],
+    e:S=>(S.flags.kills||0)>=3?['นักดาบมือสังหารของบุเกียว',75]:null,
+    j:S=>S.year<1868&&S.year>=1603?'คุกเด็นมะโจ':'คุกของแคว้น',alt:['ซ่อนตัวในย่านโยชิวาระ','ไม่มีใครถามชื่อในย่านโคมแดง'],
+    jl:['คุกเด็นมะโจแออัดจนต้องนอนตะแคง','หัวหน้าห้องขังเก็บส่วยข้าวจากนักโทษใหม่','ทุกเช้ามีชื่อนักโทษถูกเรียกไปลานประหาร']},
+  jojo:{u:S=>gang(S)?'หน่วยลับของบอส':'ตำรวจโมริโอ',f:S=>gang(S)?['มือสังหารของปาสซีโอเน่',70]:['ตำรวจโมริโอ',28],
+    e:S=>(S.flags.kills||0)>=2?['ผู้ใช้สแตนด์ของมูลนิธิสปีดวาแกน',80]:null,
+    j:()=>'สถานกักกันของตำรวจ',alt:['ใช้สแตนด์ลบร่องรอยแล้วหายไป','กล้องวงจรปิดทั้งย่านจับภาพคุณไม่ได้แม้แต่เฟรมเดียว'],
+    jl:['ผู้ต้องขังคนหนึ่งยืนยันว่าเห็นวิญญาณยืนอยู่ข้างหลังผู้คุม','อาหารคุกแย่กว่าร้านของโทนิโอเป็นร้อยเท่า']},
+  db:{u:S=>S.year<751?'กองทัพริบบอนแดง':'ตำรวจของราชาโลก',f:S=>S.year<751?['ทหารริบบอนแดง',45]:['ตำรวจของราชาโลก',30],
+    e:S=>S.year<751&&(S.heat||0)>=60?['ทหารรับจ้างเท้าโดคาสึ',70]:null,
+    j:()=>'เรือนจำเมืองหลวงตะวันตก',alt:['บินหนีขึ้นฟ้า','ตำรวจได้แต่ยืนมองคุณเล็กลงเรื่อยๆ บนท้องฟ้า'],
+    jl:['นักโทษห้องข้างๆ อ้างว่าเคยฝึกกับผู้เฒ่าเต่า','ทีวีในคุกฉายข่าวมิสเตอร์ซาตานซ้ำทุกวัน']},
+  lookism:{u:S=>'ตำรวจ',f:S=>S.flags.crew?['คนของเวิร์กเกอร์ส',62]:['ตำรวจกังนัม',30],
+    e:S=>(S.heat||0)>=70?['หน่วยกำจัดของแก๊งใหญ่',80]:null,
+    j:S=>S.age<19?'สถานพินิจเด็กและเยาวชน':'เรือนจำโซล',alt:['หนีไปหลบที่แก๊งอื่น','หัวหน้าแก๊งรับคุณไว้ แต่บอกว่า "นายเป็นหนี้ฉัน"'],
+    jl:['ในสถานพินิจ ทุกคนวัดกันด้วยหมัด','ผู้คุมหลับตาข้างหนึ่งเวลาเด็กๆ ตีกันในห้องอาบน้ำ']},
+};
+const lawOf=()=>LAWX[W.id]||{u:()=>LAW(),f:()=>[LAW(),45],e:()=>null,j:()=>'คุก',alt:['หนีไปเมืองอื่น','คุณเริ่มชีวิตใหม่ในที่ที่ไม่มีใครรู้จัก'],jl:['วันในคุกยาวเหมือนปี']};
+function crimeName(){return S.flags.kills?'ฆาตกรรม':S.flags.heists?'ปล้นทรัพย์':'ก่ออาชญากรรม';}
+function caught(){const L=lawOf();S.flags.jailN=L.j(S);say(`${L.u(S)}จับตัวคุณได้ และส่งตัวไป${S.flags.jailN}`,'bad');sentence(crimeName());}
+function fleeTown(){
+  if(W.id==='naruto'){if(!S.flags.outlaw){S.flags.outlaw=1;setJob('missing');S.rent=null;}heat(-30);return;}
+  const ks=Object.keys(W.places).filter(k=>k!==S.place);if(ks.length){S.place=pick(ks);S.rent=null;if(S.job&&!S.job.mil)S.job=null;}S.flags.wanted=1;heat(-30);
+  say(`คุณมาถึง${placeName(S)}พร้อมชื่อใหม่ที่ยังพูดไม่คล่อง`,'plain');
+}
+const HUNTEV={id:'hunt62',t:'ถูกไล่ล่า',big:1,play(S){
+  const L=lawOf(),el=L.e(S),f=el&&(S.heat||0)>=55&&chance(.45)?el:L.f(S),n=f[0],bribe=Math.max(8,Math.round((S.heat||20)/3));
+  return{text:pick([`${n}มาถามหาคุณที่บ้านเช่า เจ้าของบ้านชี้มาที่ประตูห้องคุณ`,`คุณเห็นใบประกาศจับที่มีหน้าคุณติดอยู่หน้า${placeName(S)} แล้ว${n}ก็เลี้ยวหัวมุมมาพอดี`,`${n}ล้อมทางออกทั้งสองด้านของซอย "อย่าขยับ!"`,`คืนนี้มีคนเคาะประตูสามครั้ง เสียงเดียวกับที่${L.u(S)}ใช้เวลามาจับคน`]),choices:[
+    {l:`สู้กับ${n}`,g:'brave dark',foe:[n,f[1],f[2]||''],f(S){const won=TECH&&TECH.live>0;if(!live(.5+fitb(250),`ถูก${n}สังหารระหว่างขัดขืนการจับกุม`))return;
+      if(won){heat(10);dk(6);fm(4);say(`คุณล้ม${n}ได้ ข่าวลือเรื่องคุณแพร่ไปทั่ว${placeName(S)}`,'bad');remember('สู้กับผู้ไล่ล่า',n,'fight',2);if(W.id==='op')bounty(R(5,30)*1e6,`ล้ม${n}`);}
+      else if(chance(.6))caught();else{heat(-5);say('คุณหลุดออกมาได้ในความชุลมุน แผลยังเลือดไหล','bad');st('hp',-10);}}},
+    {l:'หนีออกจากเมืองคืนนี้',g:'brave safe',f(S){if(chance(.45+(S.st.fit||0)/250+(S.sk?.ride||0)/300)){fleeTown();remember('หลบหนี',`หนีจาก${n}`,'flee',3);}else{say(`${n}ดักรออยู่ที่ประตูเมือง`,'bad');caught();}}},
+    {l:'ซ่อนตัวและปลอมตัว',g:'safe curious',f(S){if(chance(.45+(S.sk?.charm||0)/300+(S.st.iq||0)/400)){heat(-15);say('คุณตัดผม เปลี่ยนเสื้อผ้า และเดินผ่านพวกเขาไปตรงๆ','plain');}else caught();}},
+    {l:`${L.alt[0]}`,g:'curious brave',f(S){if(chance(.55)){heat(-25);say(L.alt[1],'plain');if(/ทะเล|ภูเขา|เมืองใต้ดิน|โลกมนุษย์|แก๊งอื่น|โยชิวาระ/.test(L.alt[0])&&W.id!=='naruto')fleeTown();}else caught();}},
+    {l:`ติดสินบน (${fmt(bribe)})`,g:'selfish dark',ok:S.money>=bribe,h:S.money>=bribe?'ได้ผลถ้าอีกฝ่ายไม่ซื่อเกินไป':'เงินไม่พอ',f(S){mon(-bribe);if(chance(.65)){heat(-30);say(`${n}นับเงินแล้วทำเหมือนไม่เคยเห็นหน้าคุณ`,'plain');}else{say('อีกฝ่ายรับเงินแล้วยังใส่กุญแจมือคุณอยู่ดี','bad');caught();}}},
+    {l:'มอบตัว',g:'kind',f(S){dk(-10);say('คุณยื่นข้อมือให้เขาเอง','plain');caught();}},
+  ]};}};
+
+/* prison life */
+const JAILEV={id:'jail62',t:'ชีวิตในคุก',play(S){
+  const L=lawOf(),jn=S.flags.jailN||L.j(S),plan=S.flags.jbPlan||0,left=Math.max(0,Math.ceil(((S.flags.jailUntil||0)-(S.year*12+(S.mo||0)))/12));
+  const bully=chance(.3);
+  return{text:`${jn} · เหลือโทษอีกราว ${left} ปี · ${pick(L.jl)}${bully?' · วันนี้หัวโจกประจำห้องขังมายืนค้ำหัวคุณ':''}`,choices:[
+    ...(bully?[{l:'สู้กับหัวโจกในห้องขัง',g:'brave',foe:['หัวโจกในคุก',35+R(0,25)],f(S){if(!live(.85+fitb(400),'ถูกรุมทำร้ายในคุก'))return;if(TECH&&TECH.live>0){S.flags.jRespect=1;say('ตั้งแต่วันนั้นไม่มีใครในห้องขังกล้าแตะคุณ','good');skill('fight',3);}else{st('hp',-8);say('คุณโดนซ้อมจนลุกไม่ขึ้นสองวัน','bad');}}},
+      {l:'ยอมแบ่งอาหารให้',g:'safe',f(S){st('hp',-3);st('joy',-4);say('คุณกินแค่ครึ่งเดียวทั้งเดือน','plain');}}]:[]),
+    {l:'ทำงานในคุกอย่างเรียบร้อย',g:'obey safe',f(S){S.flags.jailUntil-=R(2,5);skill('craft',2);say('ผู้คุมจดชื่อคุณเป็นนักโทษความประพฤติดี โทษลดลงหลายเดือน','good');}},
+    {l:'ผูกมิตรกับนักโทษเก่า',g:'kind curious',f(S){S.flags.jbFriends=(S.flags.jbFriends||0)+1;skill(chance(.5)?'trade':'fight',3);say(pick(['ชายแก่ที่ติดคุกมายี่สิบปีสอนวิธีอ่านใจผู้คุมให้คุณ','นักโทษคนหนึ่งเล่าว่าเขารู้ทางลับใต้ห้องครัว','คุณได้เพื่อนที่สัญญาว่าจะตอบแทนเมื่อออกไป']),'good');}},
+    {l:'ยื่นอุทธรณ์ขอลดโทษ',g:'curious',ok:S.money>=6,h:S.money>=6?'ใช้เงินจ้างคนเขียนคำร้อง':'เงินไม่พอ',f(S){mon(-6);if(chance(.25+(S.st.iq||0)/300)){S.flags.jailUntil-=R(10,24);say('ศาลรับคำร้อง โทษของคุณลดลงหนึ่งถึงสองปี','good');}else say('คำร้องถูกตีกลับโดยไม่มีใครอ่าน','bad');}},
+    plan<3?{l:`วางแผนแหกคุก (ขั้นที่ ${plan+1}/3)`,g:'rebel brave',f(S){S.flags.jbPlan=plan+1;if(chance(.15)){S.flags.jailUntil+=R(6,12);S.flags.jbPlan=0;say('ผู้คุมค้นเจอเครื่องมือที่คุณซ่อนไว้ โทษเพิ่มขึ้นและแผนทั้งหมดพัง','bad');}else say(['คุณขโมยช้อนมาฝนเป็นกุญแจ','คุณจำเวรยามได้ครบทุกกะ','เพื่อนนักโทษสัญญาว่าจะก่อความวุ่นวายให้'][plan],'plain');}}
+      :{l:'แหกคุกคืนนี้',g:'brave rebel',foe:[`ผู้คุม${jn}`,50+R(0,20)],f(S){if(!live(.6+fitb(300),`ถูกยิงตายระหว่างแหกคุก${jn}`))return;if((TECH&&TECH.live>0)||chance(.45+(S.flags.jbFriends||0)*.08)){S.flags.jailUntil=0;S.flags.jbPlan=0;fleeTown();heat(40);say(`คุณออกมาจาก${jn}ได้ เสียงระฆังเตือนภัยดังไล่หลัง`,'bad');remember('แหกคุก',jn,'flee',3);}else{S.flags.jailUntil+=R(12,24);S.flags.jbPlan=0;say('คุณถูกลากกลับเข้าห้องขังเดี่ยว','bad');}}},
+  ]};}};
+async function runC(ev){busy=true;try{render();await runEv(ev,'story');}finally{busy=false;}save();render();if(!S.alive)setTimeout(afterDeath,350);}
+async function crimeTick(){
+  const now=S.year*12+(S.mo||0);S.flags=S.flags||{};
+  if(jailed()){if(chance(.35)&&!(S.flags.jEvAt>now-2)){S.flags.jEvAt=now;await runC(JAILEV);}return;}
+  if(S.age<13||S.flags.titan||(S.flags.huntAt>now-4))return;
+  const h=S.heat||0,fug=S.flags.wanted||S.flags.outlaw||(W.id==='op'&&(S.flags.bounty||0)>=5e7);
+  const p=(h>=30?h/450:0)+(fug?.05:0);if(!p||!chance(p))return;
+  S.flags.huntAt=now;await runC(HUNTEV);
+}
+{const mp0=monthPass;monthPass=async function(){const r=await mp0.apply(this,arguments);
+  try{if(S&&S.alive&&!busy&&$('#modal').hidden&&!(typeof BT!=='undefined'&&BT.on))await crimeTick();}catch(e){busy=false;console.error(e);}return r;};}
+
+
+/* --- d_life62.js --- */
+/* ===== v62 living cast and dreams: lore lines for every main character, varied chance meetings,
+   playable night dreams per world, and small life experiences ===== */
+Object.assign(CLINE,{
+  mikasa:{talk:'มิคาสะพูดน้อย แต่ทุกครั้งที่ชื่อเอเรนโผล่มาในบทสนทนา เธอจะจับผ้าพันคอแน่นขึ้น',train:'มิคาสะฟันหุ่นไม้ขาดในครั้งเดียว แล้วสอนคุณจับใบมีดใหม่'},
+  armin:{talk:'อาร์มินเล่าเรื่องทะเลที่เขาอ่านจากหนังสือต้องห้าม "น้ำที่เค็มจนกินไม่ได้ กว้างจนมองไม่เห็นฝั่ง"'},
+  sasha:{talk:'ซาช่าแบ่งมันฝรั่งให้คุณครึ่งหัว ซึ่งสำหรับเธอถือว่าเป็นการแสดงความรักขั้นสูงสุด',eat:'ซาช่ากินส่วนของคุณไปครึ่งหนึ่งก่อนคุณจะทันหยิบช้อน'},
+  connie:{talk:'คอนนี่เล่าเรื่องบ้านเกิดที่ราแกโกไม่หยุด แล้วก็ถามว่าคุณว่าเขาตัวสูงขึ้นไหม'},
+  erwin:{talk:'เออร์วินถามคุณว่าเคยสงสัยไหมว่าโลกนอกกำแพงมีอะไร แล้วฟังคำตอบคุณอย่างตั้งใจเหมือนมันสำคัญมาก'},
+  historia:{talk:'ฮิสทอเรียยิ้มสวยเหมือนนางฟ้า แต่พอคุยกันนานพอ เธอบอกว่า "เบื่อที่ต้องเป็นคนดีให้คนอื่นดู"'},
+  reiner:{talk:'ไรเนอร์ทำตัวเป็นพี่ใหญ่ของทุกคน แต่บางครั้งเขาก็พูดถึง "บ้านเกิด" ด้วยสายตาที่เหมือนเป็นคนละคน'},
+  annie:{talk:'แอนนี่ตอบทุกคำถามด้วยคำเดียว แต่เธอยอมสอนท่าเตะต่ำให้คุณหนึ่งท่า',train:'แอนนี่ล้มคุณลงพื้นในสองวินาที "ยืนให้มั่นกว่านี้"'},
+  zeke:{talk:'ซีคพูดถึงเบสบอลกับพ่อบุญธรรมด้วยรอยยิ้มอ่อนโยนที่ไม่เข้ากับข่าวลือเรื่องเขาเลย'},
+  sakura:{talk:'ซากุระเล่าว่ากำลังฝึกวิชาแพทย์กับท่านซึนาเดะ แล้วก็กำหมัดจนพื้นร้าวโดยไม่ตั้งใจ',train:'ซากุระสอนคุณควบคุมจักระที่ปลายนิ้ว ก่อนจะต่อยต้นไม้ล้มให้ดู'},
+  gai:{talk:'ไมโตะ ไก ชูนิ้วโป้งแล้วฟันขาวก็เปล่งประกาย "วัยหนุ่มสาวคือพลังงาน!"',train:'ไกพาคุณวิ่งรอบหมู่บ้านด้วยมือ แล้วบอกว่านี่แค่วอร์มอัป'},
+  orochimaru:{talk:'โอโรจิมารุมองคุณเหมือนมองหนูทดลองที่น่าสนใจ "ร่างกายเธอดีนะ..." แล้วเลียริมฝีปาก'},
+  itachi:{talk:'อิทาจิพูดเบาๆ ว่า "คนเราใช้ชีวิตโดยยึดติดกับสิ่งที่เชื่อว่าถูกต้อง" แล้วก็มองไปไกล'},
+  luffy:{talk:'ลูฟี่หัวเราะชิชิชิแล้วถามว่ามีเนื้อไหม พอคุณบอกว่าไม่มี เขาก็ยังชวนคุยต่ออยู่ดี',eat:'ลูฟี่ยืดแขนมาขโมยเนื้อจากจานคุณสามรอบ'},
+  zoro:{talk:'โซโลหลงทางมาเจอคุณ แล้วยืนยันว่าเขาไม่ได้หลง',train:'โซโลยกน้ำหนักร้อยกิโลด้วยแขนเดียวระหว่างคุยกับคุณ'},
+  nami:{talk:'นามิถามว่าคุณมีเงินเท่าไร แล้วคิดดอกเบี้ยค่าคุยกับเธอสามสิบเปอร์เซ็นต์'},
+  sanji:{talk:'ซันจิจุดบุหรี่แล้วเล่าเรื่องออลบลู ทะเลที่มีปลาจากทุกมหาสมุทร',eat:'ซันจิทำอาหารให้คุณจานหนึ่ง "อย่าเหลือแม้แต่เม็ดเดียว"'},
+  robin:{talk:'โรบินเล่าประวัติศาสตร์ที่ถูกลบไปด้วยรอยยิ้ม แล้วพูดเรื่องศพด้วยน้ำเสียงเดียวกัน'},
+  ace:{talk:'เอสหลับคาโต๊ะกลางประโยค ตื่นมาแล้วขอโทษอย่างสุภาพเหมือนไม่มีอะไรเกิดขึ้น'},
+  shanks:{talk:'แชงคูสยกเหล้าให้คุณแก้วหนึ่ง แล้วหัวเราะเสียงดังจนทั้งบาร์หัวเราะตาม'},
+  ichigo:{talk:'อิจิโกะทำหน้าบึ้งตลอดเวลา แต่พอคุยกันจริงๆ เขาห่วงทุกคนรอบตัวมากกว่าตัวเอง'},
+  rukia:{talk:'รุเกียวาดรูปกระต่ายประกอบคำอธิบายเรื่องโซลโซไซตี้ ซึ่งทำให้มันเข้าใจยากกว่าเดิม'},
+  kenpachi:{talk:'เค็นปาจิถามคำเดียว "แกแข็งแรงไหม?" พอคุณลังเล เขาก็เดินจากไปด้วยความผิดหวัง'},
+  urahara:{talk:'อุราฮาระพัดพัดแล้วขายของแปลกๆ ให้คุณสามชิ้น ทั้งที่คุณยังไม่ได้บอกว่าอยากได้อะไร'},
+  aizen:{talk:'ไอเซ็นยิ้มอย่างสุภาพแล้วถามความเห็นคุณ คุณรู้สึกว่าเขารู้คำตอบก่อนคุณพูดแล้ว'},
+  gojo:{talk:'โกโจยื่นขนมให้คุณแล้วพูดว่า "ไม่ต้องห่วงหรอก เพราะฉันแข็งแกร่งที่สุด"',train:'โกโจให้คุณต่อยเขาเต็มแรง หมัดของคุณหยุดอยู่ห่างหน้าเขาหนึ่งเซนติเมตร'},
+  itadori:{talk:'อิตาโดริเล่าเรื่องปู่และหนังที่เพิ่งดู แล้วบอกว่าอยากให้ทุกคนตายอย่างถูกต้อง'},
+  megumi:{talk:'เมงุมิพูดเรียบๆ ว่า "ฉันช่วยคนแบบเลือก" แต่เขาก็ช่วยแมวจรที่ถูกคำสาปเกาะอยู่ดี'},
+  nobara:{talk:'โนบาระบ่นเรื่องบ้านนอกที่เธอจากมา แล้วลากคุณไปช็อปปิ้งที่ฮาราจูกุ'},
+  nanami:{talk:'นานามิดูนาฬิกา "หกโมงเย็น ล่วงเวลาแล้ว" แล้วเล่าว่าเขาอยากเกษียณไปอยู่ริมทะเล'},
+  todo:{talk:'โทโดถามว่า "ชอบผู้หญิงแบบไหน?" ถ้าคำตอบไม่ถูกใจ เขาจะเริ่มกระทืบเท้า'},
+  sukuna:{talk:'สุคุนะมองคุณเหมือนมองแมลง "รู้จักที่ของตัวเองซะ" แล้วหัวเราะเสียงต่ำ'},
+  josuke:{talk:'โจสุเกะจัดทรงผมก่อนตอบทุกคำถาม และเตือนว่าอย่าพูดถึงทรงผมเขาไม่ดีเด็ดขาด'},
+  jotaro:{talk:'โจทาโร่ดึงหมวกลงต่ำ "ยาเระ ยาเระ ดาเซะ" แล้วก็ไม่พูดอะไรอีกเลย'},
+  rohan:{talk:'โรฮังถามรายละเอียดชีวิตคุณจนน่ารำคาญ เพราะเขาบอกว่า "ความจริงคือวัตถุดิบของมังงะ"'},
+  kira:{talk:'คิระพูดถึงความปรารถนาจะใช้ชีวิตอย่างสงบเงียบ แล้วมองมือคุณนานกว่าที่ควร'},
+  goku:{talk:'โกคูถามว่าคุณแข็งแรงไหม แล้วชวนประลองก่อนจะรู้ชื่อคุณด้วยซ้ำ',train:'โกคูใส่เสื้อน้ำหนักให้คุณ แล้วบอกว่ามันเบามาก'},
+  vegeta:{talk:'เบจิต้ากอดอกแล้วพูดว่า "ข้าคือเจ้าชายแห่งชาวไซย่า" ทั้งที่คุณยังไม่ได้ถามอะไร'},
+  bulma:{talk:'บุลมาซ่อมเครื่องมือของคุณระหว่างคุย แล้วติดตราแคปซูลคอร์ปไว้ด้วย'},
+  krillin:{talk:'คุริรินเล่าเรื่องการฝึกกับผู้เฒ่าเต่าด้วยเสียงหัวเราะ แล้วถอนหายใจเรื่องผู้หญิง'},
+  piccolo:{talk:'พิคโกโร่ยืนกอดอกฟัง ไม่พูดอะไร แต่หูของเขาขยับทุกครั้งที่คุณเอ่ยถึงโกฮัง'},
+  hyungseok:{talk:'ฮยองซอกพูดสุภาพจนน่าตกใจ แล้วขอตัวไปทำงานพิเศษกะดึก'},
+  vasco:{talk:'วาสโกตะโกนว่าจะปกป้องเด็กที่ถูกรังแกทุกคน แล้วเลี้ยงซุปเลือดหมูคุณ'},
+  zack:{talk:'แซ็คโพสท่ามวยแล้วบอกว่ากำลังจะได้แฟน ซึ่งเขาพูดแบบนี้มาสองปีแล้ว'},
+  jay:{talk:'เจย์ไม่พูดเลยสักคำ แต่ยื่นลูกอมให้คุณหนึ่งเม็ด'},
+  gun:{talk:'กุนมองคุณด้วยสายตาเบื่อหน่าย "ทำไมฉันต้องคุยกับเด็กอ่อนแออย่างแก"'},
+  goo:{talk:'กูยิ้มกว้างและพูดเรื่องผู้หญิงสลับกับเรื่องดาบ จนคุณตามไม่ทัน'},
+});
+/* chance meetings: lore situations per character, and the character you saw least recently */
+const HANGX={
+  levi:['กำลังเช็ดโต๊ะในร้านเหล้าจนเงาวับ','กำลังเลือกใบชาอย่างพิถีพิถัน "ร้านนี้ชาดีกว่าที่อื่น"'],
+  hange:['กำลังจดบันทึกเรื่องไททันลงสมุดจนหมึกเลอะทั้งแขน','ตื่นเต้นจนตาวาวเมื่อเห็นคุณ "อยากฟังเรื่องไททันไหม! อยากใช่ไหม!"'],
+  eren:['กำลังจ้องกำแพงด้วยสายตาโกรธเกรี้ยว','กำลังเถียงกับฌองอยู่กลางถนน'],
+  jean:['กำลังบ่นว่าอยากเข้าสารวัตรทหารไปอยู่ในกำแพงชั้นใน'],
+  naruto:['กำลังกินราเมงอิจิราคุชามที่ห้า','กำลังวาดหน้าตลกบนรูปสลักหน้าผาโฮคาเงะ'],
+  shikamaru:['นอนดูเมฆอยู่บนหลังคา','กำลังเล่นโชงิกับอาจารย์อาสึมะ'],
+  kakashi:['อ่านหนังสือสวรรค์ของคนชอบเที่ยวอยู่ใต้ต้นไม้','ยืนนิ่งอยู่หน้าหินอนุสรณ์มาตั้งแต่เช้า'],
+  jiraiya:['กำลังแอบดูโรงอาบน้ำหญิงแล้วจดอะไรลงสมุด'],
+  zoro:['หลงทางอยู่หน้าร้านเหล้า แล้วถามทางไปเรือ'],
+  sanji:['กำลังเถียงกับพ่อค้าปลาเรื่องความสดของปลา'],
+  gojo:['ต่อคิวซื้อขนมหวานร้านดังพร้อมผ้าปิดตา'],
+  nanami:['นั่งกินขนมปังร้านโปรดตอนพักเที่ยง'],
+  goku:['กำลังกินข้าวกองเท่าภูเขา'],
+  hyungseok:['กำลังทำงานพิเศษที่ร้านสะดวกซื้อกะดึก'],
+  vasco:['กำลังดุเด็กที่รังแกเพื่อน'],
+};
+if(CASTMEETS[0]&&CASTMEETS[0].id==='m_hang'){CASTMEETS[0].play=function(S){
+  const ids=castNear(S);S.hangAt=S.hangAt||{};ids.sort((a,b)=>(S.hangAt[a]||0)-(S.hangAt[b]||0));const id=chance(.75)?ids[0]:pick(ids);S.hangAt[id]=S.year;
+  const n=CAST[W.id][id],pl=pick(W.hangV?.[vilOf(S)]||W.hangPlaces),doing=HANGX[id]?pick(HANGX[id]):'',L=CLINE[id]||{};
+  const sn=shortN(id);return{text:doing?`คุณบังเอิญเจอ ${n} ตอนที่${sn}${doing}`:`คุณบังเอิญเจอ ${n} ที่${pl}`,choices:[
+    {l:'ชวนคุยเรื่องสัพเพเหระ',g:'kind love',f(S){bond(id,R(8,14));st('joy',3);say(L.talk||`คุณกับ ${n} คุยกันนานกว่าที่คิด`,'good');}},
+    {l:'ขอฝึกด้วยกัน',g:'brave',f(S){bond(id,R(7,12));st('fit',2);skill('fight',2);say(L.train||`${n} ไม่ออมมือให้เลยสักนิด`,'good');}},
+    {l:`เลี้ยงข้าว${sn}`,g:'kind',ok:S.money>=3,h:S.money>=3?'':'เงินไม่พอ',f(S){mon(-3);bond(id,R(9,15));say(L.eat||`${n} กินจนหมดจานแล้วขอบคุณคุณ`,'good');}},
+    {l:'พยักหน้าทักแล้วเดินผ่าน',g:'safe home',f(){say('คุณกลับบ้านไปตามปกติ');}},
+  ]};};}
+
+/* playable night dreams: strange, lore-shaped, each with a small real effect when you wake up */
+const NDREAM={
+  aot:[['คุณฝันว่ายืนอยู่บนผืนทรายสีขาวใต้ท้องฟ้าที่ไม่มีดาว เด็กผู้หญิงผมทองคนหนึ่งปั้นดินเป็นรูปคนอยู่เงียบๆ','เดินเข้าไปหาเธอ','วิ่งหนีจากที่นี่',
+      S=>{if(chance(.08)&&!hasP('titanShifter')){S.flags.pathsDream=1;say('เธอเงยหน้ามองคุณครู่เดียว คุณตื่นมาพร้อมความทรงจำที่ไม่ใช่ของตัวเอง','titan');st('iq',3);}else{st('iq',2);say('เธอไม่ได้มองคุณ แต่คุณตื่นมาพร้อมความรู้สึกว่าเคยมาที่นี่','plain');}},S=>{st('joy',2);say('คุณสะดุ้งตื่นกลางดึก ทรายยังติดอยู่ในความรู้สึก','plain');}],
+    ['ในฝัน คุณยืนอยู่บนกำแพงแล้วเห็นทะเลเป็นครั้งแรก มันกว้างกว่าที่อาร์มินเล่าเสียอีก','กระโดดลงไปในทะเล','นั่งมองจนพระอาทิตย์ตก',S=>{st('joy',6);say('น้ำเค็มจริงอย่างที่หนังสือบอก คุณตื่นมาหัวเราะคนเดียว','good');},S=>{st('joy',4);trauma(-4);say('คุณตื่นมาด้วยหัวใจที่สงบกว่าทุกวัน','good');}]],
+  naruto:[['คุณฝันว่าติดอยู่ในเกนจุตสึ ดวงจันทร์สีแดงลอยต่ำจนเกือบแตะหลังคาบ้าน','ประสานมือ "ไค!" สลายภาพลวง','ปล่อยให้ความฝันพาไป',S=>{skill('gear',3);say('ภาพลวงแตกเหมือนกระจก คุณตื่นมาพร้อมจักระที่ไหลลื่นขึ้น','good');},S=>{st('joy',5);say('ในฝันนั้นทุกคนที่คุณรักยังอยู่ คุณตื่นมาน้ำตาเปียกหมอน','plain');}],
+    ['คุณฝันว่าคางคกยักษ์ใส่เสื้อคลุมพาคุณไปเขาเมียวโบคุ ผู้เฒ่าคางคกทำนายอะไรบางอย่าง','ฟังคำทำนายให้จบ','ขอกลับบ้าน',S=>{st('iq',2);fm(1);say('"เจ้าจะได้พบกับเด็กหนุ่มผู้เปลี่ยนโลก..." คุณตื่นมาจำได้แค่นั้น','good');},S=>{say('คางคกถอนหายใจแล้วดีดคุณกลับบ้าน','plain');}]],
+  op:[['คุณฝันว่าได้ยินเสียงกลองดังมาจากใต้ท้องทะเล "ดง ดง ดง" เสียงหัวเราะของใครบางคนดังตาม','ว่ายตามเสียงกลอง','อุดหูไว้',S=>{st('joy',6);fm(1);say('ในฝันคุณเห็นชายร่างยักษ์หัวเราะอยู่บนเมฆขาว คุณตื่นมาพร้อมรอยยิ้ม','good');},S=>{say('เสียงกลองยังดังในหัวไปทั้งวัน','plain');}],
+    ['ในฝัน คุณเจอผลไม้ลายก้นหอยบนจานอาหารเช้า','กัดคำโต','ทิ้งลงทะเล',S=>{st('joy',3);say('รสชาติแย่ที่สุดในโลก แม้แต่ในฝัน คุณตื่นมาลิ้นยังขม','plain');},S=>{say('ทันทีที่ผลไม้จมน้ำ คุณรู้สึกโล่งอย่างประหลาด','plain');}]],
+  bleach:[['คุณฝันว่ายืนอยู่บนตึกที่ตั้งตะแคง ชายเสื้อคลุมดำยืนบนเสาไฟ "เจ้าได้ยินชื่อข้าหรือยัง"','ตะโกนถามชื่อของเขา','หันหลังกลับ',S=>{skill('gear',4);say('เสียงลมกลืนชื่อไปครึ่งหนึ่ง แต่คุณตื่นมาพร้อมพลังวิญญาณที่ชัดขึ้น','good');},S=>{say('เขาหัวเราะเบาๆ "สักวันเจ้าจะต้องฟัง"','plain');}],
+    ['คุณฝันว่าฮอลโลว์ตัวหนึ่งนั่งร้องไห้อยู่หน้าบ้านคุณ มันเรียกชื่อแม่ของใครบางคน','เข้าไปปลอบมัน','ซ่อนอยู่ในบ้าน',S=>{st('joy',3);dk(-3);say('มันหยุดร้องแล้วสลายเป็นแสง คุณตื่นมาใจหาย','plain');},S=>{trauma(3);say('เสียงร้องไห้ตามคุณออกมาจากความฝัน','bad');}]],
+  jjk:[['คุณฝันว่านั่งอยู่บนกองกะโหลกในสระเลือด ชายสี่ตาบนบัลลังก์มองลงมา "เจ้าหนูนี่ใคร"','ตอบชื่อของคุณ','ก้มหน้าเงียบ',S=>{dk(3);skill('gear',3);say('เขาหัวเราะ "ชื่อไร้ค่า" คุณตื่นมาพร้อมพลังคำสาปที่ข้นขึ้น','bad');},S=>{say('เขาเบื่อแล้วโบกมือ คุณตื่นมาตัวสั่น','plain');}],
+    ['ในฝัน คุณนั่งดูหนังในห้องมืดกับตุ๊กตาหมีที่ต่อยคุณทุกครั้งที่ใจคุณไม่นิ่ง','ฝึกจนตุ๊กตาหลับ','ทุบตุ๊กตาทิ้ง',S=>{skill('gear',3);st('iq',1);say('คุณตื่นมาควบคุมพลังได้นิ่งขึ้นเหมือนคนผ่านการฝึกมาจริงๆ','good');},S=>{say('ตุ๊กตาต่อยคุณจนตื่น','plain');}]],
+  heian:[['คุณฝันถึงงานเลี้ยงในวังใต้แสงจันทร์ ใครคนหนึ่งร่ายบทกลอนที่คุณไม่เคยได้ยิน','ต่อกลอนตอบ','ฟังเงียบๆ',S=>{skill('art',4);fm(1);say('คุณตื่นมาจำกลอนได้ทั้งบท แล้วรีบเขียนลงกระดาษ','good');},S=>{st('joy',4);say('ความเศร้างดงามของกลอนตามคุณมาทั้งวัน','plain');}]],
+  jjedo:[['คุณฝันว่าเดินอยู่บนสะพานนิฮงบาชิตอนกลางคืน คนเดินสวนทุกคนไม่มีหน้า','วิ่งข้ามสะพานให้สุด','ยืนนิ่งรอจนเช้า',S=>{st('fit',2);say('คุณตื่นมาหอบเหมือนวิ่งมาจริงๆ','plain');},S=>{skill('gear',2);say('คนไม่มีหน้าค่อยๆ หายไปทีละคน คุณตื่นมาเห็นคำสาปชัดขึ้น','good');}]],
+  jojo:[['คุณฝันว่าลูกศรสีทองพุ่งมาจากความมืดตรงเข้าหน้าอกคุณ','รับมันไว้','หลบ',S=>{st('joy',2);say('ในฝันมีร่างโปร่งแสงยืนอยู่ข้างหลังคุณ คุณตื่นมาหันหลังไปดูแต่ไม่มีอะไร','plain');S.flags.arrowDream=1;},S=>{say('ลูกศรปักกำแพง คุณตื่นมาใจเต้นแรง','plain');}]],
+  db:[['คุณฝันว่ามังกรเขียวยักษ์ลอยอยู่บนฟ้ามืด "จงกล่าวคำขอของเจ้า"','ขอให้แข็งแกร่งที่สุด','ขอกางเกงในสาวๆ',S=>{st('fit',2);skill('fight',2);say('มังกรตาเรืองแสง คุณตื่นมาพร้อมแรงฮึดแปลกๆ','good');},S=>{st('joy',6);say('มังกรเงียบไปนานมาก คุณตื่นมาหัวเราะจนท้องแข็ง','good');}]],
+  lookism:[['คุณฝันว่าตื่นขึ้นมาในร่างใหม่ที่สูง หล่อ แข็งแรง ร่างเก่าของคุณนอนหลับอยู่บนเตียงข้างๆ','ออกไปใช้ชีวิตในร่างใหม่','กลับเข้าร่างเดิม',S=>{st('joy',5);skill('charm',2);say('ทั้งวันในฝันทุกคนมองคุณต่างไป คุณตื่นมาพร้อมความมั่นใจที่ยังเหลือติดตัว','good');},S=>{st('joy',3);say('ร่างเดิมของคุณอุ่นกว่าที่คิด','plain');}]],
+};
+const NDEV={id:'ndream62',t:'ฝันประหลาด',play(S){const L=NDREAM[W.id];if(!L)return null;const [x,a,b,fa,fb]=pick(L);
+  return{text:x,choices:[{l:a,g:'curious brave',f:fa},{l:b,g:'safe',f:fb}]};}};
+{const mp1=monthPass;monthPass=async function(){const r=await mp1.apply(this,arguments);
+  try{if(S&&S.alive&&!busy&&$('#modal').hidden&&!jailed()&&!S.flags.titan&&S.age>=5&&NDREAM[W.id]&&chance(.025)&&!(S.flags.ndY>=S.year)){S.flags.ndY=S.year;busy=true;try{render();await runEv(NDEV,'story');}finally{busy=false;}save();render();if(!S.alive)setTimeout(afterDeath,350);}}catch(e){busy=false;console.error(e);}return r;};}
+SCID['*.ndream62']='dream';
+
+
+/* --- e_home62.js --- */
+/* ===== v62 home & shop: decorate your home (wall, floor, furniture you can see indoors), plus food, medicine,
+   clothes and strange lore items in every world. Consumables can be bought again and again. ===== */
+var INDECO=false;
+Object.assign(SHCAT,{food:'🍙 ของกิน',med:'💊 ยาและการรักษา',odd:'🔮 ของแปลกตามตำนาน'});
+const EAT=(id,n,cost,d,use,o={})=>({id,n,cat:'food',cost,d,eat:1,use,...o});
+const MED=(id,n,cost,d,use,o={})=>({id,n,cat:'med',cost,d,eat:1,use,...o});
+const ODD=(id,n,cost,d,use,o={})=>({id,n,cat:'odd',cost,d,use,...o});
+const SHOP62={
+  aot:[EAT('a_meat','เนื้อสัตว์แท้ๆ หนึ่งชิ้น',6,'ของหายากในกำแพง ซาช่าคงยอมแลกด้วยชีวิต',S=>{st('joy',6);st('hp',2);say('เนื้อจริงๆ! คุณเคี้ยวช้าที่สุดเท่าที่จะทำได้','good');}),
+    EAT('a_bread','ขนมปังข้าวไรย์กับซุปมันฝรั่ง',1,'อาหารปกติของทุกบ้านในกำแพงโรส',S=>{st('hp',1);say('อิ่มท้อง อบอุ่นใจ','plain');}),
+    EAT('a_wine','ไวน์จากเขตชั้นใน',8,'ขวดเดียวราคาเท่าค่าแรงหนึ่งสัปดาห์',S=>{st('joy',5);say('รสชาติของคนรวยในกำแพงซีน่า','good');}),
+    MED('a_herb','สมุนไพรห้ามเลือดของหน่วยแพทย์',3,'ห่อด้วยผ้าพันแผลของกองทัพ',S=>{st('hp',R(6,12));if(S.flags.inj)S.flags.inj=Math.max(0,S.flags.inj-3);say('แผลหยุดเลือดเร็วกว่าที่คิด','good');}),
+    MED('a_doctor','ตรวจกับหมอเยเกอร์',6,'หมอที่ชาวชิกันชินารักที่สุด',S=>{st('hp',R(10,18));say('หมอเยเกอร์ตรวจคุณอย่างละเอียด แล้วยิ้มเศร้าๆ ให้','good');},{when:S=>S.year<845&&S.place==='shiganshina'}),
+    FT('a_civ','ชุดชาวบ้านกำแพงโรส',3,{robe:'#7a6a52'},'เสื้อลินินสีหม่นกับผ้ากันเปื้อน'),FT('a_marley','ชุดพลเรือนมาร์เลย์พร้อมปลอกแขน',4,{band:'#fee761'},'ปลอกแขนเหลืองที่ต้องใส่ตลอดเวลา',{when:S=>S.place==='liberio'}),
+    ODD('a_key','กุญแจห้องใต้ดินจำลอง',12,'ของที่ระลึกจากชิกันชินา คนเชื่อว่ามันนำโชค',S=>{fm(1);st('joy',2);},{when:S=>S.year>=851}),
+    ODD('a_sea','ขวดน้ำทะเล',10,'พ่อค้ามาร์เลย์ขายให้คนปาราดีส์ที่ไม่เคยเห็นทะเล',S=>{st('joy',4);say('คุณชิมแล้วรู้ว่ามันเค็มจริง','good');}),
+    FU('a_bed','เตียงไม้โอ๊กพร้อมฟูก',14,'นอนหลับสนิทกว่าฟางเป็นไหนๆ',S=>{st('hp',1);}),FU('a_map','แผนที่กำแพงสามชั้นบนผนัง',8,'วาดด้วยมือของนักสำรวจ',S=>{st('iq',1);}),FU('a_rug','พรมขนแกะ',9,'พื้นบ้านอุ่นขึ้นมาก',S=>{st('joy',1);})],
+  naruto:[EAT('n_ramen','ราเมงอิจิราคุ',1,'ชามโปรดของเด็กชายผมทองคนหนึ่ง',S=>{st('joy',4);st('hp',1);say('น้ำซุปกระดูกหมูเข้มข้นจนต้องยกชามซด','good');}),
+    EAT('n_dango','ดังโงะสามสี',1,'ร้านเดียวกับที่อิทาจิกับคิซาเมะเคยนั่ง',S=>{st('joy',3);}),EAT('n_pill','ยาเม็ดทหาร',4,'ฟื้นจักระเร็ว แต่รสชาติแย่มาก',S=>{skill('gear',1);st('hp',4);say('จักระไหลกลับเข้าร่างทันที ลิ้นยังขม','good');}),
+    EAT('n_curry','แกงกะหรี่ชีวิตของร็อค ลี',3,'เผ็ดจนเห็นภาพหลอน',S=>{st('fit',1);st('hp',-2);st('joy',3);say('คุณเหงื่อแตกทั้งตัว แต่รู้สึกแข็งแรงขึ้น','good');}),
+    MED('n_medic','ให้นินจาแพทย์รักษา',5,'ฝ่ามือเรืองแสงสีเขียว',S=>{st('hp',R(10,20));if(S.flags.inj)S.flags.inj=0;say('แผลปิดสนิทในไม่กี่นาที','good');}),
+    MED('n_soldier','ยาพิษแก้ของซากุระ',8,'ยาถอนพิษที่ใช้ได้กับพิษของซาโซริ',S=>{st('hp',8);S.flags.antidote=1;}),
+    FT('n_vest','เสื้อกั๊กจูนิน',12,{vest:1},'เสื้อกั๊กเขียวที่ใส่แล้วทุกคนเชื่อใจ',{when:S=>(S.age>=14)}),FT('n_cloak','เสื้อคลุมเมฆแดง',20,{robe:'#1c1a1f'},'ใส่ในหมู่บ้านแล้วโดนมองแรงแน่',{when:S=>S.flags.outlaw}),
+    ODD('n_toad','สัญญาอัญเชิญคางคก (สำเนา)',30,'คนขายบอกว่าจิไรยะเคยเซ็นไว้',S=>{if(chance(.15)){S.flags.toadPact=1;say('คางคกตัวเล็กโผล่มาจากควันจริงๆ!','power');}else say('เป็นของปลอมที่ทำได้แนบเนียนมาก','plain');}),
+    ODD('n_book','หนังสือสวรรค์ของคนชอบเที่ยว',4,'เล่มเดียวกับที่คาคาชิไม่ยอมวางมือ',S=>{st('joy',3);dk(1);}),
+    FU('n_futon','ฟูกนุ่มสองชั้น',8,'นอนสบายขึ้นมาก',S=>{st('hp',1);}),FU('n_scroll','ม้วนคัมภีร์แขวนผนัง',10,'อักษร "ไฟแห่งใบไม้"',S=>{st('joy',1);}),FU('n_plant','ต้นไม้ในกระถางชื่อมิสเตอร์อุคกี้',3,'เหมือนของนารูโตะ',S=>{st('joy',1);})],
+  op:[EAT('o_meat','เนื้อติดกระดูกชิ้นยักษ์',3,'เนื้อแบบที่กัปตันหมวกฟางชอบ',S=>{st('joy',5);st('hp',2);}),EAT('o_baratie','อาหารจากบาราติเอ',8,'ภัตตาคารลอยน้ำที่ครัวไม่เคยปฏิเสธคนหิว',S=>{st('joy',8);st('hp',3);}),
+    EAT('o_cola','โคล่าขวดใหญ่',2,'เชื้อเพลิงของไซบอร์กบางคน',S=>{st('joy',2);}),MED('o_doc','ให้หมอบนเรือรักษา',6,'หมอที่ต่อให้เป็นกวางเรนเดียร์ก็รักษาเก่ง',S=>{st('hp',R(10,18));if(S.flags.inj)S.flags.inj=0;}),
+    MED('o_rumble','ลูกบอลรัมเบิ้ล (ของปลอม)',10,'ยาเปลี่ยนรูปร่างที่ใครๆ ก็อยากลอง',S=>{if(chance(.5)){st('fit',2);say('คุณรู้สึกแข็งแรงขึ้นชั่วคราว','good');}else{st('hp',-5);say('ท้องเสียทั้งคืน','bad');}}),
+    FT('o_straw','หมวกฟาง',2,{hat:'#e8c050'},'หมวกธรรมดาที่ใส่แล้วรู้สึกอยากออกทะเล'),FT('o_suit','สูทดำผูกไท',10,{robe:'#1c1a1f'},'ใส่แล้วอยากจุดบุหรี่สักมวน'),
+    ODD('o_vivre','วิเวอร์การ์ด',15,'กระดาษที่ชี้ไปหาเจ้าของเสมอ',S=>{fm(1);say('มันขยับเบาๆ บนฝ่ามือ ชี้ไปยังทะเลกว้าง','plain');}),
+    ODD('o_poneglyph','ภาพพิมพ์โพเนกลีฟ',25,'อักษรโบราณที่รัฐบาลโลกห้ามอ่าน',S=>{st('iq',2);if(chance(.3)){bounty(3e6,'ครอบครองข้อความต้องห้าม');}}),
+    ODD('o_logpose','ล็อกโพสสำรอง',12,'เข็มทิศเดียวที่ใช้ได้ในแกรนด์ไลน์',S=>{skill('ride',3);}),
+    FU('o_hammock','เปลญวนแบบลูกเรือ',4,'แกว่งไปมาเหมือนอยู่บนเรือ',S=>{st('joy',1);}),FU('o_wheel','พวงมาลัยเรือประดับผนัง',8,'จากเรือที่จมไปนานแล้ว',S=>{st('joy',1);})],
+  bleach:[EAT('b_bean','ถั่วแดงกวนของพี่สาวโอริฮิเมะ',1,'สูตรถั่วแดงราดซอสต่างๆ ที่ไม่มีใครกล้ากิน',S=>{st('joy',-2);st('hp',1);say('รสชาติ... ไม่สามารถอธิบายได้','plain');}),
+    EAT('b_sake','สาเกจากร้านในรุคอนไก',4,'รันงิคุชอบสั่งที่ร้านนี้',S=>{st('joy',4);}),MED('b_4th','ให้หน่วยที่สี่รักษา',6,'หน่วยที่ทุกคนดูถูกจนกว่าจะบาดเจ็บ',S=>{st('hp',R(12,20));if(S.flags.inj)S.flags.inj=0;}),
+    MED('b_gikon','ยาเม็ดกิคอน',8,'ใส่วิญญาณดัดแปลงในร่าง ปลดวิญญาณออกได้ชั่วคราว',S=>{skill('gear',2);}),
+    ODD('b_candy','ลูกอมของร้านอุราฮาระ',5,'ขายพร้อมรอยยิ้มน่าสงสัย',S=>{if(chance(.4)){skill('gear',2);say('มันเปลี่ยนรสชาติทุกครั้งที่เคี้ยว','plain');}else{st('joy',2);}}),
+    FT('b_shihaku','ชุดชิฮาคุโชสีดำ',8,{robe:'#1c1a1f'},'เครื่องแบบของยมทูต',{when:S=>soul(S)}),FT('b_karakura','ชุดนักเรียนมัธยมคาราคุระ',4,{robe:'#5a6988'},'สีเทาเรียบๆ'),
+    FU('b_chappy','ตุ๊กตากระต่ายแชปปี้',3,'รุเกียชอบมาก',S=>{st('joy',1);}),FU('b_lamp','โคมกระดาษรุคอนไก',4,'แสงส้มนุ่มนวล',S=>{st('joy',1);})],
+  jjk:[EAT('j_kikufuku','คิกุฟุกุ ขนมโปรดของโกโจ',2,'ขนมโมจิครีมจากเซนได',S=>{st('joy',4);}),EAT('j_bread','ขนมปังร้านโปรดของนานามิ',2,'แซนด์วิชสอดไส้ที่ขายหมดก่อนเที่ยง',S=>{st('joy',3);st('hp',1);}),
+    MED('j_shoko','ให้อิเอริ โชโกะรักษา',8,'เทคนิคพลิกกลับคำสาปที่ไม่ค่อยมีใครทำได้',S=>{st('hp',R(14,24));if(S.flags.inj)S.flags.inj=0;},{when:S=>sorc(S)||S.job?.id==='cuser'}),
+    MED('j_clinic','ไปคลินิกในโตเกียว',4,'หมอธรรมดาที่ไม่รู้เรื่องคำสาป',S=>{st('hp',R(6,12));}),
+    ODD('j_finger','นิ้วที่เหี่ยวแห้งในกล่องไม้ผนึก',60,'คนขายไม่ยอมบอกว่ามาจากไหน มือของคุณเย็นเฉียบทันทีที่แตะ',S=>{dk(10);trauma(6);say('คำสาประดับพิเศษหลายตัววนเวียนรอบบ้านคุณตั้งแต่คืนนั้น','bad');},{when:S=>sorc(S)||S.job?.id==='cuser'}),
+    ODD('j_glasses','แว่นเห็นคำสาป',20,'แว่นแบบที่มากิใช้',S=>{S.flags.seeCurse=1;say('ทันทีที่ใส่ คุณเห็นคำสาปเกาะอยู่บนบ่าคนในรถไฟ','bad');}),
+    FT('j_uniform','ชุดนักเรียนไสยศาสตร์',10,{robe:'#1c1a2e'},'เครื่องแบบสั่งตัดแบบที่ทุกคนปรับเอง',{when:S=>sorc(S)}),FT('j_hoodie','ฮู้ดดี้สีแดง',4,{robe:'#a22633'},'เหมือนที่อิตาโดริใส่'),
+    FU('j_sofa','โซฟาตัวยาว',12,'นั่งดูหนังกับเพื่อนได้สามคน',S=>{st('joy',1);}),FU('j_tv','ทีวีจอแบน',15,'ดูหนังได้ทั้งคืน',S=>{st('joy',1);})],
+  jojo:[EAT('jo_tonio','อาหารอิตาเลียนของโทนิโอ',6,'กินแล้วหายปวดหลังจนเหงื่อแตก',S=>{st('hp',R(8,14));st('joy',4);say('ฟันผุของคุณหลุดออกมาแล้วมีฟันใหม่งอกแทน!','good');}),
+    EAT('jo_sandwich','แซนด์วิชร้านกาแฟคาเมยูคาเฟ่',2,'ร้านที่โรฮังนั่งวาดรูป',S=>{st('joy',2);}),MED('jo_hospital','โรงพยาบาลโมริโอ',4,'ห้องพักเดียวกับที่โจสุเกะพาคนเจ็บมา',S=>{st('hp',R(8,14));}),
+    ODD('jo_arrow','ปลายลูกศรเก่าแก่',80,'คนขายบอกว่ามันมาจากอียิปต์ ห้ามแตะปลาย',S=>{if(chance(.25)&&typeof gainPower==='function')say('ปลายลูกศรบาดนิ้วคุณ ร่างโปร่งแสงยืนอยู่ข้างหลังคุณตั้งแต่วันนั้น','power');else{st('hp',-6);say('คุณมีไข้สูงสามวัน แล้วก็ไม่มีอะไรเกิดขึ้น','bad');}}),
+    FT('jo_gakuran','ชุดกาคุรันแบบดัดแปลง',8,{robe:'#1c1a2e'},'ปกตั้งสูง ติดเข็มกลัดทอง'),
+    FU('jo_poster','โปสเตอร์ปิงก์ดาร์กเดอะบอย',3,'มังงะของคิชิเบะ โรฮัง',S=>{st('joy',1);})],
+  heian:[EAT('h_rice','ข้าวขาวในชามเคลือบ',3,'ของกินของขุนนางเท่านั้น',S=>{st('hp',2);st('joy',2);}),MED('h_monk','ให้พระสวดขับไล่โรค',4,'ควันธูปกับบทสวดยาวสามวัน',S=>{st('hp',R(5,12));}),
+    ODD('h_amulet','ยันต์คุ้มครองจากวัดบนเขา',5,'ว่ากันว่ากันคำสาปได้หนึ่งครั้ง',S=>{S.flags.amulet=1;}),FT('h_kariginu','ชุดคาริงินุของขุนนาง',14,{robe:'#4f86b8'},'แขนเสื้อกว้างจนลมพัดแล้วสะบัด'),
+    FU('h_kicho','ม่านคิโจผ้าไหม',8,'ฉากผ้ากั้นห้องแบบในวัง',S=>{st('joy',1);})],
+  jjedo:[EAT('e_soba','โซบะร้อนจากแผงข้างถนน',1,'กินยืนๆ ตอนดึก',S=>{st('hp',1);st('joy',2);}),MED('e_kampo','ยาสมุนไพรของหมอคัมโปะ',3,'ขมจนน้ำตาไหล',S=>{st('hp',R(5,10));}),
+    ODD('e_ukiyoe','ภาพอุกิโยะเอะพิมพ์ใหม่',4,'ภาพคลื่นยักษ์กับภูเขาฟูจิ',S=>{skill('art',2);}),FT('e_yukata','ยูกาตะลายดอกไม้',4,{robe:'#4f86b8'},'ใส่ไปงานดอกไม้ไฟ'),
+    FU('e_lantern','โคมกระดาษแดง',3,'แขวนหน้าบ้าน',S=>{st('joy',1);})],
+  db:[EAT('d_senzu','ถั่วเซียน',30,'เม็ดเดียวอิ่มสิบวัน หายบาดเจ็บทุกอย่าง',S=>{st('hp',100);if(S.flags.inj)S.flags.inj=0;say('ร่างกายคุณฟื้นเต็มร้อยในพริบตา','power');}),
+    EAT('d_feast','บุฟเฟ่ต์ร้านในเมืองตะวันตก',5,'ชาวไซย่าหนึ่งคนกินหมดร้าน',S=>{st('joy',4);st('hp',3);}),MED('d_hosp','โรงพยาบาลแคปซูลคอร์ป',6,'เครื่องฟื้นฟูแบบล่าสุด',S=>{st('hp',R(10,20));}),
+    ODD('d_radar','เรดาร์ดราก้อนบอลจำลอง',40,'บุลมาทำขายเป็นของเล่น แต่ไฟมันกะพริบอยู่จุดหนึ่ง',S=>{S.flags.dbRadar=1;say('จุดสีเหลืองกะพริบอยู่ไกลออกไปทางตะวันออก','plain');}),
+    FT('d_gi','ชุดกังฟูสีส้มสำนักเต่า',6,{robe:'#f77622'},'ตัวอักษร "เต่า" บนหลัง'),FT('d_armor','ชุดเกราะไซย่า',20,{vest:1},'ยืดได้ไม่ขาด',{when:S=>S.year>=762}),
+    FU('d_sofa','โซฟาลอยฟ้าแคปซูลคอร์ป',18,'ลอยสูงจากพื้นสิบเซนติเมตร',S=>{st('joy',1);})],
+  lookism:[EAT('l_chimaek','ไก่ทอดกับเบียร์',2,'ชีแมกคือวัฒนธรรม',S=>{st('joy',4);}),EAT('l_ramyun','รามยอนในร้านสะดวกซื้อ',1,'อาหารหลังเลิกงานกะดึก',S=>{st('hp',1);st('joy',2);}),
+    MED('l_clinic','คลินิกผิวพรรณในกังนัม',12,'หน้าใสขึ้นในหนึ่งเดือน',S=>{st('look',R(2,4));skill('charm',2);say('ทุกคนถามว่าคุณไปทำอะไรมา','good');}),MED('l_hosp','โรงพยาบาลเอกชนในโซล',6,'รักษาแผลจากการต่อยตี',S=>{st('hp',R(10,18));if(S.flags.inj)S.flags.inj=0;}),
+    ODD('l_brand','เสื้อแบรนด์เนมลิมิเต็ด',30,'ของสะสมที่แก๊งในกังนัมแย่งกันใส่',S=>{skill('charm',4);fm(2);}),
+    FT('l_school','ชุดนักเรียนโรงเรียนมัธยมเจ',4,{robe:'#3a4466'},'แผนกแฟชั่นใส่ทรงพอดีตัว'),FT('l_street','ชุดสตรีทฮิปฮอป',8,{robe:'#e43b44'},'ใส่แล้วดูเหมือนสมาชิกแก๊ง'),
+    FU('l_bed','เตียงสปริงอย่างดี',10,'หลังจากนอนพื้นโกชีวอนมานาน',S=>{st('hp',1);}),FU('l_mirror','กระจกบานใหญ่พร้อมไฟ',8,'ส่องดูหน้าตัวเองทุกเช้า',S=>{st('look',1);})],
+};
+for(const [w,list] of Object.entries(SHOP62)){const W2=WORLDS[w];if(!W2)continue;W2.shop=W2.shop||[];for(const it of list)if(!W2.shop.some(x=>x.id===it.id))W2.shop.push(it);}
+/* consumables are not kept: you can buy them again */
+{const b1=buy;buy=function(it){const r=b1.apply(this,arguments);try{if(it&&it.eat&&S.own?.items){const i=S.own.items.lastIndexOf(it.id);if(i>=0)S.own.items.splice(i,1);if(typeof liveAct==='function')liveAct(it.cat==='med'?'heal':'cook');}}catch(e){}return r;};}
+
+/* ---------- decorating ---------- */
+const DECOWALL=[['ครีมอบอุ่น','#e8d7b0'],['ขาวสะอาด','#ecebe6'],['ฟ้าพาสเทล','#bcd4e6'],['เขียวมิ้นต์','#c4e0c8'],['ชมพูหวาน','#efc8d2'],['ไม้เข้ม','#8a6a4a'],['เทาโมเดิร์น','#9aa0a8'],['แดงอิฐ','#a8584a']];
+const DECOFLOOR=[['ไม้สีน้ำผึ้ง','#a88a68'],['ไม้เข้ม','#5a3e2a'],['เสื่อทาทามิ','#c9b26a'],['หินขัด','#8b9bb4'],['กระเบื้องขาว','#d8d8d0'],['พรมแดง','#8a2a2a']];
+const FURK=[[/เตียง|ฟูก|เปล/,'bed'],[/โต๊ะ|โคทัตสึ/,'table'],[/ตู้|ชั้น/,'shelf'],[/เตาผิง/,'hearth'],[/ตะเกียง|โคม/,'lamp'],[/พรม/,'rug'],[/แผนที่|ภาพ|โปสเตอร์|ใบประกาศ|ม้วนคัมภีร์|ฉากกั้น|ม่าน/,'frame'],
+  [/บอนไซ|กระถาง|ต้นไม้|สวนหิน/,'plant'],[/หุ่น|กระสอบทราย|ยกน้ำหนัก/,'dummy'],[/ทีวี|คอมพิวเตอร์|เกม|ตู้เพลง|ดีวีดี/,'screen'],[/โซฟา/,'sofa'],[/ตุ๊กตา/,'doll'],[/หิ้ง|บูชา/,'altar'],[/พวงมาลัยเรือ/,'wheel'],[/กระจก/,'mirror'],[/พิณ|ชงชา/,'table'],[/แคปซูล/,'screen']];
+const furKind=it=>{for(const [re,k] of FURK)if(re.test(it.n))return k;return 'box';};
+const WALLK=new Set(['frame','wheel','mirror','altar']);
+const FURP={
+  bed:(px,x,fl)=>{px(x,fl-7,26,5,'#8a5a3a');px(x,fl-10,3,10,'#5a3e2a');px(x+23,fl-9,3,9,'#5a3e2a');px(x+3,fl-9,20,3,'#ecebe6');px(x+3,fl-9,6,2,'#c0cbdc');return 27;},
+  table:(px,x,fl)=>{px(x,fl-9,18,2,'#8a5a3a');px(x+1,fl-7,2,7,'#5a3e2a');px(x+15,fl-7,2,7,'#5a3e2a');px(x+6,fl-12,4,3,'#ecebe6');return 19;},
+  shelf:(px,x,fl)=>{px(x,fl-24,14,24,'#5a3e2a');for(let r=0;r<3;r++){px(x+1,fl-22+r*7,12,1,'#3e2731');for(let b=0;b<3;b++)px(x+2+b*4,fl-21+r*7,3,5,['#a22633','#124e89','#3e8948'][(b+r)%3]);}return 15;},
+  hearth:(px,x,fl,t)=>{px(x,fl-16,18,16,'#8a4a32');px(x+3,fl-10,12,10,'#262b44');const f=Math.floor(t/120)%3;px(x+5,fl-6-f,8,6+f,'#f77622');px(x+7,fl-4-f,4,4,'#fee761');return 19;},
+  lamp:(px,x,fl,t)=>{px(x+2,fl-14,1,14,'#5a3e2a');px(x,fl-18,5,5,'#feae34');px(x+1,fl-17,3,3,Math.floor(t/400)%2?'#fee761':'#ffe9a0');return 6;},
+  rug:(px,x,fl)=>{px(x,fl,24,2,'#a22633');px(x+2,fl,20,1,'#feae34');return 25;},
+  plant:(px,x,fl)=>{px(x+1,fl-5,6,5,'#8a4a32');disc(px,x+4,fl-9,4,'#3e8948');px(x+3,fl-13,2,3,'#63c74d');return 9;},
+  dummy:(px,x,fl)=>{px(x+3,fl-18,3,18,'#8a5a3a');px(x,fl-16,9,2,'#8a5a3a');disc(px,x+4,fl-20,3,'#c4875e');return 10;},
+  screen:(px,x,fl,t)=>{px(x,fl-8,16,2,'#5a3e2a');px(x+1,fl-20,14,11,'#262b44');px(x+2,fl-19,12,9,Math.floor(t/700)%2?'#4f86b8':'#63c74d');px(x+7,fl-9,2,1,'#262b44');return 17;},
+  sofa:(px,x,fl)=>{px(x,fl-9,24,6,'#4f86b8');px(x,fl-13,24,4,'#3a6a98');px(x,fl-10,3,7,'#3a6a98');px(x+21,fl-10,3,7,'#3a6a98');px(x+2,fl-3,2,3,'#3e2731');px(x+20,fl-3,2,3,'#3e2731');return 25;},
+  doll:(px,x,fl)=>{disc(px,x+3,fl-6,3,'#ecebe6');px(x+1,fl-3,5,3,'#ecebe6');px(x+2,fl-7,1,1,'#262b44');px(x+4,fl-7,1,1,'#262b44');return 7;},
+  box:(px,x,fl)=>{px(x,fl-8,10,8,'#8a5a3a');px(x+1,fl-7,8,1,'#a8784a');return 11;},
+  frame:(px,x,y)=>{px(x,y,14,10,'#5a3e2a');px(x+1,y+1,12,8,'#ead4aa');px(x+3,y+3,8,4,'#4f86b8');return 15;},
+  wheel:(px,x,y)=>{disc(px,x+6,y+6,6,'#8a5a3a');disc(px,x+6,y+6,3,'#ead4aa');for(let i=0;i<4;i++)px(x+5,y+i*3,2,2,'#5a3e2a');return 13;},
+  mirror:(px,x,y)=>{px(x,y,10,16,'#feae34');px(x+1,y+1,8,14,'#c0e0f0');px(x+2,y+2,2,6,'#ffffff');return 11;},
+  altar:(px,x,y)=>{px(x,y+6,16,3,'#5a3e2a');px(x+5,y,6,6,'#a22633');px(x+7,y+1,2,4,'#feae34');return 17;},
+};
+{const r0=room;room=function(px,lw,lh,m,t){const fl=r0.apply(this,arguments);
+  try{if(INDECO&&S&&S.own){const items=(S.own.items||[]).map(id=>W.shop.find(s=>s.id===id)).filter(it=>it&&it.cat==='fur'&&!(S.deco?.hide||[]).includes(it.id));
+    const order=S.deco?.order||[];items.sort((a,b)=>((order.indexOf(a.id)+1)||99)-((order.indexOf(b.id)+1)||99));
+    let wx=Math.round(lw*.08),fx=Math.round(lw*.12);const wy=Math.round(lh*.1);
+    for(const it of items){const k=furKind(it),fn=FURP[k]||FURP.box;
+      if(WALLK.has(k)){if(wx>lw*.58)continue;wx+=fn(px,wx,wy,t)+4;}else{if(fx>lw-20)continue;fx+=fn(px,fx,fl,t)+3;}}}}catch(e){}
+  return fl;};}
+{const d0=drawInside;drawInside=function(){INDECO=true;try{return d0.apply(this,arguments);}finally{INDECO=false;}};}
+async function decoMenu(){
+  if(!S.own?.house&&!S.rent){await ask('ตกแต่งบ้าน','คุณยังไม่มีบ้านหรือห้องเช่าให้ตกแต่ง',[{l:'ปิด',skip:1,f(){}}],'menu');return;}
+  S.deco=S.deco||{};for(;;){let go=null;const furs=(S.own.items||[]).map(id=>W.shop.find(s=>s.id===id)).filter(it=>it&&it.cat==='fur');
+    await ask('ตกแต่งบ้าน',`ผนัง: ${(DECOWALL.find(d=>d[1]===S.deco.wall)||['ค่าเริ่มต้น'])[0]} · พื้น: ${(DECOFLOOR.find(d=>d[1]===S.deco.floor)||['ค่าเริ่มต้น'])[0]} · เฟอร์นิเจอร์ ${furs.length} ชิ้น (ซื้อเพิ่มได้ที่ร้าน หมวดเฟอร์นิเจอร์)`,[
+      {l:'🎨 เปลี่ยนสีผนัง',close:1,f(){go='wall';}},{l:'🪵 เปลี่ยนพื้น',close:1,f(){go='floor';}},
+      ...(furs.length?[{l:'🛋 จัดวาง/เก็บเฟอร์นิเจอร์',close:1,f(){go='fur';}}]:[]),{l:'เสร็จแล้ว',skip:1,f(){}}],'menu');
+    if(!go)return;
+    if(go==='wall'||go==='floor'){const L=go==='wall'?DECOWALL:DECOFLOOR;await ask(go==='wall'?'สีผนัง':'พื้นบ้าน','ทาสีและปูพื้นฟรี ใช้แรงของคุณเอง',[...L.map(([n,c])=>({l:n,close:1,f(){S.deco[go]=c;say(`คุณ${go==='wall'?'ทาผนังเป็นสี':'ปูพื้นเป็น'}${n}`,'good');st('joy',2);liveAct('star');}})),{l:'กลับ',close:1,f(){}}],'menu');}
+    if(go==='fur'){S.deco.hide=S.deco.hide||[];S.deco.order=S.deco.order||[];await ask('จัดวางเฟอร์นิเจอร์','แตะเพื่อเก็บเข้ากล่องหรือนำออกมาวาง · ย้ายไปไว้หน้าสุดเพื่อให้เห็นชัด',[...furs.map(it=>({l:`${S.deco.hide.includes(it.id)?'📦 นำออกมาวาง':'✅ เก็บ'} ${it.n}`,close:1,f(){const i=S.deco.hide.indexOf(it.id);if(i>=0)S.deco.hide.splice(i,1);else S.deco.hide.push(it.id);}})),
+      ...furs.map(it=>({l:`⬅ ย้าย ${it.n} ไปหน้าสุด`,close:1,f(){S.deco.order=[it.id,...S.deco.order.filter(x=>x!==it.id)];}})),{l:'กลับ',close:1,f(){}}],'menu');}
+    save();render();}
+}
+{const oh=openHomes;openHomes=async function(){try{const pb=document.createElement('b');pb.innerHTML='<i></i>';if(!pb.firstChild)return oh.apply(this,arguments);}catch(e){return oh.apply(this,arguments);}
+  let pick1=null;await ask('ที่อยู่อาศัย','',[{l:'🏠 ย้ายบ้าน / เช่าบ้าน / ซื้อบ้าน',close:1,f(){pick1='home';}},{l:'🎨 ตกแต่งบ้าน',close:1,f(){pick1='deco';}},{l:'ปิด',skip:1,f(){}}],'menu');
+  if(pick1==='home')return oh.apply(this,arguments);if(pick1==='deco')return decoMenu();};}
+
+
+/* --- f_story62.js --- */
+/* ===== v62 story: missing lore beats, new history-changing moments with ripples, and original after-the-end arcs ===== */
+if(WORLDS.naruto?.castMeta){const M=WORLDS.naruto.castMeta;if(M.itachi)M.itachi.d=65;if(M.jiraiya)M.jiraiya.d=65;}
+const ALL=()=>true;
+/* ---------- missing lore beats ---------- */
+ARC('naruto',26,[
+  {id:'nw2',mo:3,t:'สงครามนินจาครั้งที่ 2',mood:'fire',cap:'สนามรบในแคว้นฝน',who:S=>S.age>=14&&isNinja(S),
+   n:'ห้าหมู่บ้านใหญ่ปะทะกันอีกครั้ง สนามรบส่วนใหญ่อยู่ในแคว้นฝนที่ติดอยู่ระหว่างประเทศใหญ่ เด็กกำพร้าเกิดขึ้นทุกวัน',
+   x:'ม้วนคำสั่งมาถึงมือคุณ หน่วยของคุณต้องสกัดกองหนุนของหมู่บ้านศัตรูที่ชายแดนแคว้นฝน ฝนตกไม่หยุดมาสามสัปดาห์',
+   c:[K('บุกตามคำสั่ง','brave obey',{foe:['จูนินของหมู่บ้านศัตรู',60],p:.55,d:'เสียชีวิตในสงครามนินจาครั้งที่ 2',fm:8,sk:5,tr:8,s:'หน่วยของคุณยึดสะพานไว้ได้ แต่เหลือคนกลับมาครึ่งเดียว'}),
+      K('แบ่งเสบียงให้เด็กกำพร้าในแคว้นฝน','kind',{j:4,fm:2,s:'เด็กสามคนมองคุณเงียบๆ เด็กผมแดงคนหนึ่งมีดวงตาแปลกประหลาด'}),
+      K('ขอย้ายไปหน่วยแพทย์ด้านหลัง','safe',{s:'คุณเย็บแผลให้นินจาที่กลับมาทุกคืน','k':'plain'})]},
+  {id:'nw2b',y:28,mo:6,t:'ฮันโซตั้งฉายาสามนินจา',mood:'grief',cap:'ทุ่งฝนของอาเมะ',who:S=>S.age>=14&&isNinja(S),
+   n:'ซันโชอุโอะ ฮันโซ แห่งอาเมะ ไว้ชีวิตจิไรยะ ซึนาเดะ และโอโรจิมารุ แล้วตั้งฉายาให้ว่า "สามนินจาในตำนาน"',
+   x:'คุณเห็นนินจาหนุ่มสามคนยืนหอบหายใจต่อหน้าชายสวมหน้ากากกับซาลาแมนเดอร์ยักษ์ เขาพูดว่า "ข้าจะให้ชีวิตพวกเจ้า"',
+   c:[K('เข้าไปช่วยทั้งสามคน','hero brave',{foe:['ซันโชอุโอะ ฮันโซ',90,'b'],p:.25,d:'ถูกพิษซาลาแมนเดอร์ของฮันโซ',fm:16,b:{jiraiya:15,tsunade:12,orochimaru:6},s:'ฮันโซมองคุณแล้วหัวเราะ "เจ้าก็ด้วย จงมีชีวิตไปเล่าเรื่องนี้"'}),
+      K('ซ่อนตัวดูอยู่ห่างๆ','safe curious',{f(S){st('iq',2);},s:'คุณได้เห็นตำนานถือกำเนิดต่อหน้าต่อตา','k':'plain'})]},
+]);
+ARC('naruto',41,[{id:'sakumo',mo:2,t:'เขี้ยวขาวแห่งโคโนฮะจบชีวิต',mood:'grief',cap:'บ้านตระกูลฮาตาเกะ',who:S=>S.age>=10&&vilOf(S)==='konoha',
+  n:'ฮาตาเกะ ซาคุโมะ "เขี้ยวขาว" เลือกช่วยเพื่อนแทนภารกิจ หมู่บ้านประณามเขาจนเขาจบชีวิตตัวเอง ลูกชายวัยห้าขวบชื่อคาคาชิพบศพพ่อ',
+  x:'ทั้งหมู่บ้านซุบซิบว่าเขี้ยวขาวทำให้ภารกิจล้มเหลว คนที่เขาช่วยชีวิตไว้ก็พูดตามคนอื่น',
+  c:[K('ยืนข้างเขี้ยวขาวต่อหน้าทุกคน','hero kind',{fm:6,b:{kakashi:12},dk:-4,s:'ไม่กี่คนที่กล้าพูด คุณเป็นหนึ่งในนั้น เด็กชายผมขาวจำหน้าคุณได้'}),
+     K('เงียบเหมือนคนอื่น','safe',{tr:4,s:'สามวันต่อมา ข่าวการตายของเขาเงียบยิ่งกว่าเสียงซุบซิบ','k':'plain'})]}]);
+ARC('naruto',45,[{id:'orofall',mo:5,t:'โอโรจิมารุหนีหมู่บ้าน',mood:'night',cap:'ห้องทดลองใต้ดิน',who:S=>S.age>=12&&vilOf(S)==='konoha',
+  n:'ห้องทดลองลับใต้ดินของโอโรจิมารุถูกพบ เด็กที่หายตัวไปหลายคนอยู่ในนั้น โฮคาเงะรุ่นสามปล่อยศิษย์ของตัวเองหนีไป',
+  x:'หน่วยอันบุพาคุณลงไปในห้องใต้ดิน กลิ่นยาดองลอยคลุ้ง หลอดแก้วเรียงเป็นแถว ชายผิวซีดยืนรออยู่ปลายทางเดิน',
+  c:[K('ขวางทางหนีของโอโรจิมารุ','brave hero',{foe:['โอโรจิมารุ',92,'b'],p:.3,d:'ถูกงูของโอโรจิมารุรัดจนกระดูกแตก',fm:14,s:'เขาเลียริมฝีปาก "ร่างกายดีนะ" แล้วหายไปในหมอกควัน'}),
+     K('พาเด็กที่ยังรอดออกมา','kind',{j:5,fm:6,s:'เด็กชายตัวเล็กคนหนึ่งในหลอดแก้วลืมตาขึ้นมา ปีต่อมาเขาเข้าหน่วยราก','k':'good'})]}]);
+ARC('naruto',49,[{id:'rin',mo:10,t:'ความตายของโนฮาระ ริน',mood:'grief',cap:'ป่าในแคว้นหมอก',who:S=>S.age>=12&&vilOf(S)==='konoha'&&isNinja(S),
+  n:'หมู่บ้านหมอกผนึกหางสามไว้ในตัวริน เธอพุ่งเข้าใส่ไรคิริของคาคาชิเองเพื่อไม่ให้ถูกใช้เป็นอาวุธ โอบิโตะเห็นทุกอย่างจากต้นไม้',
+  x:'หน่วยของคุณตามสัญญาณมาถึงช้าไปหนึ่งนาที คาคาชิคุกเข่าอยู่ข้างร่างเด็กสาว เด็กชายหน้าซีกเดียวจ้องมาจากที่มืด',
+  c:[K('เข้าไปประคองคาคาชิ','kind',{b:{kakashi:15},tr:8,s:'คาคาชิไม่พูดอะไรเลยตลอดทางกลับหมู่บ้าน','k':'plain'}),
+     K('ตามรอยคนที่จ้องอยู่ในป่า','brave curious',{foe:['ชายหน้ากากก้นหอย',85],p:.45,d:'ร่างหายเข้าไปในวังวนของคามุย',f(S){S.flags.sawObito=1;},s:'คุณเห็นแวบหนึ่งว่าเขาใส่ชุดของหน่วยโคโนฮะ...'})]}]);
+ARC('op',1499,[{id:'laugh',mo:4,t:'โรเจอร์ไปถึงสุดปลายทะเล',mood:'day',cap:'ทะเลสุดขอบแกรนด์ไลน์',
+  n:'กลุ่มโจรสลัดโรเจอร์ไปถึงเกาะสุดท้าย แล้วหัวเราะออกมาเพราะเรื่องที่พวกเขาพบ จึงตั้งชื่อเกาะว่า "ลาฟเทล"',
+  x:'เรือของคุณจอดหลบพายุที่เกาะเล็กๆ ทันใดนั้นเสียงหัวเราะดังมาจากเรือลำใหญ่ที่แล่นผ่าน เสียงหัวเราะของคนทั้งลำที่หยุดไม่ได้',
+  c:[K('ตะโกนถามว่าเจออะไร','curious brave',{fm:4,f(S){st('joy',5);},s:'ชายหนวดดำโบกมือตอบ "มาดูเองสิ! วาฮะฮะ!"'}),K('จดตำแหน่งเรือลำนั้นไว้','curious',{f(S){skill('ride',3);},s:'ตำแหน่งที่คุณจดชี้ไปยังทะเลที่ไม่มีแผนที่ไหนเขียนถึง','k':'plain'})]}]);
+ARC('op',1522,[
+  {id:'drum',mo:5,t:'อาณาจักรดรัม',mood:'dawn',cap:'ปราสาทบนยอดเขาหิมะ',
+   n:'กลุ่มหมวกฟางล้มวาโปลที่กลับมายึดดรัม กวางเรนเดียร์หมอชื่อช็อปเปอร์ออกเดินทางกับพวกเขา ดร.คูเรฮะยิงปืนใหญ่ส่งด้วยหิมะสีชมพู',
+   x:'หิมะสีชมพูโปรยลงทั่วเกาะ ผู้คนหยุดเดินเงยหน้ามอง กวางเรนเดียร์ตัวเล็กยืนร้องไห้อยู่บนเลื่อนที่ลากออกไปทะเล',
+   c:[K('โบกมือส่งกวางตัวนั้น','kind',{j:6,s:'มันโบกกีบตอบทั้งน้ำตา','k':'good'}),K('สู้กับลูกน้องวาโปลที่ยังเหลือ','brave',{foe:['ลูกน้องของวาโปล',45],p:.8,fm:5,sk:3,s:'ชาวเมืองยกคุณขึ้นบ่าหลังการต่อสู้'})]},
+  {id:'w7',mo:8,t:'วอเตอร์เซเว่นกับเมอร์รี่',mood:'grief',cap:'อู่ต่อเรือกาเลย์ลา',
+   n:'โกอิ้งเมอร์รี่ซ่อมไม่ได้อีกแล้ว ลูฟี่กับอุซปทะเลาะกันจนแยกทาง หลังเอนิเอส ล็อบบี้ เมอร์รี่มารับพวกเขาเป็นครั้งสุดท้ายแล้วถูกเผาท่ามกลางทะเล',
+   x:'คุณยืนอยู่ริมท่าที่วอเตอร์เซเว่น เรือลำเล็กกำลังลุกไหม้กลางทะเล ทุกคนบนฝั่งได้ยินเสียงเหมือนเรือพูดว่า "ขอบคุณ"',
+   c:[K('ถอดหมวกไว้อาลัยให้เรือ','kind',{j:-2,f(S){skill('craft',2);},s:'คุณสาบานว่าจะต่อเรือให้ดีพอที่จะมีวิญญาณสักวัน','k':'plain'}),K('ไปสมัครเป็นช่างที่กาเลย์ลา','curious',{mn:4,f(S){skill('craft',4);},s:'ไอซ์เบิร์กรับคุณเข้าทำงานด้วยรอยยิ้มเหนื่อยๆ'})]},
+]);
+ARC('bleach',2014,[{id:'hell',mo:8,t:'ประตูนรกเปิด',mood:'red',cap:'ประตูขนาดยักษ์กลางเซเรเทย์',
+  n:'ในพิธีศพของหัวหน้าหน่วยคนหนึ่ง ประตูนรกเปิดออก คาซุอิ ลูกชายของอิจิโกะ หยุดมันไว้ได้ด้วยพลังที่ไม่มีใครเข้าใจ อิจิโกะกับเร็นจิลงไปในนรกด้วยตัวเอง',
+  x:'โซ่สีดำพุ่งออกมาจากประตูนรกแล้วพันขาคนข้างๆ คุณ ร่างที่ไม่ใช่ฮอลโลว์และไม่ใช่ยมทูตมองผ่านช่องประตูออกมา',
+  c:[K('ฟันโซ่นรกขาด','brave hero',{foe:['ผู้คุมนรก (คุชานาดา)',88,'b'],p:.35,d:'ถูกโซ่ลากลงนรก',fm:16,sk:6,s:'โซ่ขาดออก แต่รอยไหม้บนแขนคุณไม่มีวันหาย'}),
+     K('พาคนออกห่างจากประตู','kind',{p:.8,d:'ถูกโซ่นรกลากไปขณะช่วยคน',fm:6,s:'ประตูปิดลงต่อหน้าคุณ อิจิโกะยังอยู่ข้างใน'})]}]);
+/* ---------- more turning points you can change ---------- */
+HM('op',{id:'hm_ace',y:1522,mo:11,who:'ace',t:'มารีนฟอร์ด: หมัดแมกม่า',when:S=>S.age>=15&&castOK('ace')&&(opSea(S)||pirate(S)||S.job?.mil),
+  text:'อาคาอินุพุ่งหมัดแมกม่าใส่ลูฟี่ที่ทรุดอยู่กับพื้น เอสกระโดดออกมาบังน้องชาย คุณอยู่ห่างไปไม่ถึงสิบก้าว',
+  save:{l:'พุ่งเข้าขวางหมัดแมกม่า',foe:['พลเรือเอกอาคาอินุ',97,'b'],p:.18,d:'ถูกหมัดแมกม่าของอาคาอินุทะลุอก',s:'หมัดแมกม่าเฉียดไหล่คุณไป เอสลากลูฟี่หนีได้ทัน ทั้งทะเลไม่เชื่อว่ามีคนรอดจากหมัดนั้น',m:'ช่วยเอสที่มารีนฟอร์ด'},
+  help:{l:'ขว้างลูกปืนใหญ่ใส่อาคาอินุ',p:.7,d:'ลาวาพุ่งกลับมาหาคุณ',s:'อาคาอินุหันมามองคุณแค่ครึ่งวินาที แต่ก็ไม่พอ'},
+  fate:'หมัดแมกม่าทะลุอกเอส เขาตายในอ้อมแขนของลูฟี่ "ขอบคุณที่รักฉัน"'});
+HM('jjk',{id:'hm_nanami',y:2018,mo:9,who:'nanami',t:'ชิบุยะ: มือของมาฮิโตะ',when:S=>S.age>=15&&castOK('nanami')&&ARCWHO.jjk(S),
+  text:'นานามิยืนอยู่กลางสถานีที่ไหม้ครึ่งตัว มาฮิโตะเดินมาจากด้านหลังยื่นมือแตะไหล่เขาช้าๆ เหมือนทักทายเพื่อน',
+  save:{l:'กระชากนานามิหลบมือมาฮิโตะ',foe:['มาฮิโตะ',84,'c'],p:.3,d:'ถูกมาฮิโตะแตะวิญญาณจนร่างแตกสลาย',s:'มือของมาฮิโตะคว้าแค่อากาศ นานามิมองคุณด้วยตาข้างเดียวที่เหลือ "...ล่วงเวลาไปมากแล้ว"',m:'ช่วยนานามิที่ชิบุยะ'},
+  help:{l:'ตะโกนเตือนอิตาโดริ',s:'อิตาโดริวิ่งมาถึงพอดีกับคำสุดท้ายของนานามิ'},
+  fate:'นานามิหันไปหาอิตาโดริ "ที่เหลือฝากด้วยนะ" แล้วร่างครึ่งบนของเขาก็แตกออก'});
+HM('db',{id:'hm_krillin',y:762,mo:8,who:'krillin',t:'ดาวนาเม็ก: ฟรีเซอร์ยกนิ้ว',when:S=>S.age>=14&&castOK('krillin')&&S.flags.namekGo,
+  text:'ฟรีเซอร์ยกนิ้วชี้ขึ้น คุริรินลอยขึ้นฟ้าโดยไม่ตั้งใจ ร่างของเขากำลังจะระเบิด โกคูยืนห่างไปห้าสิบเมตร',
+  save:{l:'พุ่งเข้าชนคุริรินออกจากพลังจิตของฟรีเซอร์',foe:['ฟรีเซอร์',99,'b'],p:.12,d:'ร่างระเบิดกลางฟ้าดาวนาเม็กแทนคุริริน',s:'คุริรินตกลงพื้นทั้งตัว ฟรีเซอร์หันมามองคุณอย่างสนใจ แต่โกคูต้องหาความโกรธจากที่อื่น',m:'ช่วยคุริรินบนดาวนาเม็ก'},
+  fate:'ร่างของคุริรินระเบิดกลางฟ้า เส้นผมของโกคูลอยตั้งขึ้นเป็นสีทอง'});
+HM('naruto',{id:'hm_konan',y:67,mo:1,who:'konan',t:'กระดาษหกร้อยล้านแผ่น',when:S=>S.age>=15&&castOK('konan')&&(vilOf(S)==='ame'||S.flags.outlaw),
+  text:'โคนันระเบิดกระดาษหกร้อยล้านแผ่นใส่ชายหน้ากากก้นหอย เขาหายวับไปแล้วโผล่ข้างหลังเธอ คุณซ่อนอยู่หลังเสาหินในทะเลสาบ',
+  save:{l:'ขว้างคุไนตัดจังหวะชายหน้ากาก',foe:['ชายหน้ากากก้นหอย',92,'b'],p:.25,d:'ถูกดูดเข้ามิติคามุย',s:'คุไนของคุณบังคับให้เขาหายเข้ามิติก่อนเวลา โคนันพาร่างนางาโตะหนีไปได้',m:'ช่วยโคนัน'},
+  fate:'ชายหน้ากากใช้อิซานางิแล้วแทงโคนันจากด้านหลัง กระดาษทั้งทะเลสาบจมลงอย่างช้าๆ'});
+HM('lookism',{id:'hm_shingen',y:1996,mo:10,who:'shingen',t:'คืนรัฐประหาร: ห้องทำงานของชินเก็น',when:S=>S.age>=16&&castOK('shingen')&&(S.flags.crew||S.place==='seoul'),
+  text:'ทางเดินคฤหาสน์ยามาซากิเงียบผิดปกติ ลูกน้องของชินทาโร่กำลังล้อมห้องทำงานของชินเก็น คุณถือถาดน้ำชาเข้าไปพอดี',
+  save:{l:'ล็อกประตูแล้วพาชินเก็นหนีทางหลัง',foe:['ลูกน้องของชินทาโร่',72],p:.35,d:'ถูกลูกน้องของชินทาโร่รุมในทางเดิน',s:'ชินเก็นมองคุณนานก่อนพูดว่า "ยามาซากิติดหนี้เจ้าหนึ่งชีวิต"',m:'ช่วยชินเก็นจากรัฐประหาร'},
+  fate:'คืนนั้นชินทาโร่ยึดตระกูลยามาซากิได้ทั้งหมด'});
+/* ---------- the world changes when you save someone ---------- */
+const RIPPLE=[
+  ['op',1524,10,'ripple_ace','saved_ace','หมัดอัคคีที่วาโนะ','เอสที่รอดจากมารีนฟอร์ดปรากฏตัวที่วาโนะ เขาเคยสัญญากับยามาโตะว่าจะกลับมา ศึกโอนิกาชิมะมีหมัดอัคคีลุกท่วมฟ้า',
+    'เปลวไฟสีส้มลุกขึ้นกลางเทศกาลไฟ ชายสวมหมวกคาวบอยหันมายิ้มให้คุณ "ไง! ยังมีชีวิตอยู่เหมือนกันนี่"',[K('ร่วมบุกกับเอส','brave hero',{foe:['ลูกน้องของไคโด',75],p:.6,fm:15,b:{ace:15},s:'เอสกับคุณยืนหันหลังชนกันกลางสมรภูมิ'}),K('ชวนเอสดื่มฉลอง','kind',{b:{ace:10},j:8,s:'เขาหลับคาแก้วเหมือนเดิมไม่มีผิด'})]],
+  ['jjk',2019,3,'ripple_nanami','saved_nanami','ทะเลที่มาเลเซีย','นานามิที่รอดจากชิบุยะประกาศเกษียณ เขาไปเปิดร้านขนมปังเล็กๆ ที่ชายหาดกวนตัน',
+    'ไปรษณียบัตรใบหนึ่งส่งมาถึงคุณ ภาพทะเลสีฟ้ากับข้อความสั้นๆ "งานล่วงเวลาครั้งนั้น ผมยังไม่ได้จ่ายค่าตอบแทนคุณ"',[K('บินไปเยี่ยมเขา','kind',{mn:-15,j:12,b:{nanami:15},s:'นานามิยื่นขนมปังให้คุณโดยไม่พูดอะไร ทะเลเงียบสงบเหมือนที่เขาฝันไว้'}),K('เก็บไปรษณียบัตรไว้ข้างเตียง','safe',{j:5,s:'ทุกครั้งที่ท้อ คุณหยิบมันขึ้นมาดู','k':'plain'})]],
+  ['db',762,9,'ripple_krillin','saved_krillin','ความโกรธที่ต่างออกไป','คุริรินรอดชีวิต โกคูไม่ได้แปลงร่างจากความตายของเพื่อน แต่ความโกรธที่ฟรีเซอร์ทำร้ายชาวนาเม็กทั้งดาวก็จุดไฟในตัวเขาได้เหมือนกัน',
+    'คุริรินนั่งลงข้างคุณบนก้อนหินที่ลอยอยู่ "นายช่วยฉันไว้นะ... ฉันจะเลี้ยงข้าวนายสามปี"',[K('รับคำเลี้ยงข้าว','kind',{b:{krillin:20},j:8,s:'คุริรินหัวเราะทั้งที่ดาวกำลังระเบิด'}),K('บอกให้รีบหนี','safe',{s:'คุณสองคนวิ่งไปที่ยานทันเวลา','k':'plain'})]],
+  ['naruto',68,4,'ripple_konan','saved_konan','ฝนที่หยุดตก','โคนันที่รอดชีวิตกลับไปปกครองอาเมะ เธอสร้างหมู่บ้านใหม่ที่ไม่มีเทพเจ้า และส่งดอกไม้กระดาษไปยังโคโนฮะทุกปี',
+    'ดอกไม้กระดาษดอกหนึ่งลอยมาเกาะหน้าต่างบ้านคุณ มีข้อความเขียนไว้ "อาเมะยินดีต้อนรับเจ้าเสมอ"',[K('เดินทางไปอาเมะ','curious kind',{b:{konan:15},j:6,s:'เป็นครั้งแรกในรอบหลายสิบปีที่อาเมะมีแดดออก'}),K('เก็บดอกไม้ไว้','safe',{j:3,s:'มันไม่เคยเหี่ยวเลย','k':'plain'})]],
+  ['aot',851,2,'ripple_erwin','saved_erwin','เออร์วินเห็นทะเล','เออร์วินที่รอดจากศึกชิกันชินายืนอยู่ริมทะเลพร้อมหน่วยสำรวจ เขาไม่ได้พูดอะไรเลยเป็นชั่วโมง',
+    'เออร์วินหันมาหาคุณที่ริมทะเล "ความฝันของพ่อผม... คือความจริงที่อยู่ตรงหน้านี้" แล้วเขาก็ยิ้ม ยิ้มจริงๆ เป็นครั้งแรก',[K('ยืนดูทะเลข้างเขา','kind',{b:{erwin:20},j:10,s:'คลื่นซัดเท้าทุกคน ไม่มีใครพูดอะไร'}),K('ถามว่าต่อจากนี้จะทำอะไร','curious',{b:{erwin:10},f(S){st('iq',3);},s:'"ต่อจากนี้ เราต้องสู้กับทั้งโลก" เขาตอบ'})]],
+  ['aot',856,5,'ripple_sasha','saved_sasha','ร้านอาหารของซาช่า','ซาช่าที่รอดชีวิตเปิดร้านอาหารในทรอสต์ ป้ายร้านเขียนว่า "เนื้อมีจำกัด ห้ามขโมย"',
+    'ซาช่าวางมันฝรั่งอบลงตรงหน้าคุณ "ครึ่งหัวนะ อีกครึ่งของฉัน"',[K('กินกับเธอ','kind',{b:{sasha:15},j:10,s:'ร้านนี้เต็มทุกวัน และทุกคนรู้ว่าทำไม'})]],
+  ['jjk',2019,6,'ripple_gojo','saved_gojo','ครูที่แข็งแกร่งที่สุดกลับมาสอน','โกโจที่รอดจากศึกชินจูกุกลับมาสอนที่โรงเรียนเทคนิคโตเกียว เขาบอกนักเรียนใหม่ว่าตั้งใจจะเปลี่ยนวงการไสยศาสตร์ทั้งหมด',
+    'โกโจถอดผ้าปิดตาออกมองคุณ "นายเปลี่ยนเรื่องที่ไม่มีใครเปลี่ยนได้นะ รู้ตัวไหม"',[K('ขอเป็นผู้ช่วยสอน','curious',{b:{gojo:15},f(S){skill('gear',4);},s:'นักเรียนรุ่นใหม่เรียกคุณว่า "ครูคนที่สอง"'})]],
+];
+for(const [w,y,mo,id,flag,t,n,x,c] of RIPPLE)ARC(w,y,[{id,mo,t,mood:'day',cap:t,who:S=>!!S.flags[flag]&&S.age>=12,when:S=>!!S.flags[flag],n,x,c}]);
+/* ---------- original arcs after the story ends (written for this game, in each world's spirit) ---------- */
+ARC('aot',860,[{id:'pc_tree',mo:3,t:'ต้นไม้บนเนินเขา',mood:'day',cap:'ต้นไม้ใหญ่บนเนินเขาชิกันชินา',who:ALL,
+  n:'ทุกปีในวันเดียวกัน หญิงผ้าพันคอแดงจะมานั่งใต้ต้นไม้บนเนินเขา นกตัวหนึ่งบินมาพันผ้าพันคอให้เธอเสมอ',
+  x:'คุณเดินขึ้นเนินมาพบหญิงคนหนึ่งนั่งอ่านจดหมายใต้ต้นไม้ นกสีขาวเกาะอยู่บนกิ่งเหนือหัวเธอ',
+  c:[K('นั่งลงข้างเธอเงียบๆ','kind',{b:{mikasa:12},j:6,s:'มิคาสะพูดขึ้นเบาๆ "เขาชอบที่นี่"'}),K('ทิ้งดอกไม้ไว้แล้วเดินกลับ','safe',{j:3,s:'นกตัวนั้นบินตามคุณลงเนินมาครู่หนึ่ง','k':'plain'})]},
+  {id:'pc_school',y:866,mo:4,t:'ห้องเรียนที่ไม่มีกำแพง',mood:'day',cap:'โรงเรียนแห่งแรกที่สอนประวัติศาสตร์จริง',who:ALL,
+  n:'ปาราดีส์เปิดโรงเรียนที่สอนประวัติศาสตร์ของโลกทั้งใบเป็นครั้งแรก รวมถึงความจริงเรื่องยมีร์และมาร์เลย์ กลุ่มเยเกอริสต์ประท้วงหน้าประตู',
+  x:'ครูใหญ่เชิญคุณขึ้นพูดหน้าห้องเรียน เด็กๆ ถามว่า "ทำไมผู้ใหญ่ถึงเกลียดคนทะเลกันขนาดนั้น"',
+  c:[K('เล่าความจริงทั้งหมด','hero kind',{fm:8,dk:-6,f(S){st('iq',2);},s:'เด็กคนหนึ่งยกมือถามว่า "แล้วเราจะเป็นเพื่อนกับพวกเขาได้ไหม"'}),K('ออกไปคุยกับผู้ประท้วง','brave',{p:.85,d:'ถูกผู้ประท้วงหัวรุนแรงทำร้าย',fm:6,s:'คุณคุยกับพวกเขาจนพระอาทิตย์ตก ไม่มีใครเปลี่ยนใจ แต่ทุกคนกลับบ้านโดยไม่มีใครเจ็บ'})]},
+  {id:'pc_envoy',y:875,mo:7,t:'เรือทูตลำที่ร้อย',mood:'day',cap:'ท่าเรือเลแบรีโอที่สร้างใหม่',who:S=>S.age>=16,
+  n:'เรือทูตสันติภาพของอาร์มินเดินทางเป็นลำที่ร้อย เด็กชาวมาร์เลย์กับเด็กปาราดีส์เล่นฟุตบอลด้วยกันบนท่าเรือ',
+  x:'คุณยืนบนดาดฟ้าเรือทูตขณะมันเทียบท่า ชายชราชาวมาร์เลย์คนหนึ่งยื่นมือมาจับมือคุณแล้วร้องไห้',
+  c:[K('จับมือเขาไว้แน่น','kind',{fm:6,j:8,s:'"ลูกชายผมตายในวันที่พื้นดินสั่น... แต่หลานผมอยากรู้จักคุณ"'}),K('ไปเล่นฟุตบอลกับเด็กๆ','kind curious',{j:10,f(S){st('fit',2);},s:'ไม่มีใครถามว่าใครมาจากฝั่งไหน'})]}]);
+ARC('naruto',95,[{id:'pc_sasuke',mo:5,t:'ซาสึเกะกลับบ้าน',mood:'day',cap:'ประตูหมู่บ้านโคโนฮะ',who:S=>vilOf(S)==='konoha',
+  n:'หลังเดินทางไถ่บาปมาหลายสิบปี อุจิวะ ซาสึเกะกลับมาที่โคโนฮะพร้อมเสื้อคลุมขาดวิ่น โฮคาเงะรุ่นที่เจ็ดออกมารอรับที่ประตูเอง',
+  x:'ชายผมดำแขนเดียวเดินผ่านประตูหมู่บ้าน เด็กๆ วิ่งหนีเพราะกลัวเนตรวงแหวน แต่เขาหยุดลูบหัวเด็กคนหนึ่ง',
+  c:[K('เข้าไปทักทาย','kind',{b:{sasuke:12},s:'เขาพยักหน้าตอบเล็กน้อย ซึ่งสำหรับซาสึเกะคือการทักทายที่อบอุ่นที่สุด','k':'good'}),K('ขอประลองกับเขา','brave',{foe:['อุจิวะ ซาสึเกะ',96,'b'],p:.95,d:'ประมาทในการประลอง',sk:6,fm:6,s:'เขาจบการประลองด้วยมือเดียว "ฝีมือไม่เลว"'})]},
+  {id:'pc_century',y:100,mo:3,t:'ร้อยปีแห่งโคโนฮะ',mood:'festive',cap:'เทศกาลร้อยปีใต้หน้าผาโฮคาเงะ',who:S=>vilOf(S)==='konoha',
+  n:'โคโนฮะฉลองครบร้อยปีนับจากที่ฮาชิรามะกับมาดาระจับมือก่อตั้งหมู่บ้าน หน้าผาโฮคาเงะมีหน้าที่แปดสลักเพิ่มขึ้น',
+  x:'ดอกไม้ไฟจุดขึ้นทั่วท้องฟ้าโคโนฮะ หน้าผาโฮคาเงะส่องแสงด้วยโคมนับพัน ผู้เฒ่าในหมู่บ้านเล่าเรื่องสงครามที่คนรุ่นใหม่ไม่เคยเห็น',
+  c:[K('เล่าเรื่องชีวิตของคุณให้เด็กๆ ฟัง','kind',{j:10,fm:4,s:'เด็กๆ นั่งฟังจนดอกไม้ไฟดอกสุดท้ายดับลง'}),K('ไปไหว้หินอนุสรณ์','safe',{j:4,tr:-6,s:'ชื่อคนที่คุณรู้จักหลายชื่ออยู่บนหินนั้น','k':'plain'})]}]);
+ARC('op',1527,[{id:'pc_broadcast',mo:2,t:'โลกรู้ความจริงของศตวรรษว่างเปล่า',mood:'grief',cap:'ทุกเกาะเปิดเด็นเด็นมูชิพร้อมกัน',who:ALL,
+  n:'เสียงที่เวก้าพังค์บันทึกไว้ดังขึ้นอีกครั้งทั่วโลก คราวนี้พร้อมข้อความโพเนกลีฟที่นิโค โรบินแปลให้ทุกคนฟัง รัฐบาลโลกสั่นคลอนเป็นครั้งแรกในรอบแปดร้อยปี',
+  x:'ทั้งตลาดหยุดนิ่ง ทุกคนยืนฟังเด็นเด็นมูชิที่พ่อค้าปลาตั้งไว้ "ประวัติศาสตร์ที่ถูกลบ... เริ่มต้นด้วยอาณาจักรหนึ่ง"',
+  c:[K('จดทุกคำที่ได้ยิน','curious',{f(S){st('iq',4);},fm:3,s:'บันทึกของคุณกลายเป็นหนึ่งในฉบับที่คนลอกต่อกันไปทั่วทะเล'}),K('ฉีกประกาศของรัฐบาลโลกทิ้ง','rebel brave',{fm:6,dk:3,f(S){if(typeof bounty==='function')bounty(R(5,15)*1e6,'ฉีกประกาศรัฐบาลโลก');},s:'ชาวเมืองปรบมือให้คุณ ทหารเรือจดชื่อคุณไว้'})]},
+  {id:'pc_newera',y:1530,mo:6,t:'ยุคใหม่หลังลาฟเทล',mood:'day',cap:'ทะเลที่ไม่มีเรือรบของรัฐบาลโลก',who:ALL,
+  n:'แผนที่โลกถูกวาดใหม่ทั้งหมดหลังเรดไลน์ถูกทำลาย ทะเลทุกสายเชื่อมถึงกัน ผู้คนเรียกยุคนี้ว่า "ยุครุ่งอรุณ"',
+  x:'เรือของคุณแล่นผ่านช่องแคบที่เมื่อก่อนเป็นกำแพงหินสูงหมื่นเมตร ปลาจากออลบลูว่ายตามเรือ',
+  c:[K('ออกสำรวจทะเลที่ไม่มีใครเคยเห็น','curious brave',{f(S){skill('ride',5);},fm:6,j:8,s:'คุณวาดแผนที่เกาะใหม่สามเกาะได้ในปีเดียว'}),K('เปิดร้านที่ท่าเรือใหม่','safe',{mn:30,s:'ลูกค้าคนแรกเป็นเงือกที่ไม่เคยขึ้นฝั่งมาก่อน','k':'good'})]}]);
+ARC('bleach',2022,[{id:'pc_academy',mo:4,t:'โรงเรียนชินโอรุ่นใหม่',mood:'day',cap:'สถาบันชินโอ',who:S=>soul(S)||S.age>=16,
+  n:'ลูกหลานของยมทูตรุ่นสงครามพันปีเริ่มเข้าเรียนที่สถาบันชินโอ หัวหน้าหน่วยหลายคนผลัดเปลี่ยน กฎเกี่ยวกับการผสมพลังฮอลโลว์ถูกเขียนใหม่',
+  x:'คุณถูกเชิญไปเป็นแขกพิเศษของพิธีเปิดเทอม นักเรียนคนหนึ่งมีพลังทั้งยมทูตและควินซีปนกันจนครูไม่รู้จะจัดเข้าห้องไหน',
+  c:[K('รับเด็กคนนั้นเป็นศิษย์','kind',{fm:6,f(S){skill('gear',3);},s:'เด็กคนนั้นทำให้ห้องฝึกพังสามห้องในเดือนแรก'}),K('ปฏิเสธอย่างสุภาพ','safe',{s:'คุณเห็นเด็กคนนั้นยืนเหงาๆ อยู่คนเดียวตอนเลิกเรียน','k':'plain'})]}]);
+ARC('jjk',2028,[{id:'pc_newjj',mo:4,t:'วงการไสยศาสตร์ยุคใหม่',mood:'day',cap:'วิทยาลัยไสยศาสตร์โตเกียวที่สร้างใหม่',who:S=>ARCWHO.jjk(S)||S.age>=18,
+  n:'สิบปีหลังศึกชินจูกุ คนรุ่นอิตาโดริกลายเป็นครู ข้อมูลเรื่องคำสาปถูกเปิดเผยต่อรัฐบาลบางส่วน จำนวนคำสาปลดลงเพราะคนในเมืองกลัวน้อยลง',
+  x:'อิตาโดริในวัยสามสิบยืนสอนนักเรียนปีหนึ่งอยู่กลางสนาม เขาหันมาโบกมือให้คุณ "มาช่วยสอนหน่อยสิ!"',
+  c:[K('ช่วยสอนนักเรียนใหม่','kind',{b:{itadori:10},f(S){skill('gear',3);},fm:4,s:'นักเรียนคนหนึ่งปล่อยแบล็กแฟลชได้ครั้งแรกต่อหน้าคุณ'}),K('ไปเยี่ยมหลุมศพที่ชิบุยะ','safe',{tr:-8,j:4,s:'ดอกไม้สดวางอยู่ที่นั่นเสมอ ไม่มีใครรู้ว่าใครวาง','k':'plain'})]}]);
+ARC('db',790,[{id:'pc_uub',mo:6,t:'ศิษย์ของโกคู',mood:'day',cap:'หมู่บ้านเล็กๆ ทางใต้',who:ALL,
+  n:'โกคูหายไปฝึกอูบที่หมู่บ้านทางใต้หลายปี ข่าวลือว่าเด็กชายคนนั้นคือบูร่างชั่วที่เกิดใหม่เป็นคนดี',
+  x:'เด็กหนุ่มผิวเข้มกับชายผมตั้งในชุดสีส้มฝึกกันอยู่บนผาสูง ทุกหมัดที่ปะทะกันทำให้ฝูงนกแตกฮือ',
+  c:[K('ขอฝึกด้วย','brave',{b:{goku:10},f(S){skill('fight',5);st('fit',3);},s:'โกคูหัวเราะ "เอาสิ! ยิ่งเยอะยิ่งสนุก!"'}),K('เอาข้าวไปส่งให้','kind',{b:{goku:8},j:6,s:'สองคนกินข้าวของหมู่บ้านทั้งเดือนหมดในมื้อเดียว'})]}]);
+ARC('lookism',2024,[{id:'pc_seoul',mo:5,t:'โซลที่ไม่มีราชา',mood:'night',cap:'ถนนกังนัมยามค่ำ',who:S=>S.age>=14,
+  n:'หลังตระกูลยามาซากิล่มสลาย ไม่มีแก๊งไหนครองโซลได้อีก นักสู้รุ่นใหม่จากทุกภูมิภาคเดินทางเข้าเมืองหลวงเพื่อพิสูจน์ตัวเอง',
+  x:'ป้ายไฟกังนัมกะพริบอยู่เหนือหัว เด็กหนุ่มสามคนจากแทกูยืนขวางทาง "ได้ยินว่าแถวนี้มีคนเก่ง ใช่แกหรือเปล่า"',
+  c:[K('รับคำท้า','brave',{foe:['นักสู้หน้าใหม่จากแทกู',62],p:.9,d:'ถูกเตะจนหัวกระแทกฟุตบาท',sk:5,fm:6,s:'พวกเขาโค้งให้คุณ แล้วขอเบอร์ติดต่อไว้ฝึกด้วย'}),K('พาไปกินไก่ทอดแล้วคุยกัน','kind',{mn:-3,j:6,s:'พวกเขาเล่าว่าอยากเป็นแบบพัค ฮยองซอก ทั้งสามคน'})]}]);
+ARC('jojo',2012,[{id:'pc_irene',mo:3,t:'จักรวาลใหม่',mood:'day',cap:'ปั๊มน้ำมันริมทางในฟลอริดา',who:ALL,
+  n:'หลังเมดอินเฮฟเว่นวนจักรวาลครบรอบ โลกใหม่มีคนหน้าตาคุ้นๆ ชื่อต่างไปเล็กน้อย หญิงสาวชื่ออิรีนเดินทางไปพบคนแปลกหน้าที่เธอรู้สึกว่าเคยรู้จัก',
+  x:'ฝนตกหนักที่ปั๊มน้ำมัน หญิงสาวผมเปียคนหนึ่งยิ้มให้คุณราวกับรู้จักกันมานาน คุณรู้สึกเหมือนเคยเห็นสแตนด์ข้างหลังเธอในอีกชีวิตหนึ่ง',
+  c:[K('ถามชื่อเธอ','kind curious',{j:6,s:'"อิรีน" เธอตอบ "แปลกจัง รู้สึกเหมือนเราเคยสู้มาด้วยกัน"'}),K('ให้ยืมร่ม','kind',{j:4,s:'เธอโบกมือลาแล้วขึ้นรถไปกับชายหนุ่มอีกสองคน','k':'plain'})]}]);
+Object.assign(SCID,{'naruto.nw2':'samuraiwar','naruto.nw2b':'storm','naruto.sakumo':'funeral','naruto.orofall':'ritual','naruto.rin':'grief','op.laugh':'port','op.drum':'snow','op.w7':'funeral','bleach.hell':'ritual',
+  'op.ripple_ace':'festival','jjk.ripple_nanami':'bakery','db.ripple_krillin':'battle','naruto.ripple_konan':'storm','aot.ripple_erwin':'port','aot.ripple_sasha':'eat','jjk.ripple_gojo':'jclass',
+  'aot.pc_tree':'field','aot.pc_school':'school','aot.pc_envoy':'port','naruto.pc_sasuke':'field','naruto.pc_century':'festival','op.pc_broadcast':'news','op.pc_newera':'port','bleach.pc_academy':'school',
+  'jjk.pc_newjj':'jclass','db.pc_uub':'training','lookism.pc_seoul':'alley','jojo.pc_irene':'car'});
+
+
+/* --- g_echo62.js --- */
+/* ===== v62 consequences & meaning: every choice is remembered and comes back years later; life reflections ask what you live for;
+   neglected bonds fade, habits shape the body, and death sums up the life you actually lived ===== */
+const ECHOSKIP=['menu','echo','town','deed'];
+const actTag=g=>/dark|selfish/.test(g)?'bad':/hero|kind/.test(g)?'good':/love/.test(g)?'love':/brave|rebel/.test(g)?'brave':/safe|home|obey/.test(g)?'safe':'other';
+const ACTRE={good:/ช่วย|แบ่ง|บริจาค|รักษา|ปกป้อง|พา.*(หนี|ไป)|สอน|ยืนข้าง|ให้ยืม|เลี้ยง|อุ้ม|ดึง|ลาก.*ออก|ปลอบ/,brave:/สู้|บุก|ขวาง|ท้า|ปกป้อง|อาสา|ฝ่า|กระโดด|ต่อต้าน|ล้ม|ประลอง/,bad:/ขโมย|ทำร้าย|ฆ่า|หักหลัง|ใส่ร้าย|ข่มขู่|โกง|ทิ้ง|รีดไถ|ป้ายความผิด|แกล้ง|ไล่|ลอบ|วางยา|เก็บแก๊ส/,love:/สารภาพ|จีบ|เดท|ตามนัด|คบ|กอด|จูบ|แต่งงาน/,safe:/หนี|ซ่อน|เดินผ่าน|ไม่ยุ่ง|ปล่อย|ถอย|อยู่บ้าน|ปฏิเสธ/};
+const GENT=/^(เรื่องระหว่างปี|เรื่องไม่คาดฝัน|พบตัวละครหลัก|ทางสู่ความฝัน|ผลของการกระทำ|$)/;
+const snip=t=>{t=String(t||'').replace(/["“”]/g,'').split(/(?<=[ ])(?=[^ ]{0,2}คุณ)|[.!?]/)[0].trim();return t.length>46?t.slice(0,44)+'…':t;};
+function logAct(title,text,c,kind){
+  if(!S||!S.alive||!c||!c.l)return;S.karma=S.karma||{};S.acts=S.acts||[];S.habit=S.habit||{};
+  const k=actTag(c.g||'');S.karma[k]=(S.karma[k]||0)+1;
+  if(/ดื่ม|เหล้า|สาเก|เบียร์|โซจู/.test(c.l))S.habit.drink=(S.habit.drink||0)+1;
+  if(/ฝึก|ซ้อม|วิ่ง|ยิม/.test(c.l))S.habit.trainY=S.year;
+  if(/^ทางสู่ความฝัน/.test(title||'')||!ACTRE[k]||!ACTRE[k].test(c.l))return;
+  if(k==='safe'&&!['canon','side','pivot','story'].includes(kind))return;
+  const ctx=!GENT.test(title||'')?String(title).slice(0,40):snip(text);if(!ctx)return;
+  S.acts.push({y:S.year,t:ctx,l:String(c.l).slice(0,50),k,kind});if(S.acts.length>80)S.acts.splice(0,S.acts.length-80);
+}
+{const a0=ask;ask=function(title,text,choices,kind){
+  if(Array.isArray(choices)&&!ECHOSKIP.includes(kind))choices=choices.map(c=>(!c||c.skip||c.close||typeof c.f!=='function')?c:{...c,f(S){const r=c.f.apply(this,arguments);try{logAct(title,text,c,kind);}catch(e){}return r;}});
+  return a0.call(this,title,text,choices,kind);};}
+
+/* the past comes back */
+const ECHOT={
+  good:[a=>({x:`เมื่อ ${S.year-a.y} ปีก่อน ตอน "${a.t}" คุณเลือก "${a.l}" วันนี้มีคนแปลกหน้ามาเคาะประตู เขาบอกว่าเรื่องวันนั้นเปลี่ยนชีวิตเขา และเขาไม่เคยลืม`,c:[
+      {l:'รับน้ำใจของเขา',g:'kind',f(S){const m=R(8,25);mon(m);st('joy',8);say(`เขายื่นถุงเงินให้ ${fmt(m)} "ถึงเวลาที่ผมได้ตอบแทนบ้างแล้ว"`,'good');}},
+      {l:'บอกว่าไม่ต้องตอบแทน ให้ไปช่วยคนอื่นต่อ',g:'kind hero',f(S){fm(4);dk(-3);st('joy',10);say('เขาสัญญาว่าจะส่งต่อความดีนั้นไปอีกทอดหนึ่ง คุณรู้สึกอิ่มใจกว่าได้เงินเป็นไหนๆ','good');}}]}),
+    a=>({x:`เด็กหนุ่มคนหนึ่งเดินมาหาคุณ "ผมเป็นลูกของคนที่คุณช่วยไว้ตอน "${a.t}" พ่อเล่าเรื่องคุณให้ฟังทุกปี"`,c:[
+      {l:'สอนสิ่งที่คุณรู้ให้เขา',g:'kind',f(S){fm(3);st('joy',8);skill('charm',2);say('เขากลายเป็นลูกศิษย์ที่มาเยี่ยมคุณทุกเทศกาล','good');S.flags.pupil=1;}},
+      {l:'ชวนกินข้าวด้วยกัน',g:'kind love',f(S){st('joy',6);say('ระหว่างมื้ออาหาร คุณได้ยินว่าเรื่องเล็กๆ ของคุณกลายเป็นเรื่องเล่าในหมู่บ้านของเขา','good');}}]})],
+  bad:[a=>({x:`เรื่องเมื่อ ${S.year-a.y} ปีก่อน ตอน "${a.t}" ที่คุณเลือก "${a.l}" ยังไม่จบ ใครบางคนที่เสียหายจากวันนั้นตามหาคุณจนเจอ`,c:[
+      {l:'ขอโทษจากใจและชดใช้',g:'kind',ok:S.money>=10,h:S.money>=10?'เสีย 10':'เงินไม่พอ',f(S){mon(-10);dk(-8);st('joy',4);trauma(-5);say('เขามองคุณนาน แล้วพยักหน้า แผลบางอย่างไม่หาย แต่มันเลิกเน่าแล้ว','plain');}},
+      {l:'ปฏิเสธว่าไม่ได้ทำ',g:'selfish dark',f(S){dk(4);heat(12);say('เขาเดินจากไปพร้อมสายตาที่บอกว่าเรื่องนี้ยังไม่จบ ข่าวลือเรื่องคุณเริ่มแพร่ในเมือง','bad');S.flags.grudge=(S.flags.grudge||0)+1;}},
+      {l:'ข่มขู่ให้เงียบ',g:'dark',f(S){dk(8);heat(18);fm(-3);say('เขาเงียบ แต่คนรอบตัวเขาไม่เงียบ','bad');}}]}),
+    a=>({x:`ทุกครั้งที่คุณหลับตา ภาพตอน "${a.t}" ที่คุณเลือก "${a.l}" ยังกลับมา คนในเมืองบางคนยังเรียกคุณด้วยฉายาจากวันนั้น`,c:[
+      {l:'ไปทำบุญ/ทำความดีเพื่อลบล้าง',g:'kind',f(S){dk(-6);st('joy',3);say('ความดีไม่ได้ลบอดีต แต่มันทำให้คุณกล้ามองกระจกอีกครั้ง','plain');}},
+      {l:'ยอมรับว่านั่นก็คือตัวคุณ',g:'dark',f(S){dk(3);trauma(-3);say('คุณเลิกโกหกตัวเอง ความรู้สึกผิดเบาลง แต่ความมืดก็ฝังลึกขึ้น','bad');}}]})],
+  brave:[a=>({x:`เรื่องที่คุณ "${a.l}" ตอน "${a.t}" เมื่อ ${S.year-a.y} ปีก่อน กลายเป็นเรื่องเล่าของคนรุ่นใหม่ มีคนมาขอให้คุณช่วยเรื่องที่ไม่มีใครกล้า`,c:[
+      {l:'รับเรื่องนั้น',g:'brave hero',f(S){if(!live(.85+fitb(400),'ล้มลงในเรื่องที่ไม่มีใครกล้ารับ'))return;fm(6);mon(R(5,15));say('คุณทำสำเร็จอีกครั้ง ชื่อของคุณถูกพูดถึงไปอีกหลายปี','good');}},
+      {l:'บอกว่าวันนั้นคุณแค่โชคดี',g:'safe',f(S){st('joy',2);say('ความถ่อมตัวของคุณทำให้เรื่องเล่ายิ่งยิ่งใหญ่ขึ้น','plain');}}]})],
+  love:[a=>({x:`คุณเดินผ่านที่ที่เคยเกิดเรื่อง "${a.t}" เมื่อ ${S.year-a.y} ปีก่อน ตอนที่คุณเลือก "${a.l}" คนคนนั้นยืนอยู่ตรงนั้นพอดี ผมเริ่มมีสีขาวแล้ว`,c:[
+      {l:'เข้าไปทักทาย',g:'love kind',f(S){st('joy',8);trauma(-4);say(pick(['คุณสองคนหัวเราะเรื่องเก่าจนน้ำตาไหล','เขาบอกว่าวันนั้นเป็นหนึ่งในวันที่ดีที่สุดในชีวิตเขา','ไม่มีใครพูดถึงสิ่งที่อาจจะเป็น แต่ทั้งคู่รู้']),'good');}},
+      {l:'ยิ้มให้แล้วเดินต่อ',g:'safe',f(S){st('joy',2);say('บางความทรงจำสวยที่สุดตอนที่มันอยู่ในอดีต','plain');}}]})],
+  safe:[a=>({x:`คืนหนึ่งคุณนึกถึงตอน "${a.t}" เมื่อ ${S.year-a.y} ปีก่อน ตอนที่คุณเลือก "${a.l}" ถ้าวันนั้นคุณกล้ากว่านี้ ชีวิตจะเป็นอย่างไร`,c:[
+      {l:'ตั้งใจว่าครั้งหน้าจะไม่หนีอีก',g:'brave',f(S){S.flags.resolve=1;st('joy',3);say('ความเสียดายกลายเป็นแรงผลักดัน','good');}},
+      {l:'ยอมรับว่าวันนั้นมันดีที่สุดแล้ว',g:'safe',f(S){trauma(-4);st('joy',2);say('คุณให้อภัยตัวเองในวันนั้น','plain');}}]})],
+};
+const ECHOEV={id:'echo62',t:'ผลของการกระทำ',play(S){
+  const now=S.year,pool=(S.acts||[]).filter(a=>!a.e&&now-a.y>=3&&now-a.y<=25&&ECHOT[a.k]);if(!pool.length)return null;
+  const a=pick(pool);a.e=1;
+  if(a.k==='good'&&/แมว|หมา|สุนัข|ลูกนก|นก|ม้า|สัตว์|ขนฟู/.test(a.t+a.l))return{text:`สัตว์ตัวที่คุณช่วยไว้ตอน "${a.t}" เมื่อ ${S.year-a.y} ปีก่อน ยังแวะมาหน้าบ้านคุณทุกเช้า วันนี้มันพาลูกตัวเล็กๆ มาด้วย`,choices:[
+    {l:'รับพวกมันมาเลี้ยงในบ้าน',g:'kind home',f(S){st('joy',8);if(!S.pet)S.pet='เจ้าตัวเล็ก';say('บ้านคุณมีเสียงเล็กๆ วิ่งไปมาตั้งแต่วันนั้น','good');}},
+    {l:'วางอาหารไว้ให้เหมือนทุกวัน',g:'kind',f(S){st('joy',4);say('มันกินเสร็จแล้วถูหัวกับขาคุณก่อนจากไป','good');}}]};
+  const r=pick(ECHOT[a.k])(a);return{text:r.x,choices:r.c};}};
+
+/* what you live for */
+const VALUES=[['family','ครอบครัวและคนที่รัก','มีคู่ชีวิตหรือลูก'],['freedom','อิสรภาพ','ไม่ติดคุกและได้ออกไปเห็นโลก'],['power','ความแข็งแกร่งและชื่อเสียง','ชื่อเสียงสูง'],['truth','ความรู้และความจริง','สติปัญญาสูง'],['peace','ความสงบและการไม่ทำร้ายใคร','ด้านมืดต่ำ'],['help','การช่วยเหลือผู้อื่น','ทำความดีบ่อย']];
+const valueMet=v=>v==='family'?!!(S.partner||S.kids?.some(k=>k.alive)):v==='freedom'?!jailed()&&((S.flags.trips||0)>0||S.place!==S.origin):v==='power'?(S.fame||0)>=40:v==='truth'?(S.st.iq||0)>=65:v==='peace'?(S.dark||0)<12&&!(S.flags.kills>0):v==='help'?(S.karma?.good||0)>=(S.karma?.bad||0)*2+3:false;
+function lifeLine(){const K=S.karma||{};return`ช่วยเหลือผู้อื่น ${K.good||0} ครั้ง · กล้าเสี่ยง ${K.brave||0} ครั้ง · เลือกทางปลอดภัย ${K.safe||0} ครั้ง · ทำร้ายหรือเห็นแก่ตัว ${K.bad||0} ครั้ง · เรื่องหัวใจ ${K.love||0} ครั้ง`;}
+const REFLECT={id:'reflect62',when:S=>[20,30,40,50,60,70].includes(S.age)&&!S.done['rf'+S.age],play(S){S.done['rf'+S.age]=1;
+  const q={20:'อายุยี่สิบ คุณเริ่มสงสัยว่าชีวิตนี้คุณอยากได้อะไรจริงๆ',30:'อายุสามสิบ เพื่อนรุ่นเดียวกันแยกย้ายไปคนละทาง บางคนรวย บางคนตาย บางคนหายไปเฉยๆ',40:'อายุสี่สิบ คุณเริ่มนับว่าชีวิตเหลืออีกกี่ปี มากกว่านับว่าผ่านมากี่ปี',50:'อายุห้าสิบ ผมขาวเส้นแรกไม่ทำให้ตกใจเท่าชื่อของคนรู้จักที่หายไปทีละคน',60:'อายุหกสิบ ร่างกายช้าลง แต่คุณมองเห็นหลายอย่างชัดขึ้น',70:'อายุเจ็ดสิบ คุณนั่งมองเด็กๆ เล่นกัน และนึกถึงตัวเองตอนอายุเท่านั้น'}[S.age];
+  const cur=VALUES.find(v=>v[0]===S.value);
+  return{text:`${q} · ชีวิตของคุณที่ผ่านมา: ${lifeLine()}${cur?` · คุณเคยบอกตัวเองว่าสิ่งสำคัญที่สุดคือ "${cur[1]}" และตอนนี้ชีวิตคุณ${valueMet(cur[0])?'ตรงกับสิ่งนั้น':'ยังห่างจากสิ่งนั้น'}`:''} · ต่อจากนี้ อะไรสำคัญที่สุดสำหรับคุณ`,
+    choices:VALUES.map(([id,n,h])=>({l:n,g:id==='power'?'brave':id==='help'?'kind hero':id==='family'?'love home':id==='peace'?'safe kind':'curious',h:`ชีวิตจะมีความหมายเมื่อ: ${h}`,f(S){const ch=S.value&&S.value!==id;S.value=id;say(ch?`คุณเปลี่ยนสิ่งที่ยึดถือ จาก "${cur[1]}" เป็น "${n}" คนเราเปลี่ยนได้เสมอ`:`คุณตั้งใจว่าจะใช้ชีวิตเพื่อ "${n}"`,'plain');remember(`อายุ ${S.age}: สิ่งที่สำคัญที่สุด`,n,'stand',2);}}))};}};
+for(const w of Object.values(WORLDS)){if(!w.miles)w.miles=[];w.miles.push(REFLECT);}
+
+/* yearly life: meaning, fading bonds, habits, loneliness, and the past */
+{const b0=bond;bond=function(id,d){S.bondAt=S.bondAt||{};S.bondAt[id]=S.year;return b0.apply(this,arguments);};}
+function yearLife(){
+  if(!S||!S.alive||S.flags.titan)return;
+  if(S.value){const v=VALUES.find(x=>x[0]===S.value);if(valueMet(S.value)){st('joy',3);if(chance(.3))say(`ชีวิตปีนี้ตรงกับสิ่งที่คุณให้ค่า (${v[1]}) คุณรู้สึกว่ามันมีความหมาย`,'good');}else if(S.age>=25){st('joy',-2);if(chance(.3))say(`บางคืนคุณรู้สึกว่างเปล่า เพราะชีวิตยังห่างจาก "${v[1]}" ที่คุณบอกว่าสำคัญที่สุด`,'quiet');}}
+  S.bondAt=S.bondAt||{};for(const [id,v] of Object.entries(S.bonds||{})){if(v>20&&S.year-(S.bondAt[id]??S.year)>=3&&S.partner?.cast!==id){S.bonds[id]=v-3;if(chance(.12))say(`คุณกับ ${CAST[W.id]?.[id]||id} ไม่ได้คุยกันนานแล้ว ความสนิทค่อยๆ จางลงตามเวลา`,'quiet');}}
+  const H=S.habit||{};if((H.drink||0)>=5){st('hp',-2);if(chance(.25))say('การดื่มบ่อยเริ่มส่งผล ตับของคุณไม่ได้อายุยี่สิบอีกแล้ว','bad');H.drink=Math.max(0,H.drink-1);}
+  if(S.age>=40&&S.year-(H.trainY||0)>2&&chance(.5))st('fit',-1);
+  if(S.age>=35&&!S.partner&&!(S.kids||[]).some(k=>k.alive)&&Object.values(S.bonds||{}).filter(v=>v>=30).length<2&&chance(.4)){st('joy',-3);say('บ้านเงียบเกินไปในคืนวันหยุด ความเหงาเป็นสิ่งที่ไม่มีใครเตือนคุณไว้','quiet');}
+}
+{const ny=nextYear;nextYear=async function(){const r=await ny.apply(this,arguments);
+  try{if(S&&S.alive&&!busy){yearLife();if(!jailed()&&S.age>=12&&chance(.33)){busy=true;try{render();await runEv(ECHOEV,'echo');}finally{busy=false;}save();render();if(!S.alive)setTimeout(afterDeath,350);}}}catch(e){busy=false;console.error(e);}return r;};}
+
+/* the last page: the life you actually lived */
+{const d0=die;die=function(cause){const was=S&&S.alive;const r=d0.apply(this,arguments);
+  try{if(was&&S&&!S.alive){const v=VALUES.find(x=>x[0]===S.value);say(`บทสรุปชีวิต · ${lifeLine()}${v?` · คุณใช้ชีวิตเพื่อ "${v[1]}" และ${valueMet(v[0])?'ได้ใช้ชีวิตตามนั้นจริง':'ยังไปไม่ถึงตามที่หวัง'}`:''}`,'plain');}}catch(e){}return r;};}
+SCID['*.reflect62']='dream';
+
+
+/* --- h_self62.js --- */
+/* ===== v62 self-growth & daily life: more ways to train every stat, stats that change how the world treats you
+   (fit body -> compliments -> admirers; brains -> people seek advice; skills -> offers), dark times handled gently,
+   and small daily-life moments from your job, age and season so it feels like living one person's life ===== */
+if(WORLDS.jjedo&&WORLDS.heian&&WORLDS.jjedo.acts===WORLDS.heian.acts){const A=WORLDS.heian.acts;WORLDS.jjedo.acts={learn:[...A.learn],train:[...A.train],date:[...A.date],fun:[...A.fun]};}
+if(WORLDS.jjedo){const A=WORLDS.jjedo.acts;
+  A.learn.push({l:'เรียนอ่านเขียนที่เทระโกยะ',c:1,st:{iq:[2,4]},txt:'อาจารย์ที่วัดตีมือคุณเบาๆ ทุกครั้งที่เขียนตัวอักษรผิด'},{l:'ฝึกคิดเลขด้วยลูกคิด',c:1,min:8,sk:{trade:[2,4]},txt:'เสียงลูกคิดดังแป๊กๆ จนดึก'});
+  A.train.push({l:'ฝึกเคนจุตสึที่โดโจ',c:2,min:8,st:{fit:[2,4]},sk:{fight:[2,4]},a:'run',txt:'อาจารย์ให้คุณฟันดาบไม้พันครั้งก่อนจะได้กินข้าวเช้า'});
+  A.fun.push({l:'ดูละครคาบุกิ',c:2,joy:[4,7],sk:{art:[1,2]},txt:'นักแสดงหน้าขาวกระทืบเท้าดังสนั่นจนทั้งโรงละครโห่ร้อง'},{l:'แช่น้ำร้อนที่เซ็นโตะ',c:1,joy:[3,5],st:{hp:[1,3]},txt:'คนแปลกหน้าในอ่างเล่าข่าวลือเรื่องคำสาปที่สะพานเหนือเมือง'});}
+const MODW=()=>MODERN()||['jjk','jojo','lookism'].includes(W.id);
+const UNIV={
+  train:[{l:'ออกกำลังกายตอนเช้าทุกวัน',c:0,st:{fit:[1,3],hp:[1,2],look:[0,1]},a:'run',txt:['เหงื่อตอนเช้าทำให้ทั้งวันสดชื่น','วันแรกๆ ขาสั่น แต่วันนี้คุณวิ่งได้ไกลกว่าเดิม']},
+    {l:'ยืดเหยียดและฝึกหายใจ',c:0,st:{hp:[2,4]},joy:[1,2],a:'heal',txt:'หลังที่เคยปวดเบาลง ลมหายใจยาวขึ้น'}],
+  learn:[{l:'เขียนบันทึกประจำวัน',c:0,min:7,st:{iq:[1,2]},joy:[1,3],a:'book',f(S){trauma(-2);},txt:['คุณเขียนสิ่งที่ไม่กล้าพูดกับใครลงไป แล้วรู้สึกเบาขึ้น','อ่านบันทึกเมื่อปีก่อนแล้วเห็นว่าตัวเองโตขึ้นแค่ไหน']},
+    {l:'ฝึกพูดต่อหน้าคน',c:1,min:10,sk:{charm:[2,4]},a:'note',txt:'ครั้งแรกเสียงสั่น ครั้งที่สิบคนเริ่มหัวเราะตามมุกของคุณ'}],
+  fun:[{l:'ทำงานอาสาช่วยชุมชน',c:0,min:8,sk:{charm:[1,2]},joy:[2,4],a:'star',f(S){fm(1);S.karma=S.karma||{};S.karma.good=(S.karma.good||0)+1;},txt:['ยายข้างบ้านจำชื่อคุณได้แล้ว','เด็กๆ วิ่งมาช่วยคุณถือของ']},
+    {l:'นั่งสมาธิในที่เงียบสงบ',c:0,min:8,joy:[3,5],a:'heal',f(S){trauma(-4);dk(-1);},txt:'เสียงในหัวที่ดังมาทั้งปีเงียบลงได้ครู่หนึ่ง'},
+    {l:'ทำอาหารกินเองที่บ้าน',c:1,min:9,sk:{cook:[2,4]},st:{hp:[1,2]},a:'cook',txt:['ไข่เจียวครั้งนี้ไม่ไหม้แล้ว','คนในบ้านขอเติมเป็นจานที่สอง']},
+    {l:'ดูแลตัวเองและแต่งตัวให้ดูดี',c:2,min:12,st:{look:[1,2]},sk:{charm:[1,2]},a:'star',txt:'กระจกยิ้มกลับมาหาคุณเป็นครั้งแรกในรอบหลายเดือน'}],
+};
+for(const w of Object.values(WORLDS)){if(!w.acts)continue;for(const [cat,list] of Object.entries(UNIV)){w.acts[cat]=w.acts[cat]||[];for(const o of list)if(!w.acts[cat].some(x=>x.l===o.l))w.acts[cat].push(o);}}
+
+/* the world reacts to who you become */
+const admirer=(why)=>({l:'ลองเปิดใจคุยกับคนนั้น',g:'love',ok:!S.partner,h:S.partner?'คุณมีคนรักแล้ว':'',f(S){const sx=pSex(),n=W.mkName(sx);if(chance(.6)){S.partner={sx,n,married:0,b:S.birth+R(-3,3),love:55};st('joy',10);liveAct('heart');say(`คุณกับ ${n} เริ่มคบหากัน เขาบอกว่าชอบคุณตั้งแต่${why}`,'good');remember('มีคนมาจีบ',n,'love',2);}else{st('joy',3);say(`คุยกันสนุก แต่ใจยังไม่ตรงกัน คุณกับ ${n} เป็นเพื่อนกันแทน`,'plain');}}});
+const MST=[
+  ['fit60',S=>S.st.fit>=60&&S.age>=13,S=>({text:'เสื้อตัวเก่าเริ่มคับตรงไหล่ คนรอบตัวทักว่าคุณดูแข็งแรงขึ้นมาก เด็กๆ ในละแวกขอให้คุณยกพวกเขาขึ้นบ่า',choices:[
+    {l:'ตั้งเป้าฝึกต่อให้สุดทาง',g:'brave',f(S){st('fit',2);S.flags.fitGoal=1;st('look',2);say('คุณตั้งเป้าหมายใหม่ และร่างกายก็ตอบแทนความพยายามเสมอ','good');}},
+    {l:'ยิ้มรับคำชม',g:'kind',f(S){st('joy',5);st('look',2);say('คำชมเล็กๆ ทำให้คุณยืนหลังตรงขึ้นทั้งวัน','good');}}]})],
+  ['fit80',S=>S.st.fit>=80&&S.age>=16,S=>({text:'คุณเดินผ่านตลาด เสียงซุบซิบตามหลังมา "คนนั้นหุ่นดีจัง" แล้วก็มีคนหนึ่งรวบรวมความกล้าเดินมาทัก',choices:[admirer('เห็นคุณซ้อมทุกเช้า'),
+    {l:'ขอบคุณแล้วกลับไปซ้อมต่อ',g:'safe',f(S){st('joy',4);fm(2);say('คุณกลายเป็นแรงบันดาลใจให้คนในละแวกออกมาวิ่งตอนเช้า','good');}}]})],
+  ['look70',S=>S.st.look>=70&&S.age>=14,S=>({text:MODW()?'โทรศัพท์ของคุณเด้งข้อความจากคนที่ไม่รู้จัก "ขอโทษนะคะ/ครับ เห็นรูปแล้วอยากรู้จัก"':'มีคนแอบวางดอกไม้กับจดหมายไว้หน้าประตูบ้านคุณ ลายมือสั่นนิดๆ',choices:[admirer('ครั้งแรกที่เห็นหน้า'),
+    {l:'เก็บไว้เป็นความทรงจำดีๆ',g:'safe',f(S){st('joy',5);say('การรู้ว่ามีใครสักคนมองคุณแบบนั้นทำให้ทั้งสัปดาห์สดใส','good');}}]})],
+  ['look85',S=>S.st.look>=85&&S.age>=15,S=>({text:MODW()?'แมวมองจากเอเจนซี่ยื่นนามบัตรให้คุณกลางถนน "เคยคิดจะเป็นนายแบบ/นางแบบไหม"':'ความงามของคุณเลื่องลือไปทั้งเมือง ขุนนางบ้านหนึ่งส่งแม่สื่อมาทาบทาม',choices:[
+    {l:MODW()?'ไปลองถ่ายแบบ':'ฟังข้อเสนอของแม่สื่อ',g:'curious',f(S){const m=R(10,30);mon(m);fm(5);skill('charm',3);say(MODW()?`งานแรกได้ค่าตัว ${fmt(m)} รูปของคุณติดป้ายโฆษณาย่านกลางเมือง`:`ของขวัญทาบทามมาถึงบ้าน ${fmt(m)} พ่อแม่ยิ้มไม่หุบ`,'good');}},
+    {l:'ปฏิเสธ หน้าตาไม่ใช่ทุกอย่าง',g:'safe kind',f(S){st('iq',1);st('joy',2);say('คุณอยากให้คนจำคุณจากสิ่งที่ทำมากกว่า','plain');}}]})],
+  ['iq70',S=>S.st.iq>=70&&S.age>=15,S=>({text:'เพื่อนบ้านเริ่มเดินมาขอคำปรึกษาเรื่องต่างๆ ตั้งแต่เรื่องเงินไปจนถึงเรื่องหัวใจ "คุณคิดเรื่องพวกนี้เก่ง"',choices:[
+    {l:'ช่วยคิดให้ทุกคน',g:'kind',f(S){fm(3);skill('charm',2);st('joy',3);say('บ้านคุณกลายเป็นที่ที่คนแวะมานั่งคุยทุกเย็น','good');}},
+    {l:'เก็บเวลาไว้ศึกษาต่อ',g:'curious',f(S){st('iq',3);say('คุณอ่านหนังสือหมดชั้นภายในปีเดียว','good');}}]})],
+  ['iq85',S=>S.st.iq>=85&&S.age>=18,S=>({text:'มีจดหมายเชิญให้คุณไปสอนหนังสือ หรือร่วมงานกับคนที่ฉลาดที่สุดของโลกนี้',choices:[
+    {l:'รับคำเชิญ',g:'curious brave',f(S){mon(R(15,35));fm(6);st('iq',2);say('ห้องเรียนเงียบกริบทุกครั้งที่คุณเริ่มพูด','good');}},
+    {l:'ปฏิเสธ อยากใช้ชีวิตเรียบง่าย',g:'safe',f(S){st('joy',3);say('คุณยังอ่านหนังสือทุกคืนเหมือนเดิม เพียงแต่อ่านเพื่อตัวเอง','plain');}}]})],
+  ['charm60',S=>(S.sk?.charm||0)>=60&&S.age>=14,S=>({text:'ไม่ว่าคุณไปที่ไหน คนก็เข้ามาคุยด้วยเอง แม่ค้าแถมของ เด็กๆ เรียกชื่อคุณ คนแปลกหน้าเล่าเรื่องส่วนตัวให้ฟัง',choices:[
+    {l:'ใช้เสน่ห์นี้ช่วยคนอื่น',g:'kind',f(S){fm(3);for(const id of castNear(S).slice(0,3))bond(id,4);say('คุณเป็นคนกลางไกล่เกลี่ยเรื่องบาดหมางในละแวกจนจบ','good');}},
+    {l:'ใช้เสน่ห์ต่อรองให้ตัวเอง',g:'selfish',f(S){mon(R(8,20));dk(2);say('ทุกดีลของคุณจบด้วยรอยยิ้มของอีกฝ่าย และกระเป๋าเงินของคุณ','plain');}}]})],
+  ['fight60',S=>(S.sk?.fight||0)>=60&&S.age>=14,S=>({text:'ข่าวเรื่องฝีมือของคุณไปถึงหูคนทั้งย่าน เด็กหนุ่มคนหนึ่งคุกเข่าขอเป็นศิษย์ ส่วนนักเลงอีกกลุ่มส่งคนมาท้า',choices:[
+    {l:'รับเด็กคนนั้นเป็นศิษย์',g:'kind',f(S){S.flags.pupil=1;fm(3);skill('fight',2);say('สอนคนอื่นทำให้คุณเข้าใจท่าของตัวเองลึกขึ้น','good');}},
+    {l:'สู้กับคนที่มาท้า',g:'brave',foe:['นักสู้ที่มาท้าประลอง',55],f(S){if(!live(.9+fitb(400),'แพ้ในการประลองครั้งสำคัญ'))return;fm(4);skill('fight',3);say('ชื่อของคุณถูกพูดถึงในทุกโรงฝึก','good');}}]})],
+  ['cook50',S=>(S.sk?.cook||0)>=50&&S.age>=14,S=>({text:'กลิ่นอาหารจากบ้านคุณลอยไปทั้งซอย เพื่อนบ้านเริ่มมาขอซื้อ "เปิดร้านเถอะ จะมาอุดหนุนทุกวัน"',choices:[
+    {l:'เปิดแผงขายอาหารหน้าบ้าน',g:'curious',f(S){S.flags.stall=1;mon(R(6,15));skill('trade',2);say('แผงเล็กๆ ของคุณมีคิวทุกเย็น','good');}},
+    {l:'ทำให้คนที่รักกินก็พอ',g:'kind home',f(S){st('joy',5);for(const p of par())st('joy',1);say('มื้อเย็นของบ้านคุณกลายเป็นเวลาที่ทุกคนรอคอย','good');}}]})],
+  ['medic50',S=>(S.sk?.medic||0)>=50&&S.age>=15,S=>({text:'เด็กข้างบ้านตกต้นไม้แขนหัก แม่ของเขาวิ่งมาเคาะประตูบ้านคุณแทนที่จะไปหาหมอ',choices:[
+    {l:'รักษาให้ทันที',g:'kind hero',f(S){fm(3);skill('medic',2);S.karma=S.karma||{};S.karma.good=(S.karma.good||0)+1;say('แขนเด็กติดดี ตั้งแต่นั้นคนในละแวกเรียกคุณว่าหมอ','good');}}]})],
+  ['trade50',S=>(S.sk?.trade||0)>=50&&S.age>=16,S=>({text:'พ่อค้ารุ่นใหญ่ชวนคุณลงทุนร่วมกัน "หัวการค้าแบบนี้ อย่าปล่อยให้เสียเปล่า"',choices:[
+    {l:'ลงทุนร่วม (20)',g:'brave',ok:S.money>=20,h:S.money>=20?'เสี่ยง แต่ได้มากถ้าสำเร็จ':'เงินไม่พอ',f(S){mon(-20);if(chance(.6+(S.sk?.trade||0)/400)){mon(R(35,60));say('กิจการไปได้สวย คุณได้ส่วนแบ่งก้อนโต','good');}else say('สินค้าล็อตแรกเสียหายกลางทาง เงินหายไปทั้งหมด','bad');}},
+    {l:'ขอเก็บเงินไว้ก่อน',g:'safe',f(S){say('คุณจดชื่อเขาไว้ เผื่อวันหน้า','plain');}}]})],
+];
+const MSTEV={id:'mst62',t:'คนรอบตัวเริ่มมองคุณเปลี่ยนไป',play(S){const m=MST.find(([k,w])=>!S.flags['ms_'+k]&&w(S));if(!m)return null;S.flags['ms_'+m[0]]=1;return m[2](S);}};
+/* hard times, handled with care */
+const LOWEV={id:'low62',t:'ช่วงเวลาที่มืดมน',play(S){return{text:'หลายสัปดาห์แล้วที่คุณตื่นมาแล้วไม่อยากลุกจากที่นอน อาหารไม่มีรส สิ่งที่เคยชอบก็ไม่สนุกอีกแล้ว',choices:[
+  {l:'เล่าให้คนที่ไว้ใจฟัง',g:'kind love',f(S){st('joy',12);trauma(-6);say(S.partner?`${S.partner.n} ฟังคุณจนดึก ไม่ได้พูดอะไรมาก แค่กุมมือไว้ แต่มันช่วยได้มากกว่าที่คิด`:'เพื่อนเก่าฟังคุณจนจบ แล้วนัดกินข้าวด้วยกันทุกสัปดาห์หลังจากนั้น','good');}},
+  {l:'ไปหาคนที่ช่วยดูแลจิตใจ',g:'safe',f(S){mon(-3);st('joy',10);trauma(-8);say(MODW()?'นักจิตวิทยาบอกว่าสิ่งที่คุณรู้สึกไม่ใช่ความอ่อนแอ และค่อยๆ พาคุณหาทางออก':'พระชราที่วัดนั่งฟังคุณนิ่งๆ แล้วสอนให้หายใจช้าลง หนึ่งวันทีละวัน','good');}},
+  {l:'เก็บไว้คนเดียว',g:'safe',f(S){trauma(4);st('hp',-4);say('ความเงียบไม่ได้ทำให้มันหายไป มันแค่หนักขึ้นทีละนิด','bad');}},
+]};}};
+const HPEV={id:'hp62',t:'ร่างกายส่งสัญญาณเตือน',play(S){return{text:'คุณหน้ามืดกลางวัน ต้องนั่งพักข้างทาง หมอบอกว่าร่างกายทรุดเพราะใช้ชีวิตแบบนี้มานาน',choices:[
+  {l:'เปลี่ยนวิถีชีวิตจริงจัง',g:'safe',f(S){st('hp',12);st('joy',-2);if(S.habit)S.habit.drink=0;S.habit=S.habit||{};S.habit.trainY=S.year;say('สามเดือนแรกยากที่สุด แต่สีหน้าคุณกลับมามีเลือดฝาด','good');}},
+  {l:'ไม่เป็นไรหรอก',g:'brave',f(S){st('hp',-4);say('คุณกลับไปใช้ชีวิตแบบเดิม ร่างกายจดจำทุกอย่าง','bad');}}]};}};
+{const ny2=nextYear;nextYear=async function(){const r=await ny2.apply(this,arguments);
+  try{if(S&&S.alive&&!busy&&!jailed()&&!S.flags.titan){let ev=null;S.flags.lowY=S.flags.lowY||0;
+    if(S.st.joy<20&&S.age>=13&&S.year-S.flags.lowY>=3){S.flags.lowY=S.year;ev=LOWEV;}
+    else if(S.st.hp<25&&S.age>=18&&S.year-(S.flags.hpY||0)>=3){S.flags.hpY=S.year;ev=HPEV;}
+    else if(MST.some(([k,w])=>!S.flags['ms_'+k]&&w(S)))ev=MSTEV;
+    if(ev){busy=true;try{render();await runEv(ev,'story');}finally{busy=false;}save();render();if(!S.alive)setTimeout(afterDeath,350);}}}catch(e){busy=false;console.error(e);}return r;};}
+
+/* everyday life: small moments from your job, age and the season (toasts, no interruptions) */
+const SEASON=[null,null,'ลมหนาวยังไม่หมด',null,'ดอกไม้บานทั่วเมือง',null,'ฝนตกทั้งเดือน',null,'แดดร้อนจนถนนเป็นไอ',null,'ใบไม้เปลี่ยนสี',null];
+const JOBDAY=[['หัวหน้าชมงานของคุณต่อหน้าทุกคน',{joy:3}],['เพื่อนร่วมงานเอาขนมมาแบ่ง',{joy:2}],['งานล้นจนกลับบ้านมืดค่ำ',{hp:-1}],['ลูกค้าขี้บ่นทำให้หงุดหงิดทั้งวัน',{joy:-2}],['คุณทำงานพลาดเล็กน้อย แต่แก้ทันก่อนใครเห็น',{iq:1}],['ได้เรียนรู้วิธีทำงานใหม่จากรุ่นพี่',{iq:1}],['วันนี้งานเงียบ คุณนั่งมองฟ้าอยู่นาน',{joy:1}]];
+const KIDDAY=[['ครูให้ดาวบนสมุดการบ้าน',{joy:2}],['คุณทะเลาะกับเพื่อน แล้วดีกันก่อนเลิกเรียน',{charm:1}],['คุณวิ่งแข่งกับเด็กข้างบ้านจนหอบ',{fit:1}],['แม่ทำอาหารจานโปรดให้',{joy:2}]];
+const OLDDAY=[['หลานโทรมาหา/มาเยี่ยม เสียงหัวเราะดังทั้งบ้าน',{joy:3}],['ข้อเข่าปวดกว่าทุกวันตอนฝนตก',{hp:-1}],['คุณเล่าเรื่องสมัยหนุ่มสาวให้เด็กๆ ฟัง',{joy:2}]];
+{const mp3=monthPass;monthPass=async function(){const r=await mp3.apply(this,arguments);
+  try{if(S&&S.alive&&!busy&&!jailed()&&!S.flags.titan&&chance(.1)&&!TQ.q.length){const L=S.age<15?KIDDAY:S.age>=60?OLDDAY:S.job?JOBDAY:null;if(L){const [x,e]=pick(L);for(const [k,v] of Object.entries(e)){if(k==='charm')skill('charm',v);else st(k,v);}
+      const sea=SEASON[S.mo||0];const line=`${S.job&&S.age>=15&&S.age<60?S.job.n+' · ':''}${x}${sea&&chance(.5)?` · ${sea}`:''}`;say(line,'quiet');toast(line,`เดือน ${(S.mo||0)+1} · ชีวิตประจำวัน`,'');}}}catch(e){console.error(e);}return r;};}
+
+
+/* --- i_ui62.js --- */
+/* ===== v62 calmer reading: notifications come one at a time with a pause between them, stay long enough to read,
+   wait while a story window is open, and low-priority chatter is dropped when too much piles up. Years last longer. ===== */
+SPEEDS[0].m=6500;SPEEDS[1].m=3600;SPEEDS[2].m=1600;SPEEDS[3].m=600;
+const TQ={q:[],busy:false,last:0};
+const TPRI=k=>k==='bad'||k==='power'||k==='good'?2:k==='news'||k==='canon'?1:0;
+{const tRaw=toast;
+  const pump=()=>{if(TQ.busy||!TQ.q.length)return;
+    const modalOpen=()=>{try{return !$('#modal').hidden||!!document.getElementById('btl');}catch(e){return false;}};
+    if(modalOpen()){TQ.busy=true;setTimeout(()=>{TQ.busy=false;pump();},700);return;}
+    const gap=(typeof TMODE!=='undefined'&&TMODE.get&&TMODE.get()==='min')?5200:2800;const wait=Math.max(0,TQ.last+gap-Date.now());
+    if(wait>0){TQ.busy=true;setTimeout(()=>{TQ.busy=false;pump();},wait);return;}
+    const [text,tag,kind]=TQ.q.shift();TQ.last=Date.now();try{tRaw(text,tag,kind);}catch(e){}if(TQ.q.length)setTimeout(pump,gap);};
+  toast=function(text,tag,kind){
+    if(typeof document==='undefined'||!document.body)return tRaw.apply(this,arguments);
+    if(TQ.q.some(x=>x[0]===text))return;
+    TQ.q.push([text,tag,kind]);
+    if(TQ.q.length>5){const i=TQ.q.findIndex(x=>TPRI(x[2])===0);TQ.q.splice(i>=0?i:0,1);}
+    pump();};}
+/* toasts stay up long enough to read: at least 7 seconds, longer for long text */
+{const css=document.createElement('style');css.textContent='#toasts .toast{animation-duration:.45s!important}#toasts .toast p{line-height:1.55;font-size:14px}';document.head.append(css);}
 
 /* ===== setup ===== */
 const cfg={world:'aot',sex:'m',year:835,place:'shiganshina',vil:'konoha',name:'',edited:false,traits:null,look:null,dream:null};
