@@ -13,6 +13,18 @@ const eventAdapter = require('../ai/event-adapter.js');
 const world = require('../ai/world-simulation.js');
 const crews = require('../ai/crew-system.js');
 
+ 
+test('save controls provide mobile-safe touch targets and viewport spacing', () => {
+  const styles = world.getSaveControlsStyles();
+  assert.match(styles, /min-width:48px/);
+  assert.match(styles, /min-height:48px/);
+  assert.match(styles, /touch-action:manipulation/);
+  assert.match(styles, /safe-area-inset-bottom/);
+  assert.match(styles, /max-width:480px/);
+  assert.match(styles, /orientation:landscape/);
+  assert.match(styles, /100dvh/);
+});
+
 test('decision engine prefers an action that advances an active goal', () => {
   const state = {
     goals: [{ id: 'g1', status: 'active', action: 'train', priority: 90 }],
