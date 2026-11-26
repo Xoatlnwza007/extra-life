@@ -26,6 +26,7 @@ test('browser bootstrap loads the One Piece companion systems in dependency orde
             './ai/crew-system.js': 'OnePieceCrewSystem',
             './ai/devil-fruit-system.js': 'OnePieceDevilFruitSystem',
             './ai/haki-system.js': 'OnePieceHakiSystem',
+            './ai/progression-system.js': 'OnePieceProgressionSystem',
             './ai/marine-system.js': 'OnePieceMarineSystem'
           };
           host[globals[script.src]] = {};
@@ -41,10 +42,11 @@ test('browser bootstrap loads the One Piece companion systems in dependency orde
     './ai/crew-system.js',
     './ai/devil-fruit-system.js',
     './ai/haki-system.js',
+    './ai/progression-system.js',
     './ai/marine-system.js'
   ]);
   assert.equal(await world.loadCompanionModules(host), true);
-  assert.equal(scripts.length, 5);
+  assert.equal(scripts.length, 6);
 });
 
 test('browser bootstrap reports a missing companion module without stopping later loads', async () => {
