@@ -657,10 +657,22 @@
     const playerBounty = Math.max(0, Math.floor(Number(worldState.flags && worldState.flags.bounty) || 0));
     const reputation = Math.max(-100, Math.min(100,
       Math.round((Number(worldState.fame) || 0) - (Number(worldState.dark) || 0))));
+    const oldBounty = Number(crew.bounty) || 0;
+    const oldReputation = Number(crew.reputation) || 0;
+    const nextBounty = Math.max(oldBounty, playerBounty);
+    const history = [...(crew.history || [])];
+    const at = new Date().toISOString();
+    if (nextBounty > oldBounty) {
+      history.push({ type: 'bounty-increased', amount: nextBounty - oldBounty, bounty: nextBounty, at });
+    }
+    if (reputation !== oldReputation) {
+      history.push({ type: 'reputation-changed', delta: reputation - oldReputation, reputation, at });
+    }
     const updated = {
       ...crew,
-      bounty: Math.max(Number(crew.bounty) || 0, playerBounty),
-      reputation
+      bounty: nextBounty,
+      reputation,
+      history: history.slice(-100)
     };
     const changed = updated.bounty !== crew.bounty || updated.reputation !== crew.reputation;
     if (changed) {
