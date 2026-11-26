@@ -72,6 +72,7 @@ async function main() {
       assert.equal(progression.haki, 5);
       assert.equal(progression.fruit, 5);
       assert.equal(progression.fruitName, 'ผลโอโตะโอโตะ');
+      await progressionPanel.getByRole('button', { name: 'ปิด' }).click();
 
       const marineWrap = page.locator('#extra-life-marine-tools');
       await marineWrap.waitFor({ state: 'attached' });
