@@ -189,3 +189,12 @@ Do not call the project playable-complete until a new/existing player can:
 - This is automated headless Chromium verification at phone/tablet viewport sizes, not a physical Android/iPad device test.
 - Current `main` HEAD at this checkpoint: `6255909a6f5ddc034ace0a2378cf28284c77357e`.
 - Next: strengthen save/reload and jail-expiry integration tests, then build the first coherent East Blue story loop with original content clearly labelled and canon-sensitive facts sourced.
+
+
+## 13. Save/reload browser regression — 2026-11-26
+
+- Extended `tests/browser-smoke.js` to reload the actual game after training Haki/Devil Fruit and performing a Marine patrol action.
+- The test resumes the saved life using the existing `เล่นต่อ` flow and verifies the following state survives: One Piece world ID, Haki mastery 5, Devil Fruit mastery 5 and name, 20,000,000 bounty, and the monthly Marine patrol action lock.
+- Latest workflow run: `45863928103` — Node tests passed and Chromium smoke tests passed at **390×844** and **820×1180**.
+- This verifies browser localStorage save/reload for these state fields. Backup recovery from a corrupted primary save and prison sentence expiry remain separate follow-up tests.
+- Main HEAD before this handoff update: `74a59bbf0148edb79b1b12658186f62cd1e7637c`.
