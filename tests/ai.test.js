@@ -255,15 +255,16 @@ test('player crew is stored in game state and recruits NPCs persistently', () =>
   assert.equal(joined.joined, true);
   assert.equal(joined.member.characterId, 'npc-nami');
   assert.equal(world.recruitNpcToPlayerCrew(state, state.npcs[0], 'navigator', crews).reason, 'already-member');
+  assert.equal(world.recruitNpcToPlayerCrew(state, state.npcs[1], 'fighter', crews).joined, true);
   assert.equal(world.recruitNpcToPlayerCrew(state, state.npcs[2], 'fighter', crews).joined, true);
   assert.notEqual(world.crewNpcId(state.npcs[1], 1), world.crewNpcId(state.npcs[2], 2));
   assert.equal(world.recruitNpcToPlayerCrew(state, state.npcs[3], 'fighter', crews).reason, 'invalid-recruitment');
 
   const saved = JSON.parse(JSON.stringify(state));
-  assert.equal(world.getPlayerCrew(saved, crews).members.length, 3);
+  assert.equal(world.getPlayerCrew(saved, crews).members.length, 4);
   const left = world.removeNpcFromPlayerCrew(saved, 'npc-nami', crews);
   assert.equal(left.left, true);
-  assert.equal(world.getPlayerCrew(saved, crews).members.length, 2);
+  assert.equal(world.getPlayerCrew(saved, crews).members.length, 3);
 });
 
 test('crew system manages membership, roles, captaincy and bounty', () => {
