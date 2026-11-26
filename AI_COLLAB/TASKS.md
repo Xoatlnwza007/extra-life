@@ -135,3 +135,11 @@
 - **Result:** Fixed lexical game-state access, independent monthly action locks, location privacy before confirmed sightings, and unnecessary panel rerenders. Retained integration with the existing prison flow.
 - **Verification:** GitHub Actions run 45853961923 — 66 passed, 0 failed.
 - **Boundary:** AI B owns runtime maintenance; AI A remains narrative/content only.
+
+
+### GAMEPLAY-006 — Migrate legacy Devil Fruit saves into mastery progression
+- **Owner:** AI B
+- **Status:** DONE — CI passed
+- **Files:** ai/world-simulation.js, tests/ai.test.js, ai/README.md
+- **Result:** Existing S.flags.df and df_* power flags now migrate into S.devilFruit with a deterministic stable ID, preserving the existing fruit name/type and enabling mastery training/awakening. No fruit is granted to characters without legacy fruit state.
+- **Verification:** GitHub Actions run 45854778043 — 67 passed, 0 failed.
