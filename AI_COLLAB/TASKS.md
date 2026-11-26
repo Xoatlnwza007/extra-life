@@ -166,3 +166,14 @@
 - **Status:** DONE
 - **Files:** AI_COLLAB/PROTOCOL.md, AI_COLLAB/README.md
 - **Result:** AI A is narrative/content-only; AI B independently owns engineering; repository owner makes final integration and merge decisions.
+
+
+---
+
+## OWNER-DIRECTIVE-2026-11-26 — Single engineering owner and persistent handoff
+- **Status:** ACTIVE
+- **Authority:** Explicit repository-owner instruction, recorded in root `PROJECT_STATE.md` on `main`.
+- **Ownership:** ChatGPT is the sole engineering implementer. Other AI agents are optional content/research sources, not approval gates.
+- **Branch policy:** Direct changes to `main` are authorized. Old PR-only and no-main-edit rules are obsolete.
+- **Persistent memory:** Every new session must read root `PROJECT_STATE.md` first. After meaningful work, update its roadmap/checklist and append to its session handoff log.
+- **Next task:** Inspect current `main` architecture and test baseline, compare completed feature-branch modules, then selectively port safe gameplay slices. See roadmap P0 in `PROJECT_STATE.md`.
