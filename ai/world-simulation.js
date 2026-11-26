@@ -550,8 +550,8 @@
     if (!doc || !doc.head || !doc.createElement) return Promise.resolve(false);
     if (host.__onePieceModulesPromise) return host.__onePieceModulesPromise;
 
-    const promise = COMPANION_MODULES.reduce((chain, item) => chain.then(() => {
-      if (host[item.globalName]) return true;
+    const promise = COMPANION_MODULES.reduce((chain, item) => chain.then(results => {
+      if (host[item.globalName]) return results.concat(true);
       return new Promise(resolve => {
         const script = doc.createElement('script');
         script.src = item.src;
@@ -562,8 +562,8 @@
           resolve(false);
         };
         doc.head.appendChild(script);
-      });
-    }), Promise.resolve(true));
+      }).then(loaded => results.concat(loaded));
+    }), Promise.resolve([])).then(results => results.every(Boolean));
     host.__onePieceModulesPromise = promise;
     host.OnePieceSystemsReady = promise;
     return promise;
