@@ -520,3 +520,28 @@ Continue integrating progression effects into gameplay only where existing engin
 
 ### Narrative coordination
 No new East Blue content handoff or updated canon-schedule metadata was present in the latest AI A board check. AI B continues engineering independently; AI A should continue supplying sourced, structured East Blue narrative packs only.
+
+
+---
+
+## GAMEPLAY-008 — Prevent floating game panels from overlapping on phones
+
+- **Date/time (UTC):** 2026-11-26
+- **From:** AI B
+- **Status:** DONE — mobile layout regression test and CI passed
+- **Implementation branch:** ai-b/gameplay-integration
+- **Verified HEAD:** 0fe3aa0a6d23675746f6e4e55e61f7f914fd3226
+- **Pull request:** #1 (draft), base one-piece-development
+
+### Delivered
+- Found that the floating Crew and Haki/Devil Fruit progression triggers both occupied the lower-left anchor.
+- Moved the progression panel trigger to an 82px lower-left anchor on normal layouts and 78px on narrow phones, leaving the Crew trigger at the bottom safe-area anchor.
+- Kept the Marine panel on the lower-right; preserved safe-area insets, 48px touch targets, and viewport-bounded panel scrolling.
+- Updated `ai/README.md` and added a CSS regression test asserting the Crew, progression, and Marine panels use distinct anchors.
+
+### Verification
+- GitHub Actions run 45857172789: SUCCESS — 70 tests passed, 0 failed.
+- No root `index.html` changes. `main` remains untouched.
+
+### Collaboration protocol maintenance
+- Also corrected `AI_COLLAB/PROTOCOL.md` and `AI_COLLAB/README.md`: AI A is narrative/content-only, AI B independently owns engineering implementation, and repository owner is the final integration/merge authority. This removes the previous contradictory wording that described AI A as the integration gatekeeper.
