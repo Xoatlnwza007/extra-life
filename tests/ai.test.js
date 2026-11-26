@@ -189,3 +189,49 @@ test('main game loads the modular simulation runtime after the game script', () 
   assert.match(html, /OnePieceCombatAdapter\.modifyOutgoingDamage\(v,S,'op'\)/);
   assert.match(html, /OnePieceCombatAdapter\.modifyIncomingDamage\(d,S,'op'\)/);
 });
+
+
+test('progression controls migrate legacy fruit flags and enforce annual training limits', () => {
+  const state = {
+    world: 'op', alive: true, year: 1522, powers: ['df_para'],
+    flags: { df: 'ผลโอโตะโอโตะ' }, haki: {}
+  };
+  globalThis.S = state;
+  let saves = 0;
+  function element(tag) {
+    return {
+      tagName: tag.toUpperCase(), children: [], attributes: {}, listeners: {}, hidden: false,
+      style: {},
+      appendChild(child) { this.children.push(child); return child; },
+      replaceChildren(...children) { this.children = children; },
+      setAttribute(key, value) { this.attributes[key] = String(value); },
+      getAttribute(key) { return this.attributes[key] || null; },
+      addEventListener(name, handler) { this.listeners[name] = handler; },
+      click() { if (!this.disabled && this.listeners.click) this.listeners.click({ target: this }); }
+    };
+  }
+  const body = element('body'), head = element('head');
+  const doc = { body, head, readyState: 'complete', createElement: element, getElementById() { return null; } };
+  const host = { document: doc, OnePieceProgressionSystem: progression, save() { saves++; }, setInterval() { return 1; } };
+  try {
+    assert.equal(world.installProgressionControls(host), true);
+    const wrap = body.children.find(node => node.id === 'extra-life-progression-tools');
+    wrap.children[1].click();
+    assert.equal(state.devilFruit.name, 'ผลโอโตะโอโตะ');
+    assert.equal(state.devilFruit.type, 'paramecia');
+    assert.match(state.devilFruit.id, /^op_df_paramecia_/);
+    assert.equal(state.devilFruit.mastery, 0);
+    assert.equal(saves, 1);
+    let fruitTrain = wrap.children[0].children[1].children.find(node =>
+      node.tagName === 'BUTTON' && node.textContent.includes('ฝึกผลปีศาจ'));
+    assert.ok(fruitTrain);
+    fruitTrain.click();
+    assert.equal(state.devilFruit.mastery, 5);
+    assert.equal(saves, 2);
+    fruitTrain = wrap.children[0].children[1].children.find(node =>
+      node.tagName === 'BUTTON' && node.textContent.includes('ฝึกผลปีศาจ'));
+    assert.ok(fruitTrain.disabled);
+  } finally {
+    delete globalThis.S;
+  }
+});
