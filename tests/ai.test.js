@@ -282,7 +282,8 @@ test('One Piece yearly simulation automatically advances the full living NPC pop
     { n: 'Sanji', r: 'kind', alive: true },
     { n: 'Deceased', r: 'grump', alive: false }
   ];
-  const result = world.simulate({ world: 'op', npcBrains: {} }, npcs, {});
+  const gameState = { world: 'op', npcBrains: {} };
+  const result = world.simulate(gameState, npcs, {});
   assert.equal(result.simulatedCount, 3);
   assert.equal(result.simulatedMonths, 12);
   assert.equal(result.actionCount, 36);
@@ -290,6 +291,7 @@ test('One Piece yearly simulation automatically advances the full living NPC pop
   assert.equal(result.monthlyResults.length, 12);
   assert.deepEqual(result.monthlyResults.map(month => month.month), Array.from({ length: 12 }, (_, i) => i + 1));
   assert.equal(result.simulationCalendar.totalMonths, 12);
+  assert.deepEqual(gameState.npcSimulationCalendar, result.simulationCalendar);
   assert.ok(result.profiles.Nami);
   assert.ok(result.profiles.Usopp);
   assert.ok(result.profiles.Sanji);
@@ -327,7 +329,9 @@ test('One Piece population remains valid across twelve annual simulation ticks',
     state = { ...state, npcBrains: result.profiles, simulationCalendar: result.simulationCalendar };
   }
 
-  assert.equal(state.simulationCalendar.totalMonths, 144);
+  assert.equal(state.npcSimulationCalendar.totalMonths, 144);
+  assert.equal(state.npcSimulationCalendar.month, 12);
+  assert.equal(state.npcSimulationCalendar.year, 11);
   for (const npc of npcs) {
     assert.equal(actionHistory[npc.n].length, 144);
     assert.ok(new Set(actionHistory[npc.n]).size >= 1);
