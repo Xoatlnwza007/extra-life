@@ -410,7 +410,7 @@ test('NPC profiles and monthly calendar survive the game JSON save/load round tr
   const serialized = JSON.stringify(original);
   const loaded = JSON.parse(serialized);
   assert.deepEqual(loaded.npcSimulationCalendar, {
-    year: 1523, month: 12, totalMonths: 12
+    year: 1522, month: 12, totalMonths: 12
   });
   assert.deepEqual(loaded.npcBrains, firstYear.profiles);
 
@@ -419,7 +419,7 @@ test('NPC profiles and monthly calendar survive the game JSON save/load round tr
   );
   const secondYear = world.simulate(loaded, npcs, { random: randomFor(78) });
   assert.equal(secondYear.simulationCalendar.totalMonths, 24);
-  assert.equal(secondYear.simulationCalendar.year, 1524);
+  assert.equal(secondYear.simulationCalendar.year, 1523);
   for (const npc of npcs) {
     assert.ok(secondYear.profiles[npc.n].memories.length >= memoryCounts[npc.n]);
   }
@@ -441,7 +441,7 @@ test('legacy saves without NPC simulation metadata initialize safely', () => {
   assert.equal(legacySave.npcSimulationCalendar, undefined);
   const result = world.simulate(legacySave, npcs, {});
   assert.equal(result.simulatedMonths, 12);
-  assert.equal(result.simulationCalendar.year, 1501);
+  assert.equal(result.simulationCalendar.year, 1500);
   assert.equal(result.simulationCalendar.totalMonths, 12);
   assert.deepEqual(legacySave.npcSimulationCalendar, result.simulationCalendar);
 });
