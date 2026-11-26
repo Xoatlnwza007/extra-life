@@ -14,6 +14,37 @@ const world = require('../ai/world-simulation.js');
 const crews = require('../ai/crew-system.js');
 
  
+test('browser bootstrap loads the One Piece companion systems in dependency order', async () => {
+  const scripts = [];
+  const host = {
+    document: {
+      head: {
+        appendChild(script) {
+          scripts.push(script.src);
+          const globals = {
+            './ai/event-adapter.js': 'OnePieceEventAdapter',
+            './ai/crew-system.js': 'OnePieceCrewSystem',
+            './ai/devil-fruit-system.js': 'OnePieceDevilFruitSystem',
+            './ai/haki-system.js': 'OnePieceHakiSystem'
+          };
+          host[globals[script.src]] = {};
+          queueMicrotask(() => script.onload());
+        }
+      },
+      createElement: () => ({})
+    }
+  };
+  assert.equal(await world.loadCompanionModules(host), true);
+  assert.deepEqual(scripts, [
+    './ai/event-adapter.js',
+    './ai/crew-system.js',
+    './ai/devil-fruit-system.js',
+    './ai/haki-system.js'
+  ]);
+  assert.equal(await world.loadCompanionModules(host), true);
+  assert.equal(scripts.length, 4);
+});
+
 test('game touch stylesheet adapts controls for phones and tablets', () => {
   const styles = world.getMobileTouchStyles();
   assert.match(styles, /any-pointer:coarse/);
