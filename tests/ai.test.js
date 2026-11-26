@@ -1152,6 +1152,74 @@ test('One Piece combat adapter scales Haki and Devil Fruit mastery progressively
   assert.ok(Math.abs(modifiers.incoming - expectedIncoming) < 1e-12);
 });
 
+
+test('One Piece combat adapter applies bounded support from the active player crew', () => {
+  const combat = require('../ai/combat-adapter.js');
+  const state = {
+    world: 'op',
+    playerCrewId: 'crew-player',
+    crews: [{
+      id: 'crew-player',
+      status: 'active',
+      captainId: 'player',
+      members: [
+        { characterId: 'player', role: 'captain' },
+        { characterId: 'npc-a', role: 'navigator' },
+        { characterId: 'npc-b', role: 'fighter' },
+        { characterId: 'npc-c', role: 'doctor' },
+        { characterId: 'npc-d', role: 'cook' },
+        { characterId: 'npc-e', role: 'shipwright' },
+        { characterId: 'npc-dead', role: 'fighter' }
+      ]
+    }],
+    npcs: [
+      { id: 'npc-a', alive: true },
+      { id: 'npc-b', alive: true },
+      { id: 'npc-c', alive: true },
+      { id: 'npc-d', alive: true },
+      { id: 'npc-e', alive: true },
+      { id: 'npc-dead', alive: false }
+    ],
+    powers: []
+  };
+  const support = combat.getCrewSupport(state);
+  assert.equal(support.memberCount, 5);
+  assert.equal(support.supportedMembers, 4);
+  assert.equal(support.outgoing, 1.04);
+  assert.equal(support.incoming, 0.98);
+  assert.equal(combat.modifyOutgoingDamage(100, state, 'op'), 104);
+  assert.equal(combat.modifyIncomingDamage(100, state, 'op'), 98);
+});
+
+test('combat adapter ignores inactive, foreign, stale and non-player crews', () => {
+  const combat = require('../ai/combat-adapter.js');
+  const crew = {
+    id: 'crew-foreign',
+    status: 'active',
+    captainId: 'other-player',
+    members: [{ characterId: 'other-player', role: 'captain' }, { characterId: 'npc-a', role: 'fighter' }]
+  };
+  const state = {
+    world: 'op',
+    playerCrewId: crew.id,
+    crews: [crew],
+    npcs: [{ id: 'npc-a', alive: true }],
+    powers: []
+  };
+  assert.deepEqual(combat.getCrewSupport(state), {
+    memberCount: 0, supportedMembers: 0, outgoing: 1, incoming: 1
+  });
+  assert.equal(combat.getModifiers(state, 'op').outgoing, 1);
+  state.crews[0] = { ...crew, captainId: 'player', status: 'disbanded',
+    members: [{ characterId: 'player', role: 'captain' }, { characterId: 'npc-a', role: 'fighter' }] };
+  assert.equal(combat.getModifiers(state, 'op').incoming, 1);
+  state.crews[0] = { ...state.crews[0], status: 'active', members: [
+    { characterId: 'player', role: 'captain' }, { characterId: 'npc-dead', role: 'fighter' }
+  ] };
+  state.npcs.push({ id: 'npc-dead', alive: false });
+  assert.equal(combat.getCrewSupport(state).memberCount, 0);
+});
+
 test('combat mastery ignores locked Haki, clamps invalid mastery, and remains world-scoped', () => {
   const combat = require('../ai/combat-adapter.js');
   const state = {
