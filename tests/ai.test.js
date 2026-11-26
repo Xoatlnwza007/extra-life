@@ -1411,23 +1411,31 @@ test('Roger recruitment can be refused without changing the player crew', () => 
 
 test('Roger-era preset button is installed once and selects the Roger-era birth year', () => {
   const content = require('../ai/roger-era-content.js');
-  const listeners = {};
-  const field = { append(...nodes) { this.nodes = [...(this.nodes || []), ...nodes]; } };
+  const field = {
+    children: [],
+    append(...nodes) { this.children.push(...nodes); }
+  };
   const input = { closest: () => field };
-  const ids = { yearIn: input };
+  const makeElement = () => ({
+    children: [], listeners: {}, attributes: {},
+    append(...nodes) { this.children.push(...nodes); },
+    setAttribute(key, value) { this.attributes[key] = value; },
+    addEventListener(type, fn) { this.listeners[type] = fn; }
+  });
   const doc = {
-    getElementById: id => ids[id] || null,
-    createElement: () => ({
-      setAttribute() {},
-      addEventListener(type, fn) { listeners[type] = fn; }
-    })
+    getElementById(id) {
+      if (id === 'yearIn') return input;
+      return field.children.flatMap(node => node.children || [])
+        .find(node => node.id === id) || null;
+    },
+    createElement: makeElement
   };
   const cfg = { year: 1500 };
   let renders = 0;
   assert.equal(content.installEraPreset(doc, cfg, () => { renders++; }), true);
   assert.equal(content.installEraPreset(doc, cfg, () => { renders++; }), false);
-  const button = field.nodes[0].nodes[0];
-  listeners.click();
+  const button = field.children[0].children[0];
+  button.listeners.click();
   assert.equal(cfg.year, 1475);
   assert.equal(renders, 1);
   assert.equal(button.id, 'rogerEraPreset');
