@@ -52,7 +52,7 @@
     // API for tests and other callers that do not identify the One Piece world.
     if (worldState && worldState.world === 'op' && !context.actorId &&
         (npcList || []).filter(npc => npc && npc.alive).length > 1) {
-      return simulatePopulation(worldState, npcList, context);
+      return simulateYearlyPopulation(worldState, npcList, context);
     }
     const stateApi = root.OnePieceCharacterState;
     const brain = root.OnePieceNPCBrain;
@@ -67,7 +67,7 @@
 
     const random = typeof context.random === 'function' ? context.random : Math.random;
     const actor = (context.actorId && living.find(npc => npc.n === context.actorId)) || living[Math.floor(random() * living.length)];
-    let profile = stateApi.advanceTime(profiles[actor.n]);
+    const now = Number.isFinite(context.now) ? context.now : Date.now();\n    let profile = stateApi.advanceTime(profiles[actor.n], now);
     const candidates = [
       { id: 'rest', label: 'พักผ่อนและดูแลตัวเอง', tags: ['rest', 'safety'], relief: { energy: 18, safety: 5 }, risk: 2, expectedReward: 1 },
       { id: 'socialize', label: 'พบปะพูดคุยกับคนในชุมชน', tags: ['socialize'], relief: { social: 20 }, relationshipValue: 2, expectedReward: 2 },
@@ -111,6 +111,72 @@
       ? actor.n + ' ออกสำรวจเส้นทางทะเล แต่ต้องกลับเข้าฝั่งเพราะสภาพอากาศไม่ปลอดภัย'
       : actor.n + ' ' + chosen.label;
     return { profiles, story, actor: actor.n, action: chosen.id, ranking: decision.ranking };
+  }
+
+  // The game's current UI advances by year. Run twelve logical monthly
+  // population ticks inside that existing yearly boundary until the main
+  // game clock/UI can be migrated safely without rewriting its large bundle.
+  function simulateYearlyPopulation(worldState, npcList, context = {}) {
+    const living = (npcList || []).filter(npc => npc && npc.alive);
+    let currentState = {
+      ...(worldState || {}),
+      npcBrains: { ...((worldState && worldState.npcBrains) || {}) }
+    };
+    const previous = currentState.simulationCalendar || {};
+    let calendarYear = Number.isFinite(Number(previous.year))
+      ? Number(previous.year) : (Number(currentState.year) || 0);
+    let calendarMonth = Number.isInteger(previous.month)
+      ? Math.max(0, Math.min(12, previous.month)) : 0;
+    let totalMonths = Number(previous.totalMonths) || 0;
+    const actions = [];
+    const interactions = [];
+    const monthlyResults = [];
+    const stories = [];
+
+    for (let tick = 0; tick < 12; tick++) {
+      calendarMonth += 1;
+      if (calendarMonth > 12) {
+        calendarMonth = 1;
+        calendarYear += 1;
+      }
+      totalMonths += 1;
+      const monthContext = {
+        ...context,
+        now: Date.UTC(calendarYear, calendarMonth - 1, 1)
+      };
+      const result = simulatePopulation(currentState, living, monthContext);
+      currentState = { ...currentState, npcBrains: result.profiles };
+      const monthActions = result.actions.map(action => ({
+        ...action, year: calendarYear, month: calendarMonth
+      }));
+      const monthInteractions = result.interactions.map(interaction => ({
+        ...interaction, year: calendarYear, month: calendarMonth
+      }));
+      actions.push(...monthActions);
+      interactions.push(...monthInteractions);
+      if (result.stories.length) stories.push(result.stories[0]);
+      monthlyResults.push({
+        year: calendarYear,
+        month: calendarMonth,
+        actionCount: monthActions.length,
+        interactionCount: monthInteractions.length,
+        actions: monthActions,
+        stories: result.stories
+      });
+    }
+
+    return {
+      profiles: currentState.npcBrains,
+      actions,
+      interactions,
+      stories,
+      monthlyResults,
+      simulatedCount: living.length,
+      actionCount: actions.length,
+      simulatedMonths: 12,
+      simulationCalendar: { year: calendarYear, month: calendarMonth, totalMonths },
+      story: stories.length ? stories.join('。') : null
+    };
   }
 
   function stateApiForInteractions() {
