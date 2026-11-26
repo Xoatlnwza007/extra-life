@@ -239,3 +239,35 @@ A successor may inherit appropriate possessions, money, obligations, reputation,
 8. Add post-death biography and successor-specific legacy events.
 
 **First playable narrative target:** a character can be born in an East Blue island community, experience a short childhood, choose a personal ambition, enter an ordinary career or begin a sea journey, form at least one meaningful relationship, encounter a locally grounded event, and have those experiences appear in their journal. No Devil Fruit or canon-character encounter is required for this slice.
+
+
+## Roger Era — additional playable historical period
+
+The Roger era is a full playable period, not a cameo. Add the stable proposed timeline preset ID "roger_era". Do not invent an absolute start year or month: use the existing game clock and verified relative anchors once technical review confirms how the current year/month fields are initialized. The era ends at Roger's surrender/execution; the Great Pirate Age is a separate later preset.
+
+A player may live as a pirate, Marine, bounty hunter, revolutionary, merchant, shipwright, doctor, sailor, or ordinary civilian. Roger and his crew remain autonomous characters with their own goals, route, schedule, and decisions. The player is not automatically present at every famous voyage or historical milestone.
+
+### Roger-era encounter ladder
+
+1. Rumors and news about Roger's crew, from credible sources.
+2. Distant sightings when the crew's location and the player's location match.
+3. Indirect contact through a port, delivery, repair, medical help, trade, or intermediary.
+4. Brief personal encounters with a crew member under a valid time/location window.
+5. Repeated contact and earned trust through meaningful choices.
+6. Temporary cooperation, shared travel, rescue, or fighting beside the crew.
+7. Rare invitation to join the Roger Pirates, requiring trust, a credible contribution, crew approval, a plausible role, and the player's explicit acceptance.
+8. Rivalry or opposition, including refusal, competing goals, faction conflict, or combat when the existing combat system supports it.
+
+This is not a mandatory linear quest. A pirate career does not guarantee meeting or joining Roger. The player can miss the crew entirely and still have a complete life story. Crew members may refuse, depart, or continue their voyage without the player.
+
+### Training and relationships
+
+Training or mentorship can emerge after repeated contact and demonstrated effort. Use the existing relationship and training mechanics where possible. Grant only effects already supported by the engine; otherwise record a memory or future story hook rather than inventing new stats. Crew recruitment must preserve the player's prior family, career, memories, and obligations.
+
+### Canon integrity
+
+Roger must never spawn as a random encounter anywhere. Direct appearances require verified time, location, and character availability. If the player is elsewhere, use rumors, witnesses, or news. In canon-guarded mode, preserve major historical outcomes unless an explicit divergence rule is met. Record any major divergence as a timeline branch. Do not promise that the player can prevent Roger's execution in the default mode.
+
+### Roger-era event family
+
+Add event concepts for port rumors, distant ship sightings, a port crisis, supply work, a sea rescue, a training offer, temporary alliance, recruitment invitation, and rivalry. These are narrative proposals only; map their triggers, choices, and effects to the existing event callback system before implementation.
