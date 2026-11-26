@@ -229,7 +229,7 @@ test('pirate crew panel creates a crew and recruits an NPC through its controls'
   const previousState = globalThis.S;
   function element(tag) {
     return {
-      tagName: tag.toUpperCase(), children: [], attributes: {}, listeners: {}, value: '',
+      tagName: tag.toUpperCase(), children: [], attributes: {}, listeners: {}, value: '', value: '',
       appendChild(child) { this.children.push(child); return child; },
       replaceChildren(...children) { this.children = children; },
       setAttribute(key, value) { this.attributes[key] = String(value); },
