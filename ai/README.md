@@ -45,6 +45,26 @@ updated = OnePieceCharacterState.remember(updated, 'เคยถูกโจร�
 
 Memories are capped at the latest 100 entries. The decision engine considers the latest 40 non-expired memories when scoring actions. Goals with status other than `active` are ignored. Call `advanceTime(character, now)` when the simulation clock advances to expire timed memories and overdue goals.
 
+## NPC relationships and interactions
+
+Relationship scores range from -100 to 100 and can be classified with
+`relationshipLabel(score)`. Use `adjustRelationship` for a one-sided change,
+or `interact(first, second, delta, options)` to update both characters'
+relationship records independently:
+
+```js
+const result = OnePieceCharacterState.interact(npcA, npcB, 8, {
+  replyDelta: 3,
+  event: 'ช่วยกันปกป้องหมู่บ้าน'
+});
+npcA = result.first;
+npcB = result.second;
+```
+
+The second character's change defaults to the same delta; set `replyDelta`
+when the interaction affects each participant differently. The helper returns
+new character objects and does not mutate the inputs.
+
 ## Let an NPC choose an activity
 
 ```js
