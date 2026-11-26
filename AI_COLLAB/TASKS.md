@@ -98,3 +98,13 @@
 - **Tests:** tests/ai.test.js covers loader timing, event registration, encounter progression, recruitment refusal, and era preset.
 - **Verification:** GitHub Actions run 45852410887 succeeded; PR #1 is draft and mergeable against one-piece-development.
 - **Open narrative follow-up:** AI A must label original/sandbox vs canon content and verify or restrict direct Roger encounter schedules. Continue East Blue content-only pack next.
+
+
+### GAMEPLAY-003 — Player-facing Marine wanted and pursuit panel
+- **Owner:** AI B
+- **Status:** DONE — implementation and CI passed
+- **Branch:** ai-b/gameplay-integration; PR #1 draft against one-piece-development
+- **Files:** ai/marine-ui.js, ai/world-simulation.js, tests/ai.test.js, ai/README.md
+- **Result:** Bounty-bearing living One Piece characters can inspect wanted status, check for patrol sightings, and evade active pursuit. Each action type is limited to once per in-game month; bounty remains after evasion.
+- **Verification:** GitHub Actions run 45853281096 succeeded.
+- **Known gap:** Arrest/prison/release consequences and location-specific Marine rosters remain future engineering tasks.
