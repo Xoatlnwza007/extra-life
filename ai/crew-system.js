@@ -103,6 +103,92 @@
     };
   }
 
+  function adjustReputation(crew, delta, reason = 'world-event') {
+    const amount = Number(delta);
+    if (!crew || !Number.isFinite(amount) || amount === 0) return crew;
+    const current = clamp(Number(crew.reputation) || 0, -100, 100);
+    const nextValue = clamp(current + amount, -100, 100);
+    return {
+      ...crew,
+      reputation: nextValue,
+      history: [...(crew.history || []), {
+        type: 'reputation-changed', delta: nextValue - current,
+        reputation: nextValue, reason: String(reason), at: new Date().toISOString()
+      }].slice(-100)
+    };
+  }
+
+  function crewRelationLabel(score) {
+    const value = clamp(Number(score) || 0, -100, 100);
+    if (value >= 60) return 'allied';
+    if (value >= 20) return 'friendly';
+    if (value <= -60) return 'at-war';
+    if (value <= -20) return 'hostile';
+    return 'neutral';
+  }
+
+  function setCrewRelation(crew, otherCrewId, score, options = {}) {
+    if (!crew || !otherCrewId || String(otherCrewId) === String(crew.id)) {
+      return { crew, updated: false, reason: 'invalid-target' };
+    }
+    const value = Number(score);
+    if (!Number.isFinite(value)) return { crew, updated: false, reason: 'invalid-score' };
+    const bounded = clamp(value, -100, 100);
+    const relations = { ...(crew.relations || {}), [String(otherCrewId)]: bounded };
+    return {
+      crew: {
+        ...crew,
+        relations,
+        history: [...(crew.history || []), {
+          type: 'relation-changed', otherCrewId: String(otherCrewId),
+          score: bounded, label: crewRelationLabel(bounded),
+          reason: options.reason || 'diplomacy', at: options.at || new Date().toISOString()
+        }].slice(-100)
+      },
+      updated: true
+    };
+  }
+
+  function resolveCrewEncounter(first, second, options = {}) {
+    if (!first || !second || !first.id || !second.id || first.id === second.id ||
+        first.status !== 'active' || second.status !== 'active') {
+      return { resolved: false, reason: 'invalid-crews' };
+    }
+    const winnerId = options.winnerId ? String(options.winnerId) : null;
+    if (winnerId && winnerId !== first.id && winnerId !== second.id) {
+      return { resolved: false, reason: 'winner-not-in-encounter' };
+    }
+    const hostility = clamp(Number(options.hostilityDelta ?? -25), -100, 0);
+    const firstReputation = winnerId ? (winnerId === first.id ? 5 : -3) : -1;
+    const secondReputation = winnerId ? (winnerId === second.id ? 5 : -3) : -1;
+    const event = {
+      type: 'crew-encounter',
+      opponentId: second.id,
+      winnerId,
+      outcome: winnerId ? (winnerId === first.id ? 'victory' : 'defeat') : 'stalemate',
+      at: options.at || new Date().toISOString()
+    };
+    const reverseEvent = { ...event, opponentId: first.id,
+      outcome: winnerId ? (winnerId === second.id ? 'victory' : 'defeat') : 'stalemate' };
+    let nextFirst = setCrewRelation(first, second.id, (first.relations || {})[second.id] || 0, { reason: 'encounter' }).crew;
+    let nextSecond = setCrewRelation(second, first.id, (second.relations || {})[first.id] || 0, { reason: 'encounter' }).crew;
+    nextFirst = setCrewRelation(nextFirst, second.id,
+      clamp(((first.relations || {})[second.id] || 0) + hostility, -100, 100),
+      { reason: 'crew-encounter', at: event.at }).crew;
+    nextSecond = setCrewRelation(nextSecond, first.id,
+      clamp(((second.relations || {})[first.id] || 0) + hostility, -100, 100),
+      { reason: 'crew-encounter', at: event.at }).crew;
+    nextFirst = adjustReputation(nextFirst, firstReputation, 'crew-encounter');
+    nextSecond = adjustReputation(nextSecond, secondReputation, 'crew-encounter');
+    nextFirst = { ...nextFirst, history: [...nextFirst.history, event].slice(-100) };
+    nextSecond = { ...nextSecond, history: [...nextSecond.history, reverseEvent].slice(-100) };
+    if (winnerId && Number(options.winnerBountyIncrease) > 0) {
+      if (winnerId === first.id) nextFirst = addBounty(nextFirst, options.winnerBountyIncrease, 'crew-encounter-victory');
+      else nextSecond = addBounty(nextSecond, options.winnerBountyIncrease, 'crew-encounter-victory');
+    }
+    return { resolved: true, first: nextFirst, second: nextSecond, winnerId, outcome: event.outcome };
+  }
+
   function findCrewForMember(crews, characterId) {
     const id = String(characterId);
     return (crews || []).find(crew => crew.status === 'active' && (crew.members || []).some(member => member.characterId === id)) || null;
@@ -119,7 +205,7 @@
     };
   }
 
-  const api = Object.freeze({ DEFAULT_ROLES, createCrew, joinCrew, leaveCrew, setMemberRole, transferCaptaincy, addBounty, findCrewForMember, disbandCrew });
+  const api = Object.freeze({ DEFAULT_ROLES, createCrew, joinCrew, leaveCrew, setMemberRole, transferCaptaincy, addBounty, adjustReputation, crewRelationLabel, setCrewRelation, resolveCrewEncounter, findCrewForMember, disbandCrew });
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.OnePieceCrewSystem = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
