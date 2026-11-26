@@ -378,6 +378,9 @@ test('player crew is stored in game state and recruits NPCs persistently', () =>
   assert.equal(world.recruitNpcToPlayerCrew(state, state.npcs[3], 'fighter', crews).reason, 'invalid-recruitment');
 
   const saved = JSON.parse(JSON.stringify(state));
+  const encoded = world.saveSystem.encode(saved);
+  const decoded = world.saveSystem.decode(encoded);
+  assert.deepEqual(decoded.data.crews, saved.crews);
   assert.equal(world.getPlayerCrew(saved, crews).members.length, 4);
   const left = world.removeNpcFromPlayerCrew(saved, 'npc-nami', crews);
   assert.equal(left.left, true);
