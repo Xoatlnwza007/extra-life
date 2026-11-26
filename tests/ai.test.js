@@ -78,6 +78,20 @@ test('relationships are clamped, classified, and keep a bounded interaction hist
   assert.equal(stateApi.getRelationship(character, 'unknown'), 0);
 });
 
+test('NPC interactions update both sides without sharing relationship state', () => {
+  let alice = stateApi.createCharacterState({ id: 'alice' });
+  let bob = stateApi.createCharacterState({ id: 'bob' });
+  const result = stateApi.interact(alice, bob, 12, {
+    replyDelta: 5,
+    event: 'bob shared supplies with alice'
+  });
+  assert.equal(stateApi.getRelationship(result.first, 'bob'), 12);
+  assert.equal(stateApi.getRelationship(result.second, 'alice'), 5);
+  assert.equal(result.first.relationshipHistory.at(-1).event, 'bob shared supplies with alice');
+  assert.equal(stateApi.getRelationship(alice, 'bob'), 0);
+  assert.equal(stateApi.getRelationship(bob, 'alice'), 0);
+});
+
 test('world simulation initializes and returns persistent NPC profiles', () => {
   const npc = { n: 'Test villager', r: 'kind', alive: true };
   const result = world.simulate({ npcBrains: {} }, [npc], {});
