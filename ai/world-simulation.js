@@ -618,7 +618,7 @@
     return true;
   }
 
-  function buyBoatForPlayerCrew(worldState, boatDefinition, buyFunction) {
+  function buyBoatForPlayerCrew(worldState, boatDefinition, buyFunction, crewApi = root.OnePieceCrewSystem) {
     if (!worldState || worldState.world !== 'op') {
       return { ok: false, reason: 'unsupported-world' };
     }
@@ -633,6 +633,18 @@
       return { ok: false, reason: 'insufficient-funds' };
     }
     buyFunction(boatDefinition);
+    const crew = getPlayerCrew(worldState, crewApi);
+    if (crew) {
+      const updated = {
+        ...crew,
+        history: [...(crew.history || []), {
+          type: 'ship-purchased',
+          itemId: 'boat',
+          at: new Date().toISOString()
+        }].slice(-100)
+      };
+      worldState.crews = (worldState.crews || []).map(item => item && item.id === crew.id ? updated : item);
+    }
     return { ok: true, alreadyOwned: false };
   }
 
@@ -835,7 +847,7 @@
           () => {
             let buyFunction = null;
             try { if (typeof buy === 'function') buyFunction = buy; } catch (error) {}
-            const result = buyBoatForPlayerCrew(state, boatDefinition, buyFunction);
+            const result = buyBoatForPlayerCrew(state, boatDefinition, buyFunction, api);
             if (!result.ok) {
               setStatus(result.reason === 'insufficient-funds' ? 'เงินไม่พอซื้อเรือ' : 'ยังซื้อเรือไม่ได้');
               return;
@@ -920,6 +932,7 @@
       const historyMessage = entry => {
         switch (entry.type) {
           case 'joined': return characterName(entry.characterId) + ' เข้าร่วมลูกเรือ · ' + entry.role;
+          case 'ship-purchased': return 'ซื้อเรือใบลำเล็กสำหรับลูกเรือ';
           case 'left': return characterName(entry.characterId) + ' ออกจากลูกเรือ';
           case 'captaincy-transferred': return 'เปลี่ยนกัปตันจาก ' + characterName(entry.from) + ' เป็น ' + characterName(entry.to);
           case 'bounty-increased': return 'ค่าหัวเพิ่มขึ้น ' + Number(entry.amount || 0).toLocaleString('th-TH') + ' เบรี';
