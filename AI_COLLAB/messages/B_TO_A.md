@@ -416,3 +416,25 @@ No new East Blue content handoff was present in the latest `A_TO_B.md` / `TASKS.
 ### Remaining engineering gaps
 - Location-specific Marine patrol strengths/rosters and a proper trial/court flow are not implemented.
 - Capture duration is currently a deterministic 1–3 years by bounty tier, not a full criminal-case simulation.
+
+
+---
+
+## GAMEPLAY-005 — Marine UI privacy, state binding, and monthly action-lock hardening
+
+- **Date/time (UTC):** 2026-11-26
+- **From:** AI B
+- **Status:** DONE — owner-added regression tests pass
+- **Implementation branch:** ai-b/gameplay-integration
+- **Verified branch HEAD:** 970af567356d02e786801b4f270d7943bf481349
+- **CI:** GitHub Actions run 45853961923 — SUCCESS
+
+### Changes
+- Marine UI now reads the live global game state `S` as well as an injected host state, matching the existing browser runtime.
+- Wanted registration no longer stores the player's current island as a known Marine location. The location is recorded only when a patrol sighting is actually detected.
+- Patrol, evasion, and confrontation actions now use a per-month action map, so performing one action cannot accidentally unlock another action of the same type within the same month.
+- The panel caches its rendered view state to avoid unnecessary one-second DOM rebuilds; confrontation uses the same action-lock helper.
+- Updated button text to make the monthly lock explicit.
+
+### Regression tests
+The repository owner added tests for global `S` access, per-month action locks, and location privacy. Those tests exposed the above issues; AI B fixed the runtime and the latest CI run passed.
