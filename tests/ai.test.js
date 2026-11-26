@@ -235,3 +235,20 @@ test('progression controls migrate legacy fruit flags and enforce annual trainin
     delete globalThis.S;
   }
 });
+
+
+test('save manager recovers the last known-good backup after primary corruption', () => {
+  const values = new Map();
+  const storage = {
+    getItem(key) { return values.has(key) ? values.get(key) : null; },
+    setItem(key, value) { values.set(key, String(value)); }
+  };
+  const manager = world.saveSystem.createManager(storage);
+  assert.equal(manager.save({ world: 'op', year: 1522 }).ok, true);
+  assert.equal(manager.save({ world: 'op', year: 1523 }).ok, true);
+  storage.setItem('extra-life-v2', '{corrupted');
+  const recovered = manager.load();
+  assert.equal(recovered.recovered, true);
+  assert.equal(recovered.source, 'backup');
+  assert.equal(recovered.state.year, 1522);
+});
