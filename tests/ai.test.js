@@ -1135,9 +1135,13 @@ test('Marine pursuit progresses from investigation to pursuit and resolves captu
   const sighting = marines.evaluateSighting(registered.force, {
     id: 'pirate-2', name: 'Storm Fox', bounty: 120000000
   }, { random: () => 0, at: '2026-01-02T00:00:00.000Z' });
-  const advanced = marines.advancePursuit(sighting.record, {
+  const firstAdvance = marines.advancePursuit(sighting.record, {
     evidence: 100, targetMovement: 0, resources: 100,
     at: '2026-01-03T00:00:00.000Z'
+  });
+  const advanced = marines.advancePursuit(firstAdvance.record, {
+    evidence: 100, targetMovement: 0, resources: 100,
+    at: '2026-01-04T00:00:00.000Z'
   });
   assert.equal(advanced.phase, 'pursuing');
   const outcome = marines.resolveEncounter(advanced.record, {
