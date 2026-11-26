@@ -543,7 +543,8 @@
     { src: './ai/devil-fruit-system.js', globalName: 'OnePieceDevilFruitSystem' },
     { src: './ai/haki-system.js', globalName: 'OnePieceHakiSystem' },
     { src: './ai/progression-system.js', globalName: 'OnePieceProgressionSystem' },
-    { src: './ai/marine-system.js', globalName: 'OnePieceMarineSystem' }
+    { src: './ai/marine-system.js', globalName: 'OnePieceMarineSystem' },
+    { src: './ai/marine-ui.js', globalName: 'OnePieceMarineUI' }
   ]);
 
   function loadCompanionModules(host = root) {
@@ -1437,5 +1438,5 @@
   installBrowserSaveProtection(root);
   installMobileTouchStyles(root);
   scheduleSaveControls(root);
-  loadCompanionModules(root).then(loaded => { if (loaded) { scheduleCrewControls(root); scheduleProgressionControls(root); } scheduleRogerEraContent(root); });
+  loadCompanionModules(root).then(loaded => { if (loaded) { scheduleCrewControls(root); scheduleProgressionControls(root); if (root.OnePieceMarineUI) root.OnePieceMarineUI.scheduleMarineControls(root); } scheduleRogerEraContent(root); });
 })(typeof globalThis !== 'undefined' ? globalThis : this);
