@@ -120,6 +120,36 @@ async function main() {
       assert.equal(restored.fruitName, 'ผลโอโตะโอโตะ');
       assert.equal(restored.bounty, 20000000);
       assert.equal(restored.patrolUsed, true);
+
+      await page.evaluate(() => {
+        const now = S.year * 12 + (S.mo || 0);
+        const force = S.marineForce || { wantedRecords: {} };
+        const record = force.wantedRecords?.player || {
+          targetId: 'player', name: S.name, bounty: S.flags.bounty,
+          status: 'wanted', sightings: 1, confidence: 50
+        };
+        S.marineForce = {
+          ...force,
+          wantedRecords: {
+            ...(force.wantedRecords || {}),
+            player: { ...record, status: 'captured', pursuit: { phase: 'captured', progress: 100, pressure: 100 } }
+          }
+        };
+        S.flags.jailUntil = now + 1;
+        S.mo = (S.mo || 0) + 1;
+        jailMonth();
+        save();
+      });
+      await page.waitForFunction(() => {
+        const node = document.getElementById('extra-life-marine-tools');
+        return node && !node.hidden;
+      });
+      await page.locator('#extra-life-marine-tools .el-marine-trigger').click();
+      const releasedPanel = page.locator('#extra-life-marine-tools .el-marine-panel');
+      await releasedPanel.waitFor({ state: 'visible' });
+      assert.match(await releasedPanel.innerText(), /สถานะ: มีประกาศจับ/);
+      assert.doesNotMatch(await releasedPanel.innerText(), /สถานะ: ถูกจับกุม/);
+      assert.equal(await page.evaluate(() => S.flags.jailUntil), 0);
       assert.deepEqual(pageErrors, [], 'browser page errors: ' + pageErrors.join('; '));
       await page.close();
       process.stdout.write('PASS phone/tablet smoke at ' + viewport.width + 'x' + viewport.height + '\n');
