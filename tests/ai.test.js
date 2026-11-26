@@ -27,7 +27,8 @@ test('browser bootstrap loads the One Piece companion systems in dependency orde
             './ai/devil-fruit-system.js': 'OnePieceDevilFruitSystem',
             './ai/haki-system.js': 'OnePieceHakiSystem',
             './ai/progression-system.js': 'OnePieceProgressionSystem',
-            './ai/marine-system.js': 'OnePieceMarineSystem'
+            './ai/marine-system.js': 'OnePieceMarineSystem',
+            './ai/marine-ui.js': 'OnePieceMarineUI'
           };
           host[globals[script.src]] = {};
           queueMicrotask(() => script.onload());
@@ -43,10 +44,11 @@ test('browser bootstrap loads the One Piece companion systems in dependency orde
     './ai/devil-fruit-system.js',
     './ai/haki-system.js',
     './ai/progression-system.js',
-    './ai/marine-system.js'
+    './ai/marine-system.js',
+    './ai/marine-ui.js'
   ]);
   assert.equal(await world.loadCompanionModules(host), true);
-  assert.equal(scripts.length, 6);
+  assert.equal(scripts.length, 7);
 });
 
 test('browser bootstrap reports a missing companion module without stopping later loads', async () => {
@@ -64,7 +66,9 @@ test('browser bootstrap reports a missing companion module without stopping late
             './ai/crew-system.js': 'OnePieceCrewSystem',
             './ai/devil-fruit-system.js': 'OnePieceDevilFruitSystem',
             './ai/haki-system.js': 'OnePieceHakiSystem',
-            './ai/marine-system.js': 'OnePieceMarineSystem'
+            './ai/progression-system.js': 'OnePieceProgressionSystem',
+            './ai/marine-system.js': 'OnePieceMarineSystem',
+            './ai/marine-ui.js': 'OnePieceMarineUI'
           };
           host[globals[script.src]] = {};
           queueMicrotask(() => script.onload());
@@ -75,7 +79,7 @@ test('browser bootstrap reports a missing companion module without stopping late
   };
   assert.equal(await world.loadCompanionModules(host), false);
   assert.deepEqual(host.__onePieceModuleErrors, ['./ai/event-adapter.js']);
-  assert.equal(scripts.length, 4);
+  assert.equal(scripts.length, 7);
 });
 
 test('game touch stylesheet adapts controls for phones and tablets', () => {
@@ -88,6 +92,17 @@ test('game touch stylesheet adapts controls for phones and tablets', () => {
   assert.match(styles, /max-width:900px/);
 });
 
+
+
+test('floating progression and crew controls do not share the same mobile anchor', () => {
+  const progressionStyles = world.getProgressionControlsStyles();
+  const crewStyles = world.getCrewControlsStyles();
+  const marineStyles = require('../ai/marine-ui.js').getMarineControlsStyles();
+  assert.match(progressionStyles, /bottom:calc\(82px \+ env\(safe-area-inset-bottom/);
+  assert.match(progressionStyles, /max-width:480px[^}]*bottom:calc\(78px \+ env\(safe-area-inset-bottom/);
+  assert.match(crewStyles, /bottom:calc\(18px \+ env\(safe-area-inset-bottom/);
+  assert.match(marineStyles, /bottom:calc\(82px \+ env\(safe-area-inset-bottom/);
+});
 
 test('save controls provide mobile-safe touch targets and viewport spacing', () => {
   const styles = world.getSaveControlsStyles();
@@ -1148,6 +1163,74 @@ test('One Piece combat adapter scales Haki and Devil Fruit mastery progressively
   assert.ok(Math.abs(modifiers.incoming - expectedIncoming) < 1e-12);
 });
 
+
+test('One Piece combat adapter applies bounded support from the active player crew', () => {
+  const combat = require('../ai/combat-adapter.js');
+  const state = {
+    world: 'op',
+    playerCrewId: 'crew-player',
+    crews: [{
+      id: 'crew-player',
+      status: 'active',
+      captainId: 'player',
+      members: [
+        { characterId: 'player', role: 'captain' },
+        { characterId: 'npc-a', role: 'navigator' },
+        { characterId: 'npc-b', role: 'fighter' },
+        { characterId: 'npc-c', role: 'doctor' },
+        { characterId: 'npc-d', role: 'cook' },
+        { characterId: 'npc-e', role: 'shipwright' },
+        { characterId: 'npc-dead', role: 'fighter' }
+      ]
+    }],
+    npcs: [
+      { id: 'npc-a', alive: true },
+      { id: 'npc-b', alive: true },
+      { id: 'npc-c', alive: true },
+      { id: 'npc-d', alive: true },
+      { id: 'npc-e', alive: true },
+      { id: 'npc-dead', alive: false }
+    ],
+    powers: []
+  };
+  const support = combat.getCrewSupport(state);
+  assert.equal(support.memberCount, 5);
+  assert.equal(support.supportedMembers, 4);
+  assert.equal(support.outgoing, 1.04);
+  assert.equal(support.incoming, 0.98);
+  assert.equal(combat.modifyOutgoingDamage(100, state, 'op'), 104);
+  assert.equal(combat.modifyIncomingDamage(100, state, 'op'), 98);
+});
+
+test('combat adapter ignores inactive, foreign, stale and non-player crews', () => {
+  const combat = require('../ai/combat-adapter.js');
+  const crew = {
+    id: 'crew-foreign',
+    status: 'active',
+    captainId: 'other-player',
+    members: [{ characterId: 'other-player', role: 'captain' }, { characterId: 'npc-a', role: 'fighter' }]
+  };
+  const state = {
+    world: 'op',
+    playerCrewId: crew.id,
+    crews: [crew],
+    npcs: [{ id: 'npc-a', alive: true }],
+    powers: []
+  };
+  assert.deepEqual(combat.getCrewSupport(state), {
+    memberCount: 0, supportedMembers: 0, outgoing: 1, incoming: 1
+  });
+  assert.equal(combat.getModifiers(state, 'op').outgoing, 1);
+  state.crews[0] = { ...crew, captainId: 'player', status: 'disbanded',
+    members: [{ characterId: 'player', role: 'captain' }, { characterId: 'npc-a', role: 'fighter' }] };
+  assert.equal(combat.getModifiers(state, 'op').incoming, 1);
+  state.crews[0] = { ...state.crews[0], status: 'active', members: [
+    { characterId: 'player', role: 'captain' }, { characterId: 'npc-dead', role: 'fighter' }
+  ] };
+  state.npcs.push({ id: 'npc-dead', alive: false });
+  assert.equal(combat.getCrewSupport(state).memberCount, 0);
+});
+
 test('combat mastery ignores locked Haki, clamps invalid mastery, and remains world-scoped', () => {
   const combat = require('../ai/combat-adapter.js');
   const state = {
@@ -1242,4 +1325,403 @@ test('Marine system rejects zero-bounty targets and cannot advance a resolved pu
   const force = marines.createMarineForce();
   assert.equal(marines.registerWanted(force, { id: 'civilian', bounty: 0 }).reason, 'no-bounty');
   assert.equal(marines.advancePursuit({ status: 'captured' }).reason, 'no-active-pursuit');
+});
+
+
+test('player progression controls train unlocked Haki and fruit once per game year', () => {
+  const haki = require('../ai/haki-system.js');
+  const fruits = require('../ai/devil-fruit-system.js');
+  const progression = require('../ai/progression-system.js');
+  globalThis.OnePieceHakiSystem = haki;
+  globalThis.OnePieceDevilFruitSystem = fruits;
+  const state = {
+    world: 'op', alive: true, year: 1522, powers: ['haki_arm', 'haki_obs'],
+    haki: {}, devilFruit: { id: 'gomu', name: 'Gomu Gomu no Mi', type: 'paramecia', mastery: 0, awakened: false }
+  };
+  globalThis.S = state;
+  let saves = 0;
+  function element(tag) {
+    return {
+      tagName: tag.toUpperCase(), children: [], attributes: {}, listeners: {}, hidden: false,
+      appendChild(child) { this.children.push(child); return child; },
+      replaceChildren(...children) { this.children = children; },
+      setAttribute(key, value) { this.attributes[key] = String(value); },
+      getAttribute(key) { return this.attributes[key] || null; },
+      addEventListener(name, handler) { this.listeners[name] = handler; },
+      click() { if (!this.disabled && this.listeners.click) this.listeners.click({ target: this }); }
+    };
+  }
+  const head = element('head');
+  const body = element('body');
+  const doc = {
+    head, body, readyState: 'complete', createElement: element,
+    getElementById(id) { return [body, head, ...body.children].flatMap(node => node.children || []).find(node => node.id === id) || null; }
+  };
+  const host = { document: doc, OnePieceProgressionSystem: progression, save: () => { saves++; } };
+  try {
+    assert.equal(world.installProgressionControls(host), true);
+    const wrap = body.children.find(node => node.id === 'extra-life-progression-tools');
+    assert.ok(wrap);
+    const panel = wrap.children[0];
+    const trigger = wrap.children[1];
+    trigger.click();
+    const content = panel.children[1];
+    const armamentRow = content.children[2];
+    assert.equal(armamentRow.children[0].textContent.includes('0/100'), true);
+    armamentRow.children[1].click();
+    assert.equal(state.haki.armament.mastery, 5);
+    assert.equal(state.progressionTraining['haki:armament'], 1522);
+    assert.equal(saves, 2); // Initial unlock sync plus Haki training.
+    assert.equal(content.children.length > 0, true);
+
+    const fruitTrain = content.children.find(node =>
+      node.tagName === 'BUTTON' && node.textContent.includes('ฝึกผลปีศาจ'));
+    assert.ok(fruitTrain);
+    fruitTrain.click();
+    assert.equal(state.devilFruit.mastery, 5);
+    assert.equal(saves, 3);
+    assert.match(world.getProgressionControlsStyles(), /any-pointer|100dvh|safe-area-inset/);
+  } finally {
+    delete globalThis.S;
+    delete globalThis.OnePieceHakiSystem;
+    delete globalThis.OnePieceDevilFruitSystem;
+  }
+});
+
+
+test('Roger-era content registers once and exposes the historical cast', () => {
+  const content = require('../ai/roger-era-content.js');
+  const world = { meets: [] };
+  const cast = {};
+  const helpers = { pirate: () => false, marine: () => false };
+  const first = content.register(world, cast, helpers);
+  const second = content.register(world, cast, helpers);
+
+  assert.equal(first.registered, content.EVENT_IDS.length);
+  assert.equal(second.registered, 0);
+  assert.deepEqual(world.meets.map(event => event.id), content.EVENT_IDS);
+  assert.equal(cast.roger, 'โกล ดี. โรเจอร์');
+  assert.equal(cast.rayleigh, 'ซิลเวอร์ส เรย์ลี');
+  assert.equal(cast.gaban, 'สกอปเปอร์ แกบบัน');
+});
+
+test('Roger-era timeline is bounded by the existing Roger execution year', () => {
+  const content = require('../ai/roger-era-content.js');
+  assert.equal(content.inRogerEra({ year: 1470 }), true);
+  assert.equal(content.inRogerEra({ year: 1499 }), true);
+  assert.equal(content.inRogerEra({ year: 1500 }), false);
+  assert.equal(content.inRogerEra({ year: 1469 }), false);
+  assert.equal(content.applyEraPreset({ year: 1500 }).year, 1475);
+  assert.equal(content.applyEraPreset({ year: 1500 }, 1460).year, 1470);
+  assert.equal(content.applyEraPreset({ year: 1500 }, 1510).year, 1499);
+});
+
+test('Roger encounter progression supports sighting, meeting, rescue, training, alliance and recruitment', () => {
+  const content = require('../ai/roger-era-content.js');
+  const world = { meets: [] };
+  const cast = {};
+  const state = {
+    year: 1480, age: 15, place: 'sea', job: { id: 'pirate' },
+    flags: {}, sk: { fight: 0, ride: 25 }, fame: 0
+  };
+  const bonds = {};
+  const memories = [];
+  const helpers = {
+    pirate: s => s.job?.id === 'pirate',
+    marine: s => s.job?.id === 'marine',
+    bond: (id, delta) => { bonds[id] = (bonds[id] || 0) + delta; },
+    say: () => {},
+    skill: (id, delta) => { state.sk[id] = (state.sk[id] || 0) + delta; },
+    fm: () => {},
+    remember: (...args) => memories.push(args)
+  };
+  content.register(world, cast, helpers);
+  const byId = id => world.meets.find(event => event.id === id);
+  const choose = (id, choiceIndex = 0) => {
+    const event = byId(id);
+    assert.ok(event, 'missing event ' + id);
+    assert.equal(event.when(state), true, 'event should be available: ' + id);
+    const result = event.play(state);
+    assert.ok(result.choices && result.choices[choiceIndex]);
+    result.choices[choiceIndex].f(state);
+  };
+
+  choose('op_roger_sighting', 0);
+  assert.equal(state.flags.rogerLead, 1);
+  state.year = 1481;
+  state.age = 16;
+  choose('op_roger_meeting', 0);
+  assert.equal(state.flags.rogerMet, 1);
+  assert.equal(state.flags.rogerTrust, 8);
+  choose('op_roger_rescue', 0);
+  assert.equal(state.flags.rogerRescue, 1);
+  choose('op_roger_training', 0);
+  assert.equal(state.flags.rogerTraining, 1);
+  assert.ok(state.sk.fight >= 6);
+  state.age = 17; // Alliance is age-gated in the content pack.
+  choose('op_roger_alliance', 0);
+  assert.equal(state.flags.rogerAlliance, 1);
+  state.year = 1483;
+  state.age = 18;
+  choose('op_roger_recruitment', 0);
+  assert.equal(state.flags.rogerCrew, 1);
+  assert.equal(state.flags.crew, 'กลุ่มโจรสลัดโรเจอร์');
+  assert.ok(bonds.roger > 0);
+  assert.ok(bonds.rayleigh > 0);
+  assert.ok(memories.length >= 4);
+});
+
+test('Roger recruitment can be refused without changing the player crew', () => {
+  const content = require('../ai/roger-era-content.js');
+  const world = { meets: [] };
+  const state = {
+    year: 1490, age: 20, place: 'sea', job: { id: 'pirate' },
+    flags: { rogerAlliance: 1, rogerTrust: 40, crew: 'กลุ่มโจรสลัดเดิม' },
+    sk: { fight: 30 }, fame: 10
+  };
+  content.register(world, {}, {
+    pirate: s => s.job?.id === 'pirate',
+    marine: () => false,
+    say: () => {}
+  });
+  const event = world.meets.find(item => item.id === 'op_roger_recruitment');
+  assert.equal(event.when(state), true);
+  event.play(state).choices[1].f(state);
+  assert.equal(state.flags.rogerCrew, undefined);
+  assert.equal(state.flags.crew, 'กลุ่มโจรสลัดเดิม');
+  assert.equal(state.flags.rogerRecruitmentDeclined, 1);
+});
+
+test('Roger-era preset button is installed once and selects the Roger-era birth year', () => {
+  const content = require('../ai/roger-era-content.js');
+  const field = {
+    children: [],
+    append(...nodes) { this.children.push(...nodes); }
+  };
+  const input = { closest: () => field };
+  const makeElement = () => ({
+    children: [], listeners: {}, attributes: {},
+    append(...nodes) { this.children.push(...nodes); },
+    setAttribute(key, value) { this.attributes[key] = value; },
+    addEventListener(type, fn) { this.listeners[type] = fn; }
+  });
+  const doc = {
+    getElementById(id) {
+      if (id === 'yearIn') return input;
+      return field.children.flatMap(node => node.children || [])
+        .find(node => node.id === id) || null;
+    },
+    createElement: makeElement
+  };
+  const cfg = { year: 1500 };
+  let renders = 0;
+  assert.equal(content.installEraPreset(doc, cfg, () => { renders++; }), true);
+  assert.equal(content.installEraPreset(doc, cfg, () => { renders++; }), false);
+  const button = field.children[0].children[0];
+  button.listeners.click();
+  assert.equal(cfg.year, 1475);
+  assert.equal(renders, 1);
+  assert.equal(button.id, 'rogerEraPreset');
+});
+
+
+test('Roger-era content loader waits for game initialization and loads only once', async () => {
+  const scripts = [];
+  const listeners = {};
+  const host = {
+    document: {
+      readyState: 'loading',
+      head: {
+        appendChild(script) {
+          scripts.push(script.src);
+          host.OnePieceRogerEraContent = { register() {} };
+          queueMicrotask(() => script.onload());
+        }
+      },
+      createElement: () => ({}),
+      addEventListener(name, handler) { listeners[name] = handler; }
+    }
+  };
+  assert.equal(world.scheduleRogerEraContent(host), true);
+  assert.equal(scripts.length, 0);
+  listeners.DOMContentLoaded();
+  assert.equal(await host.__onePieceRogerEraPromise, true);
+  assert.equal(scripts.length, 1);
+  assert.equal(await world.loadRogerEraContent(host), true);
+  assert.equal(scripts.length, 1);
+});
+
+
+test('Marine UI shows wanted status, detects a patrol, and allows monthly evasion', () => {
+  const marine = require('../ai/marine-system.js');
+  const marineUI = require('../ai/marine-ui.js');
+  const state = {
+    world: 'op', alive: true, name: 'Test Pirate', year: 1522, mo: 3,
+    place: 'foosha_village', flags: { bounty: 1000000 }, marineForce: null
+  };
+  function element(tag) {
+    return {
+      tagName: tag.toUpperCase(), children: [], attributes: {}, listeners: {}, hidden: false,
+      appendChild(child) { this.children.push(child); return child; },
+      replaceChildren(...children) { this.children = children; },
+      setAttribute(key, value) { this.attributes[key] = String(value); },
+      getAttribute(key) { return this.attributes[key] || null; },
+      addEventListener(name, handler) { this.listeners[name] = handler; },
+      click() { if (!this.disabled && this.listeners.click) this.listeners.click({ target: this }); }
+    };
+  }
+  const body = element('body'), head = element('head');
+  const doc = { body, head, createElement: element, getElementById() { return null; } };
+  let saves = 0;
+  const host = { document: doc, OnePieceMarineSystem: marine, save() { saves++; } };
+  const originalRandom = Math.random;
+  globalThis.S = state;
+  try {
+    Math.random = () => 0;
+    assert.equal(marineUI.installMarineControls(host), true);
+    const wrap = body.children.find(node => node.id === 'extra-life-marine-tools');
+    assert.ok(wrap);
+    wrap.children[1].click();
+    const content = wrap.children[0].children[1];
+    const patrol = content.children.find(node => node.tagName === 'BUTTON' && node.textContent.includes('ตรวจสอบ'));
+    assert.ok(patrol);
+    patrol.click();
+    assert.equal(state.marineForce.wantedRecords.player.status, 'tracking');
+    assert.equal(state.marineForce.wantedRecords.player.lastKnownLocation, 'foosha_village');
+    assert.equal(saves, 1);
+    const evade = content.children.find(node => node.tagName === 'BUTTON' && node.textContent.includes('หลบซ่อน'));
+    assert.ok(evade);
+    evade.click();
+    assert.equal(state.marineForce.wantedRecords.player.status, 'wanted');
+    assert.equal(state.marineForce.wantedRecords.player.pursuit, null);
+    assert.equal(state.marineActionAt.period, '1522:3');
+    assert.deepEqual(state.marineActionAt.actions, { patrol: true, evade: true });
+    const patrolAfterEvade = content.children.find(node => node.tagName === 'BUTTON' && node.textContent.includes('ตรวจสอบการลาดตระเวนแล้ว'));
+    assert.ok(patrolAfterEvade.disabled, 'patrol cannot be repeated after evasion in the same month');
+    assert.equal(saves, 2);
+    assert.match(marineUI.getMarineControlsStyles(), /safe-area-inset/);
+  } finally {
+    Math.random = originalRandom;
+    delete globalThis.S;
+  }
+});
+
+test('Marine wanted registration does not reveal the player location before a confirmed sighting', () => {
+  const marine = require('../ai/marine-system.js');
+  const marineUI = require('../ai/marine-ui.js');
+  const state = { world: 'op', alive: true, name: 'Hidden Pirate', flags: { bounty: 1000000 }, place: 'secret-island' };
+  const force = marineUI.getMarineForce(state, marine, '2026-11-26T00:00:00.000Z');
+  assert.equal(force.wantedRecords.player.lastKnownLocation, null);
+  const sighting = marine.evaluateSighting(force, {
+    id: 'player', name: 'Hidden Pirate', bounty: 1000000, location: null
+  }, { location: 'secret-island', cover: 100, distance: 100, random: () => 0.99 });
+  assert.equal(sighting.detected, false);
+  assert.equal(sighting.record.lastKnownLocation, null);
+});
+
+
+test('Marine capture sends the player into the existing prison sentence flow', () => {
+  const marine = require('../ai/marine-system.js');
+  const marineUI = require('../ai/marine-ui.js');
+  const state = {
+    world: 'op', alive: true, name: 'Test Pirate', year: 1522, mo: 3,
+    place: 'foosha_village', st: { fit: 50 }, job: { id: 'pirate' }, rent: { home: 'room' }, heat: 60,
+    flags: { bounty: 20000000 }, marineForce: null
+  };
+  function element(tag) {
+    return {
+      tagName: tag.toUpperCase(), children: [], attributes: {}, listeners: {}, hidden: false,
+      appendChild(child) { this.children.push(child); return child; },
+      replaceChildren(...children) { this.children = children; },
+      setAttribute(key, value) { this.attributes[key] = String(value); },
+      getAttribute(key) { return this.attributes[key] || null; },
+      addEventListener(name, handler) { this.listeners[name] = handler; },
+      click() { if (!this.disabled && this.listeners.click) this.listeners.click({ target: this }); }
+    };
+  }
+  const body = element('body'), head = element('head');
+  const doc = { body, head, createElement: element, getElementById() { return null; } };
+  const messages = [];
+  let saves = 0;
+  const host = {
+    S: state, document: doc, OnePieceMarineSystem: marine,
+    save() { saves++; },
+    say(message) { messages.push(message); },
+    remember(title, detail) { messages.push(title + ':' + detail); }
+  };
+  const originalRandom = Math.random;
+  try {
+    Math.random = () => 0;
+    assert.equal(marineUI.installMarineControls(host), true);
+    const wrap = body.children.find(node => node.id === 'extra-life-marine-tools');
+    wrap.children[1].click();
+    const content = wrap.children[0].children[1];
+    content.children.find(node => node.tagName === 'BUTTON' && node.textContent.includes('ตรวจสอบ')).click();
+    const confront = content.children.find(node => node.tagName === 'BUTTON' && node.textContent.includes('เผชิญหน้า'));
+    assert.ok(confront);
+    confront.click();
+    assert.equal(state.marineForce.wantedRecords.player.status, 'captured');
+    assert.equal(state.flags.jailUntil, 1522 * 12 + 3 + 24);
+    assert.equal(state.job, null);
+    assert.equal(state.rent, null);
+    assert.equal(state.heat, 0);
+    assert.equal(saves, 2);
+    assert.ok(messages.some(message => message.includes('จับกุม')));
+    state.year = 1524;
+    state.mo = 4;
+    wrap.children[1].click();
+    wrap.children[1].click();
+    assert.equal(state.marineForce.wantedRecords.player.status, 'wanted');
+  } finally {
+    Math.random = originalRandom;
+  }
+});
+
+
+test('progression panel migrates legacy Devil Fruit flags into mastery state', () => {
+  const haki = require('../ai/haki-system.js');
+  const fruits = require('../ai/devil-fruit-system.js');
+  const progression = require('../ai/progression-system.js');
+  globalThis.OnePieceHakiSystem = haki;
+  globalThis.OnePieceDevilFruitSystem = fruits;
+  const state = {
+    world: 'op', alive: true, year: 1522, powers: ['df_para'],
+    flags: { df: 'ผลโอโตะโอโตะ' }, haki: {}
+  };
+  globalThis.S = state;
+  let saves = 0;
+  function element(tag) {
+    return {
+      tagName: tag.toUpperCase(), children: [], attributes: {}, listeners: {}, hidden: false,
+      appendChild(child) { this.children.push(child); return child; },
+      replaceChildren(...children) { this.children = children; },
+      setAttribute(key, value) { this.attributes[key] = String(value); },
+      getAttribute(key) { return this.attributes[key] || null; },
+      addEventListener(name, handler) { this.listeners[name] = handler; },
+      click() { if (!this.disabled && this.listeners.click) this.listeners.click({ target: this }); }
+    };
+  }
+  const body = element('body'), head = element('head');
+  const doc = { body, head, readyState: 'complete', createElement: element, getElementById() { return null; } };
+  const host = { document: doc, OnePieceProgressionSystem: progression, save() { saves++; } };
+  try {
+    assert.equal(world.installProgressionControls(host), true);
+    const wrap = body.children.find(node => node.id === 'extra-life-progression-tools');
+    wrap.children[1].click();
+    assert.equal(state.devilFruit.name, 'ผลโอโตะโอโตะ');
+    assert.equal(state.devilFruit.type, 'paramecia');
+    assert.match(state.devilFruit.id, /^op_df_paramecia_/);
+    assert.equal(state.devilFruit.mastery, 0);
+    assert.equal(saves, 1);
+    const fruitTrain = wrap.children[0].children[1].children.find(node =>
+      node.tagName === 'BUTTON' && node.textContent.includes('ฝึกผลปีศาจ'));
+    assert.ok(fruitTrain);
+    fruitTrain.click();
+    assert.equal(state.devilFruit.mastery, 5);
+    assert.equal(saves, 2);
+  } finally {
+    delete globalThis.S;
+    delete globalThis.OnePieceHakiSystem;
+    delete globalThis.OnePieceDevilFruitSystem;
+  }
 });

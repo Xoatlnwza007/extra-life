@@ -543,7 +543,8 @@
     { src: './ai/devil-fruit-system.js', globalName: 'OnePieceDevilFruitSystem' },
     { src: './ai/haki-system.js', globalName: 'OnePieceHakiSystem' },
     { src: './ai/progression-system.js', globalName: 'OnePieceProgressionSystem' },
-    { src: './ai/marine-system.js', globalName: 'OnePieceMarineSystem' }
+    { src: './ai/marine-system.js', globalName: 'OnePieceMarineSystem' },
+    { src: './ai/marine-ui.js', globalName: 'OnePieceMarineUI' }
   ]);
 
   function loadCompanionModules(host = root) {
@@ -1051,6 +1052,295 @@
     return install();
   }
 
+
+
+  function loadRogerEraContent(host = root) {
+    const doc = host && host.document;
+    if (!doc || !doc.head || !doc.createElement) return Promise.resolve(false);
+    if (host.OnePieceRogerEraContent) return Promise.resolve(true);
+    if (host.__onePieceRogerEraPromise) return host.__onePieceRogerEraPromise;
+    const promise = new Promise(resolve => {
+      const script = doc.createElement('script');
+      script.src = './ai/roger-era-content.js';
+      script.async = false;
+      script.onload = () => resolve(!!host.OnePieceRogerEraContent);
+      script.onerror = () => {
+        host.__onePieceContentErrors = (host.__onePieceContentErrors || []).concat(script.src);
+        resolve(false);
+      };
+      doc.head.appendChild(script);
+    });
+    host.__onePieceRogerEraPromise = promise;
+    return promise;
+  }
+
+  function scheduleRogerEraContent(host = root) {
+    if (!host || !host.document) return false;
+    const doc = host.document;
+    if (doc.readyState === 'loading') {
+      if (!host.__onePieceRogerEraScheduled) {
+        host.__onePieceRogerEraScheduled = true;
+        doc.addEventListener('DOMContentLoaded', () => { loadRogerEraContent(host); }, { once: true });
+      }
+      return true;
+    }
+    loadRogerEraContent(host);
+    return true;
+  }
+
+  // Player-facing Haki and Devil Fruit mastery controls.
+  // Training is limited to once per in-game year per discipline to prevent UI spam.
+  function getProgressionControlsStyles() {
+    return `
+      #extra-life-progression-tools{position:fixed;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(82px + env(safe-area-inset-bottom,0px));z-index:2147482998;font:14px/1.45 system-ui,sans-serif;color:#18211c;max-width:calc(100vw - 24px)}
+      #extra-life-progression-tools button{font:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;border:1px solid #aab5aa;border-radius:10px;min-width:48px;min-height:48px;padding:10px 14px;background:#f5f7f2;color:#18211c}
+      #extra-life-progression-tools .el-progression-trigger{background:#263e62;color:#fff;border-color:#263e62;font-weight:700}
+      #extra-life-progression-tools .el-progression-panel{display:none;width:min(360px,calc(100vw - 24px));max-height:calc(100dvh - 48px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));overflow:auto;overscroll-behavior:contain;margin-bottom:8px;padding:12px;background:#f5f7f2;border:1px solid #aab5aa;border-radius:14px;box-shadow:0 5px 24px #0003}
+      #extra-life-progression-tools[data-open="true"] .el-progression-panel{display:grid;gap:9px}
+      #extra-life-progression-tools .el-progression-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid #d8ded6}
+      #extra-life-progression-tools .el-progression-row span{min-width:0;overflow-wrap:anywhere}
+      #extra-life-progression-tools .el-progression-row button{flex:0 0 auto}
+      #extra-life-progression-tools .el-progression-muted{font-size:12px;color:#536257;margin:0}
+      #extra-life-progression-tools .el-progression-status{min-height:1.4em;font-size:12px;color:#405348;overflow-wrap:anywhere}
+      @media(max-width:480px){#extra-life-progression-tools{left:max(8px,env(safe-area-inset-left,0px));bottom:calc(78px + env(safe-area-inset-bottom,0px))}#extra-life-progression-tools .el-progression-panel{width:min(340px,calc(100vw - 16px))}}
+      @media(max-height:520px) and (orientation:landscape){#extra-life-progression-tools .el-progression-panel{max-height:calc(100dvh - 24px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}}
+    `;
+  }
+
+
+  function syncLegacyDevilFruitProgression(state, api) {
+    if (!state || state.devilFruit || !api || typeof api.consumeFruit !== 'function') return false;
+    state.flags = state.flags || {};
+    let name = state.flags.df || null;
+    if (!name && typeof dfOf === 'function') {
+      try { dfOf(state); name = state.flags.df || null; } catch (error) {}
+    }
+    if (!name) return false;
+
+    const typeFlags = ['df_para', 'df_zoan', 'df_logia'];
+    let typeFlag = typeFlags.find(flag => Array.isArray(state.powers) && state.powers.includes(flag));
+    if (!typeFlag && typeof DFRUIT !== 'undefined' && Array.isArray(DFRUIT)) {
+      const legacyEntry = DFRUIT.find(entry => entry && entry[0] === name);
+      typeFlag = legacyEntry && legacyEntry[2];
+    }
+    const typeByFlag = { df_para: 'paramecia', df_zoan: 'zoan', df_logia: 'logia' };
+    const type = typeByFlag[typeFlag];
+    if (!type) return false;
+
+    let hash = 2166136261;
+    for (let i = 0; i < String(name).length; i++) {
+      hash ^= String(name).charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    const fruit = {
+      id: 'op_df_' + type + '_' + (hash >>> 0).toString(36),
+      name: String(name),
+      type,
+      rarity: 'legacy'
+    };
+    const character = { ...state, id: String(state.id || 'player') };
+    const result = api.consumeFruit(character, fruit, { at: state.flags.dfConsumedAt });
+    if (!result.consumed) return false;
+    state.devilFruit = result.character.devilFruit;
+    return true;
+  }
+
+  function installProgressionControls(host = root) {
+    const doc = host && host.document;
+    const api = host && host.OnePieceProgressionSystem;
+    if (!doc || !doc.body || !doc.createElement || !api) return false;
+    if (doc.getElementById('extra-life-progression-tools')) return true;
+
+    const style = doc.createElement('style');
+    style.textContent = getProgressionControlsStyles();
+    if (doc.head) doc.head.appendChild(style);
+    const wrap = doc.createElement('div');
+    wrap.id = 'extra-life-progression-tools';
+    wrap.hidden = true;
+    const panel = doc.createElement('section');
+    panel.className = 'el-progression-panel';
+    panel.hidden = true;
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-label', 'พัฒนาพลังฮาคิและผลปีศาจ');
+    const heading = doc.createElement('strong');
+    heading.textContent = 'พัฒนาพลัง';
+    const close = doc.createElement('button');
+    close.type = 'button';
+    close.textContent = 'ปิด';
+    const body = doc.createElement('div');
+    const status = doc.createElement('p');
+    status.className = 'el-progression-status';
+    status.setAttribute('role', 'status');
+    status.setAttribute('aria-live', 'polite');
+    panel.appendChild(heading);
+    panel.appendChild(body);
+    panel.appendChild(status);
+    panel.appendChild(close);
+    const trigger = doc.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'el-progression-trigger';
+    trigger.textContent = 'พลัง';
+    trigger.setAttribute('aria-expanded', 'false');
+    wrap.appendChild(panel);
+    wrap.appendChild(trigger);
+    doc.body.appendChild(wrap);
+
+    const make = (tag, text, className) => {
+      const node = doc.createElement(tag);
+      if (text !== undefined) node.textContent = text;
+      if (className) node.className = className;
+      return node;
+    };
+    const button = (label, handler) => {
+      const node = make('button', label);
+      node.type = 'button';
+      node.addEventListener('click', handler);
+      return node;
+    };
+    const setStatus = message => { status.textContent = message; };
+    let renderedYear = null;
+    const persist = () => {
+      try {
+        if (typeof save === 'function') save();
+        else if (host && typeof host.save === 'function') host.save();
+      } catch (error) { setStatus('บันทึกไม่สำเร็จ: ' + error.message); }
+    };
+    const currentYear = state => Number.isFinite(Number(state.year)) ? Number(state.year) : null;
+    const trainingUsed = (state, key) => {
+      const year = currentYear(state);
+      return year !== null && state.progressionTraining &&
+        state.progressionTraining[key] === year;
+    };
+    const markTraining = (state, key) => {
+      const year = currentYear(state);
+      if (year === null) return;
+      state.progressionTraining = { ...(state.progressionTraining || {}), [key]: year };
+    };
+
+    function render() {
+      const state = currentOnePieceState(host);
+      if (!state || !state.alive) return;
+      renderedYear = currentYear(state);
+      body.replaceChildren();
+      let changed = false;
+      const synced = api.syncCharacter(state);
+      if (synced.ok && synced.changed) {
+        state.haki = synced.character.haki;
+        changed = true;
+      }
+      if (syncLegacyDevilFruitProgression(state, api)) changed = true;
+      if (changed) persist();
+      const summary = api.getSummary(state);
+      if (!summary.ready) {
+        body.appendChild(make('p', 'ระบบพัฒนาพลังยังไม่พร้อม', 'el-progression-muted'));
+        return;
+      }
+      body.appendChild(make('p', 'ฝึกได้อย่างละ 1 ครั้งต่อปีเกม · เพิ่มความชำนาญครั้งละ 5 แต้ม', 'el-progression-muted'));
+      body.appendChild(make('h4', 'ฮาคิ'));
+      const labels = {
+        armament: 'ฮาคิเกราะ',
+        observation: 'ฮาคิสังเกต',
+        conquerors: 'ฮาคิราชัน'
+      };
+      for (const type of ['armament', 'observation', 'conquerors']) {
+        const styleState = summary.haki[type];
+        const row = make('div', undefined, 'el-progression-row');
+        const detail = make('span', labels[type] + ' · ' +
+          (styleState.unlocked ? styleState.mastery + '/100 · ' + styleState.rank : 'ยังไม่ปลุกพลัง'));
+        row.appendChild(detail);
+        if (styleState.unlocked) {
+          const used = trainingUsed(state, 'haki:' + type);
+          const train = button(used ? 'ฝึกแล้ว' : '+5 ฝึกฝน', () => {
+            if (trainingUsed(state, 'haki:' + type)) return setStatus('ฮาคิชนิดนี้ฝึกได้อีกครั้งในปีเกมถัดไป');
+            const result = api.trainHaki(state, type, 5);
+            if (!result.trained) return setStatus('ฝึกไม่สำเร็จ: ' + result.reason);
+            state.haki = result.character.haki;
+            markTraining(state, 'haki:' + type);
+            persist();
+            setStatus(labels[type] + ' เพิ่มขึ้น ' + result.gained + ' แต้ม');
+            render();
+          });
+          train.disabled = used || styleState.mastery >= 100;
+          row.appendChild(train);
+        }
+        body.appendChild(row);
+      }
+
+      body.appendChild(make('h4', 'ผลปีศาจ'));
+      if (!summary.devilFruit) {
+        body.appendChild(make('p', 'ยังไม่มีข้อมูลผลปีศาจที่กินแล้ว', 'el-progression-muted'));
+      } else {
+        const fruit = summary.devilFruit;
+        body.appendChild(make('p', fruit.name + ' · ' + fruit.type + ' · ความชำนาญ ' + fruit.mastery + '/100' +
+          (fruit.awakened ? ' · ปลุกพลังแล้ว' : ''), 'el-progression-muted'));
+        if (!fruit.awakened) {
+          const used = trainingUsed(state, 'fruit');
+          const train = button(used ? 'ฝึกผลปีศาจแล้ว' : '+5 ฝึกผลปีศาจ', () => {
+            if (trainingUsed(state, 'fruit')) return setStatus('ฝึกผลปีศาจได้อีกครั้งในปีเกมถัดไป');
+            const result = api.trainFruit(state, 5);
+            if (!result.trained) return setStatus('ฝึกไม่สำเร็จ: ' + result.reason);
+            state.devilFruit = result.character.devilFruit;
+            markTraining(state, 'fruit');
+            persist();
+            setStatus('ความชำนาญผลปีศาจเพิ่มขึ้น ' + result.gained + ' แต้ม');
+            render();
+          });
+          train.disabled = used || fruit.mastery >= 100;
+          body.appendChild(train);
+          const awaken = button('ลองปลุกพลัง (ต้องมี 80 แต้ม)', () => {
+            const result = api.awakenFruit(state, { requiredMastery: 80 });
+            if (!result.awakened) return setStatus(result.reason === 'insufficient-mastery'
+              ? 'ความชำนาญยังไม่ถึง ' + result.required + ' แต้ม' : 'ปลุกพลังไม่สำเร็จ: ' + result.reason);
+            state.devilFruit = result.character.devilFruit;
+            persist();
+            setStatus('ปลุกพลังผลปีศาจสำเร็จ');
+            render();
+          });
+          awaken.disabled = fruit.mastery < 80;
+          body.appendChild(awaken);
+        }
+      }
+    }
+
+    trigger.addEventListener('click', () => {
+      const open = panel.hidden;
+      panel.hidden = !open;
+      wrap.setAttribute('data-open', String(open));
+      trigger.setAttribute('aria-expanded', String(open));
+      if (open) render();
+    });
+    close.addEventListener('click', () => {
+      panel.hidden = true;
+      wrap.setAttribute('data-open', 'false');
+      trigger.setAttribute('aria-expanded', 'false');
+    });
+    const syncVisibility = () => {
+      const state = currentOnePieceState(host);
+      const visible = !!(state && state.alive);
+      wrap.hidden = !visible;
+      if (!visible) {
+        panel.hidden = true;
+        wrap.setAttribute('data-open', 'false');
+        trigger.setAttribute('aria-expanded', 'false');
+      } else if (!panel.hidden && currentYear(state) !== renderedYear) render();
+    };
+    syncVisibility();
+    if (typeof host.setInterval === 'function') {
+      host.__onePieceProgressionUiTimer = host.setInterval(syncVisibility, 1000);
+    }
+    return true;
+  }
+
+  function scheduleProgressionControls(host = root) {
+    if (!host || !host.document) return false;
+    const install = () => installProgressionControls(host);
+    if (host.document.readyState === 'loading') {
+      host.document.addEventListener('DOMContentLoaded', install, { once: true });
+      return true;
+    }
+    return install();
+  }
+
   function getMobileTouchStyles() {
     return `
       @media(any-pointer:coarse){
@@ -1182,12 +1472,12 @@
     return install();
   }
 
-  const api = Object.freeze({ simulate, simulatePopulation, saveSystem, installSaveControls, getSaveControlsStyles, getMobileTouchStyles, installMobileTouchStyles, loadCompanionModules, companionModules: COMPANION_MODULES, crewNpcId, getPlayerCrew, createPlayerCrew, recruitNpcToPlayerCrew, removeNpcFromPlayerCrew, syncPlayerCrew, recordCrewNpcInteraction, buyBoatForPlayerCrew, canManagePirateCrew, getCrewControlsStyles, installCrewControls, scheduleCrewControls });
+  const api = Object.freeze({ simulate, simulatePopulation, saveSystem, installProgressionControls, scheduleProgressionControls, getProgressionControlsStyles, loadRogerEraContent, scheduleRogerEraContent, installSaveControls, getSaveControlsStyles, getMobileTouchStyles, installMobileTouchStyles, loadCompanionModules, companionModules: COMPANION_MODULES, crewNpcId, getPlayerCrew, createPlayerCrew, recruitNpcToPlayerCrew, removeNpcFromPlayerCrew, syncPlayerCrew, recordCrewNpcInteraction, buyBoatForPlayerCrew, canManagePirateCrew, getCrewControlsStyles, installCrewControls, scheduleCrewControls });
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.OnePieceWorldSimulation = api;
   root.OnePieceSaveSystem = saveSystem;
   installBrowserSaveProtection(root);
   installMobileTouchStyles(root);
   scheduleSaveControls(root);
-  loadCompanionModules(root).then(loaded => { if (loaded) scheduleCrewControls(root); });
+  loadCompanionModules(root).then(loaded => { if (loaded) { scheduleCrewControls(root); scheduleProgressionControls(root); if (root.OnePieceMarineUI) root.OnePieceMarineUI.scheduleMarineControls(root); } scheduleRogerEraContent(root); });
 })(typeof globalThis !== 'undefined' ? globalThis : this);

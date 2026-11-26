@@ -138,7 +138,7 @@ relations (allied, friendly, neutral, hostile, or at-war), and resolving a
 crew encounter as a victory, defeat, or stalemate. An encounter updates both
 crews' relation scores and reputation; a configured victory reward can also
 increase the winning crew's bounty. The default capacity is 10; pass a different capacity when
-joining if the game mode uses another limit. The main One Piece game now exposes a floating **ลูกเรือ** panel for living pirate-captain characters. Players can create a crew, recruit living NPCs, edit each recruit's role, buy the in-game small sailboat, name that ship, and dismiss non-captain members. The panel shows crew history, bounty and reputation. Recruiting or dismissing an NPC also records a memory and relationship change in that NPC's AI profile. The player's bounty and fame/dark balance synchronize to crew bounty and reputation. The crew roster and `playerCrewId` are stored directly on the game state (`S.crews` and `S.playerCrewId`), so the existing save/load flow persists them. Crew diplomacy and encounter resolution remain helper APIs; they are not yet connected to the game's story events or combat outcomes.
+joining if the game mode uses another limit. The main One Piece game now exposes a floating **ลูกเรือ** panel for living pirate-captain characters. Players can create a crew, recruit living NPCs, edit each recruit's role, buy the in-game small sailboat, name that ship, and dismiss non-captain members. The panel shows crew history, bounty and reputation. Recruiting or dismissing an NPC also records a memory and relationship change in that NPC's AI profile. The player's bounty and fame/dark balance synchronize to crew bounty and reputation. The crew roster and `playerCrewId` are stored directly on the game state (`S.crews` and `S.playerCrewId`), so the existing save/load flow persists them. Crew-to-crew diplomacy and encounter resolution remain helper APIs; they are not yet connected to story events or a crew-versus-crew battle flow. Active player-crew members do now provide bounded support in the player's normal combat damage calculations.
 
 ## Automated tests
 
@@ -158,7 +158,7 @@ Zoan and Logia fruit records, consuming a fruit (one per character and one
 consumer per fruit record), training mastery from 0–100, and awakening at a
 configurable mastery threshold (80 by default). `getSeaEffect` reports the
 baseline swimming/weakness effect in seawater and a stronger penalty for Sea
-Prism Stone exposure. The main game already has its own Devil Fruit discovery event and power flags. This helper remains a separate mastery/awakening data model; it is loaded by the browser bootstrap but is not yet synchronized with the game's existing `S.flags.df` / `S.powers` values or combat outcomes.
+Prism Stone exposure. The main game already has its own Devil Fruit discovery event and power flags. The player-facing progression panel migrates existing `S.flags.df` and `S.powers` into `S.devilFruit` for legacy saves, then persists mastery and awakening through the existing save flow. `combat-adapter.js` consumes those progression values during One Piece battles.
 
 Load this module after the other AI helpers:
 
@@ -177,9 +177,12 @@ reduces incoming damage, and Conqueror's Haki improves outgoing damage. The
 adapter additionally accepts optional `state.haki` and `state.devilFruit`
 progression records: unlocked Haki mastery scales its relevant combat effects,
 while Devil Fruit mastery and awakening add bounded offensive/durability
-scaling. Existing saves without these records retain their original unlock-only
-behavior. The game does not yet expose training controls or persist these
-optional progression records.
+scaling. The player-facing progression panel creates and persists these records,
+including migration from legacy Devil Fruit flags. An active player crew also
+provides bounded combat support: up to four living non-player members add 1%
+outgoing damage and 0.5% incoming-damage reduction each. The adapter verifies
+that the selected active crew contains the player, ignores duplicate roster IDs
+and known dead NPCs, and applies no crew bonus outside One Piece.
 
 The adapter is loaded before the main inline game script and is only applied
 when the active world is One Piece. Other anime worlds and characters without
@@ -192,7 +195,7 @@ cover the modifier combinations, world isolation and invalid damage inputs.
 from 0–100. Armament and Observation are available by default; Conqueror's
 Haki must be marked as innate when creating the character's Haki state.
 Training is bounded, and `getCombatProfile` converts mastery into simple
-defense, awareness and pressure bonuses plus rank labels. The main game already contains Haki-related power flags. This helper is loaded by the browser bootstrap, but mastery values are not yet synchronized with those existing flags or applied to the main game's combat calculations.
+defense, awareness and pressure bonuses plus rank labels. The main game already contains Haki-related power flags. The player-facing progression panel synchronizes unlocked Haki styles from those flags and persists mastery. `combat-adapter.js` consumes the resulting mastery values during One Piece battles.
 
 ```js
 const haki = OnePieceHakiSystem.createHakiState({ hasConquerorsHaki: true });
@@ -261,8 +264,7 @@ future-version or tampered files are rejected without replacing local progress.
 For browser UI, `OnePieceSaveSystem.downloadExport(manager)` downloads the JSON
 file through a Blob URL, and `OnePieceSaveSystem.importFile(file, manager)`
 reads a user-selected File and passes its contents through the same validator.
-These are APIs only; the existing game's visible menu/buttons have not yet been
-modified to expose export/import controls.
+The in-game **จัดการเซฟ** panel calls these APIs for visible JSON export and file import controls.
 
 ### In-game save controls
 
@@ -280,7 +282,7 @@ the full reload flow still need manual verification in Chrome Android/Desktop.
 
 ## Mobile and tablet touch support
 
-The main game already has responsive layouts for narrow screens. The browser bootstrap adds touch-specific rules when the device reports a coarse pointer: primary actions and segmented controls receive larger hit areas, the bottom action bar can scroll on short phone screens, and dialogs respect display safe areas. The floating save and crew panels also use touch-sized controls and safe-area spacing. Automated tests verify these layout rules; real-device testing on Android and iPad/iPhone browsers is still required.
+The main game already has responsive layouts for narrow screens. The browser bootstrap adds touch-specific rules when the device reports a coarse pointer: primary actions and segmented controls receive larger hit areas, the bottom action bar can scroll on short phone screens, and dialogs respect display safe areas. The floating save, crew, progression, and Marine panels use touch-sized controls and safe-area spacing. The progression panel is anchored above the crew panel on the lower-left, while the Marine panel uses the lower-right, preventing the primary triggers from overlapping on narrow phone screens. Automated tests verify the anchors and layout rules; real-device testing on Android and iPad/iPhone browsers is still required.
 
 
 ## Marine intelligence and pirate pursuit
@@ -291,12 +293,11 @@ using intelligence, alertness, notoriety, location match, distance and concealme
 then advance an investigation through tracking to active pursuit. Encounters
 resolve to capture or escape using Marine strength, target strength, pursuit
 pressure and support. Detection and encounter helpers accept an injected random
-function for deterministic tests. The helpers return updated state objects;
-the game layer remains responsible for saving state and presenting UI.
-
-The module is loaded by the browser companion bootstrap as
-`OnePieceMarineSystem`. It is currently an engine/API layer and is not yet
-wired to the player's bounty UI or a visible Marine encounter panel.
+function for deterministic tests. The helpers return updated state objects; the game layer remains responsible
+for saving state and presenting UI. The browser companion bootstrap loads the
+rules as `OnePieceMarineSystem` and the player-facing adapter as
+`OnePieceMarineUI`. The UI exposes wanted status, patrol checks, evasion, and
+confrontation without duplicating the Marine rules engine.
 
 
 ### Mastery-aware combat adapter
@@ -306,8 +307,7 @@ contain `S.powers`. If the game state also contains a Haki record from
 `OnePieceHakiSystem` at `state.haki`, unlocked mastery adds gradual outgoing
 or incoming damage modifiers. If it contains a Devil Fruit progression record
 at `state.devilFruit`, fruit type supplies the baseline family modifier and
-mastery/awakening add bounded scaling. These optional fields are not currently
-created or persisted by the main game UI; callers must initialize and save them.
+mastery/awakening add bounded scaling. The progression panel creates and persists these fields, including the legacy Devil Fruit migration; the combat adapter consumes them through the existing battle damage hook.
 
 
 ### Sync Haki unlocks with the legacy game flags
@@ -330,3 +330,20 @@ consumption and awakening, exposes sea/Seastone weakness, and builds a compact
 progress summary for UI use. It is loaded as `OnePieceProgressionSystem`.
 The coordinator does not itself award training points, spend currency, or save
 the character; game rules and persistence remain owned by the main game layer.
+
+
+## Player-facing Haki and Devil Fruit progression
+
+The One Piece world simulator now installs a compact **พลัง** panel for the living player character. It synchronizes Haki unlocks from the existing `S.powers` flags, displays each unlocked Haki mastery/rank, and allows one +5 mastery training action per Haki discipline per in-game year. For existing saves that only have the legacy `S.flags.df` fruit name and `df_para` / `df_zoan` / `df_logia` power flag, the panel migrates those values into `S.devilFruit` using a stable fruit ID. The panel then allows one +5 fruit-mastery training action per year and enables awakening at 80 mastery. Training state is stored on `S.progressionTraining`; mastery remains on `S.haki` and `S.devilFruit`, so the existing full-state save flow persists it. No fruit is granted by this panel, and it does not unlock Haki that the character has not already obtained.
+
+The panel is mounted by `OnePieceWorldSimulation.scheduleProgressionControls()` after the companion systems finish loading. Its controls use 48px touch targets, safe-area insets, and viewport-bounded scrolling for phone and tablet layouts. Unit coverage is in `tests/ai.test.js`; GitHub Actions run 45854778043 completed successfully with 67 tests passed and 0 failed, including legacy Devil Fruit migration, Haki/fruit training, Marine UI, and Roger-era integration.
+
+
+## Roger-era content integration
+
+The narrative-owned `ai/roger-era-content.js` pack registers eight replay-safe encounter events into the existing One Piece `W.meets` collection and adds an optional 1475 birth-year preset. `OnePieceWorldSimulation.scheduleRogerEraContent()` loads it only after `DOMContentLoaded`, so the main game's lexical world/cast/configuration helpers are initialized before registration. The loader is idempotent and records load failures in `__onePieceContentErrors`. The event module remains content-owned; runtime loading and integration remain engineering-owned.
+
+
+## Marine wanted and pursuit panel
+
+`marine-ui.js` mounts a player-facing **กองทัพเรือ** panel when an alive One Piece character has a positive bounty. It registers/updates the player's wanted record in `S.marineForce`, lets the player check local patrol activity, and, when a sighting starts a pursuit, attempt to hide and cut the trail. Patrol checks and evasion are each limited to one action of that type per in-game month using `S.marineActionAt`; wanted/pursuit state is persisted in the normal `S` save. Losing a pursuit does not erase the bounty. The panel is loaded after `marine-system.js` and uses touch-sized controls and safe-area-aware mobile/tablet layout. When a pursuit is active, the player can also confront the patrol. A capture enters the existing game's prison flow by setting `S.flags.jailUntil`, clearing the current job/rent, and resetting heat; the existing `jailed()` / `jailMonth()` logic handles confinement, sentence expiry, and prison escape. On sentence expiry, the Marine wanted record becomes active again while the bounty remains. Location-specific Marine force rosters and trial mechanics are not implemented yet.
