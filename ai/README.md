@@ -89,6 +89,26 @@ The returned `ranking` includes each candidate's score and scoring reasons, whic
 
 The annual world simulator maintains role-based NPC profiles, seeds long-term goals, chooses autonomous activities, records memories, and updates needs. Profiles are stored in `S.npcBrains` and should be serialized by the game's existing save/load flow. This is an initial annual simulation layer, not yet a full real-time NPC economy or a complete crew/relationship system.
 
+### Simulate every living NPC
+
+The original `simulate(worldState, npcList, context)` function remains a
+single-NPC annual step for compatibility with the existing game loop. For a
+full-population pass, call the optional `simulatePopulation` helper:
+
+```js
+const result = OnePieceWorldSimulation.simulatePopulation(S, npcList, {
+  seaDanger: false
+});
+S.npcBrains = result.profiles;
+// Use result.stories for a world-news or annual-summary panel.
+```
+
+It processes each living NPC once, carries updated profiles forward between
+steps, skips dead NPCs, and returns per-NPC actions plus story summaries.
+This helper is additive; it is not automatically wired into the game's annual
+loop yet. Integrate it only after checking the existing game-loop performance
+and save flow.
+
 ## Automated tests
 
 Run the AI unit tests with Node.js 18 or later:
