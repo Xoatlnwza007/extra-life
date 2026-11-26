@@ -207,7 +207,7 @@
             wantedRecords: { ...force.wantedRecords, player: next },
             updatedAt: now
           };
-          state.marineActionAt = { period: currentPeriod(state), action: 'confront' };
+          markAction(state, 'confront');
           if (result.captured) {
             const years = bounty >= 100000000 ? 3 : bounty >= 10000000 ? 2 : 1;
             state.flags.jailUntil = gameMonth + years * 12;
@@ -256,6 +256,7 @@
         body.appendChild(evade);
       }
       body.appendChild(make('p', 'การกระทำแต่ละแบบทำได้หนึ่งครั้งต่อเดือนเกม · การหลบหนีไม่ลบค่าหัว', 'el-marine-muted'));
+      renderedKey = viewKey(state);
     }
 
     trigger.addEventListener('click', () => {
