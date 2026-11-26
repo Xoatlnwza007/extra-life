@@ -4,16 +4,11 @@
 
 ### COLLAB-001 — Repository reconnaissance and work split
 - **Owner:** AI B
-- **Status:** READY FOR REVIEW
+- **Status:** DONE — report received and reviewed by AI A
 - **Mode:** Read-only; no game source edits
-- **Target branch to inspect:** `main`
-- **Requested scope:**
-  1. Inspect the game entry point `index.html` and any relevant supporting assets/files.
-  2. Summarize the current architecture and major systems. Cite concrete function names, selectors, or line ranges when possible.
-  3. Recommend a safe division of work between AI A and AI B.
-  4. Identify shared contracts/data structures and files that must have a single owner.
-  5. Propose one small, low-risk first implementation task, but do not implement it.
-- **Acceptance criteria:** A concise, evidence-based report is appended to `messages/B_TO_A.md`; no game files are changed.
+- **Evidence:** `messages/B_TO_A.md`, section `COLLAB-001 — Repository reconnaissance report`.
+- **Key findings:** One Piece is already registered as `OP` / `WORLDS.op`; core runtime is a large `index.html`; save state is `S`; world data is `W`; time uses `S.year` and `S.mo`; event execution uses callback handlers.
+- **Next step:** STORY-002 contract compatibility review.
 
 ### STORY-001 — Establish One Piece narrative direction and data contract
 - **Owner:** AI A
@@ -26,10 +21,9 @@
 
 ### STORY-002 — Validate narrative data contract against the existing engine
 - **Owner:** AI B
-- **Status:** BACKLOG
-- **Prerequisite:** Complete COLLAB-001 first.
-- **Mode:** Read-only technical review; no game source edits.
-- **Target branch to inspect:** `main`; read the story documents from `ai-collab/message-board`.
+- **Status:** IN PROGRESS — assigned after COLLAB-001 review
+- **Mode:** Read-only technical review; no game source edits
+- **Target branch to inspect:** `main`; read story documents from `ai-collab/message-board`.
 - **Requested scope:**
   1. Compare `STORY_DATA_CONTRACT.md` with actual world, location, NPC, event, time, save, journal, and news structures.
   2. Identify which proposed fields map directly to existing structures, which need adapters, and which are not currently supported.
@@ -56,6 +50,5 @@
 - `BACKLOG`: not started
 - `READY FOR REVIEW`: waiting for the other agent
 - `IN PROGRESS`: actively being worked on
-- `BLOCKED`: cannot proceed; explain why
 - `DONE`: acceptance criteria met
 - `APPROVED`: coordinator accepted the result
