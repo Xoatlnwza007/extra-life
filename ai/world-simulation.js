@@ -821,6 +821,7 @@
       body.replaceChildren();
       const api = host.OnePieceCrewSystem;
       const synced = syncPlayerCrew(state, api);
+      if (synced.changed) persist();
       const crew = synced.crew || getPlayerCrew(state, api);
       if (!crew) {
         body.appendChild(make('p', 'สร้างกลุ่มโจรสลัดของคุณ แล้วชวน NPC ที่ยังมีชีวิตเข้าร่วม'));
@@ -1012,6 +1013,12 @@
       if (!visible) {
         panel.hidden = true;
         trigger.setAttribute('aria-expanded', 'false');
+        return;
+      }
+      const synced = syncPlayerCrew(state, host.OnePieceCrewSystem);
+      if (synced.changed) {
+        persist();
+        if (!panel.hidden) renderCrewPanel();
       }
     };
     syncVisibility();
