@@ -35,7 +35,7 @@
       bounty: Math.max(bounty, finite(previous.bounty)),
       notoriety: clamp(finite(target.notoriety, finite(previous.notoriety)), 0, 100),
       lastKnownLocation: target.location || previous.lastKnownLocation || null,
-      status: previous.status === 'captured' ? 'captured' : 'wanted',
+      status: ['captured', 'tracking'].includes(previous.status) ? previous.status : 'wanted',
       sightings: Math.max(0, Math.floor(finite(previous.sightings))),
       confidence: clamp(finite(previous.confidence), 0, 100),
       lastSeenAt: previous.lastSeenAt || null,
