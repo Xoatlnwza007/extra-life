@@ -387,3 +387,61 @@ test('NPC population simulation is reproducible across long runs with a seeded r
     );
   }
 });
+
+
+test('NPC profiles and monthly calendar survive the game JSON save/load round trip', () => {
+  const npcs = [
+    { n: 'Navigator', r: 'kid', alive: true },
+    { n: 'Doctor', r: 'kind', alive: true },
+    { n: 'Merchant', r: 'shop', alive: true }
+  ];
+  const randomFor = seed => {
+    let value = seed >>> 0;
+    return () => {
+      value = (value * 1664525 + 1013904223) >>> 0;
+      return value / 0x100000000;
+    };
+  };
+
+  const original = { world: 'op', year: 1522, npcBrains: {} };
+  const firstYear = world.simulate(original, npcs, { random: randomFor(77) });
+  original.npcBrains = firstYear.profiles;
+
+  const serialized = JSON.stringify(original);
+  const loaded = JSON.parse(serialized);
+  assert.deepEqual(loaded.npcSimulationCalendar, {
+    year: 1523, month: 12, totalMonths: 12
+  });
+  assert.deepEqual(loaded.npcBrains, firstYear.profiles);
+
+  const memoryCounts = Object.fromEntries(
+    npcs.map(npc => [npc.n, loaded.npcBrains[npc.n].memories.length])
+  );
+  const secondYear = world.simulate(loaded, npcs, { random: randomFor(78) });
+  assert.equal(secondYear.simulationCalendar.totalMonths, 24);
+  assert.equal(secondYear.simulationCalendar.year, 1524);
+  for (const npc of npcs) {
+    assert.ok(secondYear.profiles[npc.n].memories.length >= memoryCounts[npc.n]);
+  }
+});
+
+test('legacy saves without NPC simulation metadata initialize safely', () => {
+  const npcs = [
+    { n: 'Old Sailor', r: 'grump', alive: true },
+    { n: 'Old Friend', r: 'gossip', alive: true }
+  ];
+  const legacySave = JSON.parse(JSON.stringify({
+    world: 'op',
+    year: 1500,
+    age: 24,
+    alive: true,
+    npcBrains: {}
+  }));
+
+  assert.equal(legacySave.npcSimulationCalendar, undefined);
+  const result = world.simulate(legacySave, npcs, {});
+  assert.equal(result.simulatedMonths, 12);
+  assert.equal(result.simulationCalendar.year, 1501);
+  assert.equal(result.simulationCalendar.totalMonths, 12);
+  assert.deepEqual(legacySave.npcSimulationCalendar, result.simulationCalendar);
+});
