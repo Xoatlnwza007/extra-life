@@ -1517,7 +1517,7 @@ test('Marine UI shows wanted status, detects a patrol, and allows monthly evasio
     assert.equal(state.marineForce.wantedRecords.player.pursuit, null);
     assert.equal(state.marineActionAt.period, '1522:3');
     assert.deepEqual(state.marineActionAt.actions, { patrol: true, evade: true });
-    const patrolAfterEvade = content.children.find(node => node.tagName === 'BUTTON' && node.textContent.includes('ตรวจสอบ'));
+    const patrolAfterEvade = content.children.find(node => node.tagName === 'BUTTON' && node.textContent.includes('ตรวจสอบการลาดตระเวนแล้ว'));
     assert.ok(patrolAfterEvade.disabled, 'patrol cannot be repeated after evasion in the same month');
     assert.equal(saves, 2);
     assert.match(marineUI.getMarineControlsStyles(), /safe-area-inset/);
