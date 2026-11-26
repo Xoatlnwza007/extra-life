@@ -1243,3 +1243,64 @@ test('Marine system rejects zero-bounty targets and cannot advance a resolved pu
   assert.equal(marines.registerWanted(force, { id: 'civilian', bounty: 0 }).reason, 'no-bounty');
   assert.equal(marines.advancePursuit({ status: 'captured' }).reason, 'no-active-pursuit');
 });
+
+
+test('player progression controls train unlocked Haki and fruit once per game year', () => {
+  const haki = require('../ai/haki-system.js');
+  const fruits = require('../ai/devil-fruit-system.js');
+  const progression = require('../ai/progression-system.js');
+  globalThis.OnePieceHakiSystem = haki;
+  globalThis.OnePieceDevilFruitSystem = fruits;
+  const state = {
+    world: 'op', alive: true, year: 1522, powers: ['haki_arm', 'haki_obs'],
+    haki: {}, devilFruit: { id: 'gomu', name: 'Gomu Gomu no Mi', type: 'paramecia', mastery: 0, awakened: false }
+  };
+  globalThis.S = state;
+  let saves = 0;
+  function element(tag) {
+    return {
+      tagName: tag.toUpperCase(), children: [], attributes: {}, listeners: {}, hidden: false,
+      appendChild(child) { this.children.push(child); return child; },
+      replaceChildren(...children) { this.children = children; },
+      setAttribute(key, value) { this.attributes[key] = String(value); },
+      getAttribute(key) { return this.attributes[key] || null; },
+      addEventListener(name, handler) { this.listeners[name] = handler; },
+      click() { if (!this.disabled && this.listeners.click) this.listeners.click({ target: this }); }
+    };
+  }
+  const head = element('head');
+  const body = element('body');
+  const doc = {
+    head, body, readyState: 'complete', createElement: element,
+    getElementById(id) { return [body, head, ...body.children].flatMap(node => node.children || []).find(node => node.id === id) || null; }
+  };
+  const host = { document: doc, OnePieceProgressionSystem: progression, save: () => { saves++; } };
+  try {
+    assert.equal(world.installProgressionControls(host), true);
+    const wrap = body.children.find(node => node.id === 'extra-life-progression-tools');
+    assert.ok(wrap);
+    const panel = wrap.children[0];
+    const trigger = wrap.children[1];
+    trigger.click();
+    const content = panel.children[1];
+    const armamentRow = content.children[2];
+    assert.equal(armamentRow.children[0].textContent.includes('0/100'), true);
+    armamentRow.children[1].click();
+    assert.equal(state.haki.armament.mastery, 5);
+    assert.equal(state.progressionTraining['haki:armament'], 1522);
+    assert.equal(saves, 1);
+    assert.equal(content.children.length > 0, true);
+
+    const fruitTrain = content.children.find(node =>
+      node.tagName === 'BUTTON' && node.textContent.includes('ฝึกผลปีศาจ'));
+    assert.ok(fruitTrain);
+    fruitTrain.click();
+    assert.equal(state.devilFruit.mastery, 5);
+    assert.equal(saves, 2);
+    assert.match(world.getProgressionControlsStyles(), /any-pointer|100dvh|safe-area-inset/);
+  } finally {
+    delete globalThis.S;
+    delete globalThis.OnePieceHakiSystem;
+    delete globalThis.OnePieceDevilFruitSystem;
+  }
+});
