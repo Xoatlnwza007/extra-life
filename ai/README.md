@@ -168,6 +168,21 @@ Load this module after the other AI helpers:
 ```
 
 
+## One Piece combat power modifiers
+
+The main battle loop now uses `ai/combat-adapter.js` for baseline bonuses from
+existing unlocked power IDs in `S.powers`. Paramecia, Zoan and Logia fruits
+provide distinct offensive bonuses; Zoan and Logia also provide durability
+bonuses. Armament Haki improves outgoing and incoming damage, Observation Haki
+reduces incoming damage, and Conqueror's Haki improves outgoing damage. These
+are unlock-based baseline effects, not mastery-scaled effects. The separate
+Haki mastery helper is still not synchronized with the main game's power flags.
+
+The adapter is loaded before the main inline game script and is only applied
+when the active world is One Piece. Other anime worlds and characters without
+these unlocked powers retain their existing combat calculations. Unit tests
+cover the modifier combinations, world isolation and invalid damage inputs.
+
 ## Haki progression
 
 `haki-system.js` tracks Armament, Observation and Conqueror's Haki mastery
