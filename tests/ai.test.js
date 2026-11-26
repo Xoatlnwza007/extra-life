@@ -286,6 +286,7 @@ test('pirate crew panel creates a crew and recruits an NPC through its controls'
     recruitRow.children[1].click();
     assert.equal(state.crews[0].members.length, 2);
     assert.ok(state.crews[0].members.some(member => member.characterId === 'nami'));
+    assert.ok(panelBody.children.some(node => node.textContent.includes('Nami เข้าร่วมลูกเรือ')));
 
     const memberRow = panelBody.children.find(node =>
       node.className === 'el-crew-row' &&
