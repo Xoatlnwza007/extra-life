@@ -218,11 +218,11 @@ test('social NPC actions create memories and bilateral relationships', () => {
 });
 
 test('pirate crew management is limited to active One Piece pirate careers', () => {
-  assert.equal(world.canManagePirateCrew({ world: 'op', alive: true, job: { id: 'pirate' } }), true);
+  assert.equal(world.canManagePirateCrew({ world: 'op', alive: true, job: { id: 'pirate' } }), false);
   assert.equal(world.canManagePirateCrew({ world: 'op', alive: true, job: { id: 'pcapt' } }), true);
   assert.equal(world.canManagePirateCrew({ world: 'op', alive: true, job: { id: 'marine' } }), false);
   assert.equal(world.canManagePirateCrew({ world: 'naruto', alive: true, job: { id: 'pirate' } }), false);
-  assert.equal(world.canManagePirateCrew({ world: 'op', alive: false, job: { id: 'pirate' } }), false);
+  assert.equal(world.canManagePirateCrew({ world: 'op', alive: false, job: { id: 'pcapt' } }), false);
 });
 
 test('pirate crew panel creates a crew and recruits an NPC through its controls', () => {
@@ -249,7 +249,7 @@ test('pirate crew panel creates a crew and recruits an NPC through its controls'
     getElementById(id) { return body.children.find(node => node.id === id) || null; }
   };
   const state = {
-    world: 'op', alive: true, job: { id: 'pirate' }, name: 'Luffy',
+    world: 'op', alive: true, job: { id: 'pcapt' }, name: 'Luffy',
     flags: { bounty: 0 }, fame: 0, dark: 0, money: 100, own: { items: [] },
     npcs: [{ id: 'nami', n: 'Nami', alive: true, d: 'navigator' }],
     crews: []
@@ -354,6 +354,7 @@ test('player crew is stored in game state and recruits NPCs persistently', () =>
   const created = world.createPlayerCrew(state, 'Straw Hat Pirates', crews);
   assert.equal(created.ok, true);
   assert.equal(created.crew.captainId, 'player');
+  assert.equal(state.flags.crew, 'Straw Hat Pirates');
   assert.equal(world.getPlayerCrew(state, crews).id, created.crew.id);
   assert.equal(world.createPlayerCrew(state, 'Second Crew', crews).reason, 'already-has-crew');
 
