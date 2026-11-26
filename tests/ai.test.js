@@ -1082,6 +1082,42 @@ test('One Piece combat adapter applies Devil Fruit and Haki power bonuses', () =
   assert.equal(combat.modifyIncomingDamage(100, state, 'op'), 71);
 });
 
+
+test('One Piece combat adapter scales Haki and Devil Fruit mastery progressively', () => {
+  const combat = require('../ai/combat-adapter.js');
+  const state = {
+    powers: ['haki_arm', 'haki_obs', 'haki_king'],
+    haki: {
+      armament: { unlocked: true, mastery: 50 },
+      observation: { unlocked: true, mastery: 25 },
+      conquerors: { unlocked: true, mastery: 100 }
+    },
+    devilFruit: { id: 'gomu', type: 'paramecia', mastery: 50, awakened: true }
+  };
+  const modifiers = combat.getModifiers(state, 'op');
+  const expectedOutgoing = 1.15 * 1.12 * 1.10 * (1 + 50 * 0.0008 + 100 * 0.0006) * (1 + 50 * 0.0008 + 0.05);
+  const expectedIncoming = 0.90 * 0.90 * (1 - 50 * 0.0005 - 25 * 0.0008) * 0.97;
+  assert.ok(Math.abs(modifiers.outgoing - expectedOutgoing) < 1e-12);
+  assert.ok(Math.abs(modifiers.incoming - expectedIncoming) < 1e-12);
+});
+
+test('combat mastery ignores locked Haki, clamps invalid mastery, and remains world-scoped', () => {
+  const combat = require('../ai/combat-adapter.js');
+  const state = {
+    powers: [],
+    haki: {
+      armament: { unlocked: false, mastery: 100 },
+      observation: { unlocked: true, mastery: 1000 },
+      conquerors: { unlocked: true, mastery: -10 }
+    },
+    devilFruit: { type: 'zoan', mastery: Infinity, awakened: false }
+  };
+  const modifiers = combat.getModifiers(state, 'op');
+  assert.equal(modifiers.outgoing, 1.12);
+  assert.ok(Math.abs(modifiers.incoming - (0.88 * 0.92)) < 1e-12);
+  assert.deepEqual(combat.getModifiers(state, 'naruto'), { outgoing: 1, incoming: 1 });
+});
+
 test('One Piece combat adapter leaves other worlds and unpowered characters unchanged', () => {
   const combat = require('../ai/combat-adapter.js');
   assert.deepEqual(combat.getModifiers({ powers: ['haki_arm'] }, 'naruto'), {
