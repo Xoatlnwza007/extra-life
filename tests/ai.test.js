@@ -238,6 +238,9 @@ test('player crew is stored in game state and recruits NPCs persistently', () =>
   const state = {
     world: 'op',
     name: 'Monkey D. Luffy',
+    flags: { bounty: 30000000 },
+    fame: 60,
+    dark: 15,
     npcs: [
       { id: 'npc-nami', n: 'Nami', alive: true },
       { n: 'Zoro', alive: true },
@@ -250,6 +253,15 @@ test('player crew is stored in game state and recruits NPCs persistently', () =>
   assert.equal(created.crew.captainId, 'player');
   assert.equal(world.getPlayerCrew(state, crews).id, created.crew.id);
   assert.equal(world.createPlayerCrew(state, 'Second Crew', crews).reason, 'already-has-crew');
+
+  const synced = world.syncPlayerCrew(state, crews);
+  assert.equal(synced.changed, true);
+  assert.equal(synced.crew.bounty, 30000000);
+  assert.equal(synced.crew.reputation, 45);
+  state.flags.bounty = 50000000;
+  state.fame = 20;
+  state.dark = 60;
+  assert.equal(world.syncPlayerCrew(state, crews).crew.reputation, -40);
 
   const joined = world.recruitNpcToPlayerCrew(state, state.npcs[0], 'navigator', crews);
   assert.equal(joined.joined, true);
