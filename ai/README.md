@@ -12,6 +12,7 @@ Load the scripts in this order before the game code that creates or updates NPCs
 <script src="./ai/npc-brain.js"></script>
 <script src="./ai/event-adapter.js"></script>
 <script src="./ai/world-simulation.js"></script>
+<script src="./ai/crew-system.js"></script>
 ```
 
 ## Create and persist an NPC
@@ -111,6 +112,32 @@ This helper is additive; it is not automatically wired into the game's annual
 loop yet. Integrate it only after checking the existing game-loop performance
 and save flow.
 
+## Pirate crews
+
+`crew-system.js` provides framework-independent crew management. A crew can
+have a captain, a roster with roles, a ship name, a shared bounty, reputation,
+and a bounded event history.
+
+```js
+let crew = OnePieceCrewSystem.createCrew({
+  name: 'Straw Hat Pirates',
+  captainId: 'luffy',
+  shipName: 'Thousand Sunny'
+});
+const joined = OnePieceCrewSystem.joinCrew(crew, 'zoro', 'swordsman', {
+  capacity: 10
+});
+crew = joined.crew;
+crew = OnePieceCrewSystem.addBounty(crew, 30000000, 'defeated-a-warlord');
+```
+
+The helpers support joining, leaving, assigning non-captain roles, transferring
+captaincy, looking up a member's active crew, increasing crew bounty, and
+disbanding a crew. The default capacity is 10; pass a different capacity when
+joining if the game mode uses another limit. These are data-layer primitives:
+they are not yet wired into the main game's recruitment UI, save flow, or
+story events.
+
 ## Automated tests
 
 Run the AI unit tests with Node.js 18 or later:
@@ -119,4 +146,4 @@ Run the AI unit tests with Node.js 18 or later:
 node --test tests/ai.test.js
 ```
 
-The tests cover goal-aware action selection, negative memory weighting, memory expiry and limits, event-choice compatibility, and NPC world-simulation profile persistence.
+The tests cover goal-aware action selection, negative memory weighting, memory expiry and limits, event-choice compatibility, NPC world simulation and social interactions, and pirate crew membership rules.
