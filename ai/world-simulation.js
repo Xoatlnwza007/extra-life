@@ -798,7 +798,6 @@
     doc.body.appendChild(wrap);
 
     const setStatus = message => { status.textContent = message; };
-    let renderedYear = null;
     const persist = () => {
       try {
         if (typeof save === 'function') save();
@@ -1160,6 +1159,7 @@
       return node;
     };
     const setStatus = message => { status.textContent = message; };
+    let renderedYear = null;
     const persist = () => {
       try {
         if (typeof save === 'function') save();
