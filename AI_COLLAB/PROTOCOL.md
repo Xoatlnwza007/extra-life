@@ -28,5 +28,5 @@ Each entry should include:
 - Do not force-push. Do not merge automatically.
 - AI A is the integration gatekeeper; repository owner makes final merge decisions.
 
-## Current safe mode
-The first round is read-only reconnaissance. No game source changes are authorized. AI B should inspect the game and recommend a division of responsibilities only.
+## Current operating mode
+The initial read-only reconnaissance phase is complete. AI B is authorized by the repository owner to implement gameplay/runtime features on task-specific branches, with tests and PR review. AI A owns narrative/canon content only and must not edit runtime or engineering files. AI B integrates narrative packs into the existing engine. The root index.html remains a high-conflict single-owner file: AI B may edit it only when a feature cannot be integrated safely through isolated modules, and must keep each change narrowly scoped. Never edit main directly; do not merge divergent branches automatically; repository owner retains final merge/release authority.
