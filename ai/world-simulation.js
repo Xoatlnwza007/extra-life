@@ -651,6 +651,14 @@
     `;
   }
 
+  function canManagePirateCrew(state) {
+    if (!state || state.world !== 'op' || !state.job) return false;
+    try {
+      if (typeof pirate === 'function') return !!pirate(state);
+    } catch (error) {}
+    return state.job.id === 'pirate' || state.job.id === 'pcapt';
+  }
+
   function currentOnePieceState(host = root) {
     let state = null;
     try { if (typeof S !== 'undefined') state = S; } catch (error) {}
@@ -726,7 +734,7 @@
 
     function renderCrewPanel() {
       const state = currentOnePieceState(host);
-      if (!state || !state.alive) return;
+      if (!state || !state.alive || !canManagePirateCrew(state)) return;
       body.replaceChildren();
       const api = host.OnePieceCrewSystem;
       const crew = getPlayerCrew(state, api);
@@ -833,7 +841,7 @@
 
     const syncVisibility = () => {
       const state = currentOnePieceState(host);
-      const visible = !!(state && state.alive);
+      const visible = !!(state && state.alive && canManagePirateCrew(state));
       wrap.hidden = !visible;
       if (!visible) {
         panel.hidden = true;
@@ -988,7 +996,7 @@
     return install();
   }
 
-  const api = Object.freeze({ simulate, simulatePopulation, saveSystem, installSaveControls, getSaveControlsStyles, getMobileTouchStyles, installMobileTouchStyles, loadCompanionModules, companionModules: COMPANION_MODULES, crewNpcId, getPlayerCrew, createPlayerCrew, recruitNpcToPlayerCrew, removeNpcFromPlayerCrew, getCrewControlsStyles, installCrewControls, scheduleCrewControls });
+  const api = Object.freeze({ simulate, simulatePopulation, saveSystem, installSaveControls, getSaveControlsStyles, getMobileTouchStyles, installMobileTouchStyles, loadCompanionModules, companionModules: COMPANION_MODULES, crewNpcId, getPlayerCrew, createPlayerCrew, recruitNpcToPlayerCrew, removeNpcFromPlayerCrew, canManagePirateCrew, getCrewControlsStyles, installCrewControls, scheduleCrewControls });
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.OnePieceWorldSimulation = api;
   root.OnePieceSaveSystem = saveSystem;
