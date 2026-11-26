@@ -168,6 +168,29 @@ test('crew capacity and disbanded status prevent new members', () => {
   assert.equal(result.reason, 'invalid-crew');
 });
 
+test('crew diplomacy and encounters update rivalries and rewards', () => {
+  let first = crews.createCrew({ id: 'sun-pirates', captainId: 'captain-a', reputation: 10 });
+  let second = crews.createCrew({ id: 'moon-pirates', captainId: 'captain-b', reputation: 5 });
+  let relation = crews.setCrewRelation(first, second.id, 45, { reason: 'shared-enemy' });
+  first = relation.crew;
+  assert.equal(relation.updated, true);
+  assert.equal(crews.crewRelationLabel(first.relations[second.id]), 'friendly');
+  const encounter = crews.resolveCrewEncounter(first, second, {
+    winnerId: first.id,
+    winnerBountyIncrease: 250,
+    at: '2026-01-01T00:00:00.000Z'
+  });
+  assert.equal(encounter.resolved, true);
+  assert.equal(encounter.outcome, 'victory');
+  assert.equal(encounter.first.bounty, 250);
+  assert.equal(encounter.first.reputation, 15);
+  assert.equal(encounter.second.reputation, 2);
+  assert.equal(encounter.first.relations[second.id], 20);
+  assert.equal(encounter.second.relations[first.id], -25);
+  assert.equal(encounter.first.history.at(-2).type, 'crew-encounter');
+  assert.equal(crews.resolveCrewEncounter(first, second, { winnerId: 'outsider' }).reason, 'winner-not-in-encounter');
+});
+
 test('world simulation initializes and returns persistent NPC profiles', () => {
   const npc = { n: 'Test villager', r: 'kind', alive: true };
   const result = world.simulate({ npcBrains: {} }, [npc], {});
