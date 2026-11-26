@@ -4,7 +4,7 @@ These modules are framework-independent helpers for the One Piece Life Simulator
 
 ## Browser load order
 
-Load the scripts in this order before the game code that creates or updates NPCs:
+Load the core scripts in this order before the game code that creates or updates NPCs:
 
 ```html
 <script src="./ai/decision-engine.js"></script>
@@ -14,6 +14,8 @@ Load the scripts in this order before the game code that creates or updates NPCs
 <script src="./ai/world-simulation.js"></script>
 <script src="./ai/crew-system.js"></script>
 ```
+
+In the main browser game, `world-simulation.js` also loads `event-adapter.js`, `crew-system.js`, `devil-fruit-system.js`, and `haki-system.js` sequentially. The resulting promise is exposed as `OnePieceSystemsReady`; failed companion loads are recorded in `__onePieceModuleErrors`.
 
 ## Create and persist an NPC
 
@@ -137,9 +139,7 @@ relations (allied, friendly, neutral, hostile, or at-war), and resolving a
 crew encounter as a victory, defeat, or stalemate. An encounter updates both
 crews' relation scores and reputation; a configured victory reward can also
 increase the winning crew's bounty. The default capacity is 10; pass a different capacity when
-joining if the game mode uses another limit. These are data-layer primitives:
-they are not yet wired into the main game's recruitment UI, save flow, or
-story events.
+joining if the game mode uses another limit. The main One Piece game now exposes a floating **ลูกเรือ** panel for living pirate and pirate-captain characters. Players can create a crew, recruit living NPCs, choose each recruit's role, set a ship name, and dismiss non-captain members. The crew roster and `playerCrewId` are stored directly on the game state (`S.crews` and `S.playerCrewId`), so the existing save/load flow persists them. Crew diplomacy and encounter resolution remain helper APIs; they are not yet connected to the game's story events or combat outcomes.
 
 ## Automated tests
 
@@ -159,8 +159,7 @@ Zoan and Logia fruit records, consuming a fruit (one per character and one
 consumer per fruit record), training mastery from 0–100, and awakening at a
 configurable mastery threshold (80 by default). `getSeaEffect` reports the
 baseline swimming/weakness effect in seawater and a stronger penalty for Sea
-Prism Stone exposure. These are data-layer rules only; fruit inventory,
-combat effects, persistence and player-facing UI still need integration.
+Prism Stone exposure. The main game already has its own Devil Fruit discovery event and power flags. This helper remains a separate mastery/awakening data model; it is loaded by the browser bootstrap but is not yet synchronized with the game's existing `S.flags.df` / `S.powers` values or combat outcomes.
 
 Load this module after the other AI helpers:
 
@@ -175,9 +174,7 @@ Load this module after the other AI helpers:
 from 0–100. Armament and Observation are available by default; Conqueror's
 Haki must be marked as innate when creating the character's Haki state.
 Training is bounded, and `getCombatProfile` converts mastery into simple
-defense, awareness and pressure bonuses plus rank labels. These values are
-calculation primitives only; the main game's combat loop and character
-creation still need to call and persist them.
+defense, awareness and pressure bonuses plus rank labels. The main game already contains Haki-related power flags. This helper is loaded by the browser bootstrap, but mastery values are not yet synchronized with those existing flags or applied to the main game's combat calculations.
 
 ```js
 const haki = OnePieceHakiSystem.createHakiState({ hasConquerorsHaki: true });
@@ -261,3 +258,8 @@ rejected by the UI. The controls use the existing `extra-life-v2` storage key.
 Automated tests cover the browser download helper and File-like import helper.
 Actual touch interaction, browser download behavior, storage quota failures and
 the full reload flow still need manual verification in Chrome Android/Desktop.
+
+
+## Mobile and tablet touch support
+
+The main game already has responsive layouts for narrow screens. The browser bootstrap adds touch-specific rules when the device reports a coarse pointer: primary actions and segmented controls receive larger hit areas, the bottom action bar can scroll on short phone screens, and dialogs respect display safe areas. The floating save and crew panels also use touch-sized controls and safe-area spacing. Automated tests verify these layout rules; real-device testing on Android and iPad/iPhone browsers is still required.
