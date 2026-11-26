@@ -1071,6 +1071,24 @@ test('browser localStorage hook preserves the previous save when storage quota i
 });
 
 
+
+test('Haki progression sync follows unlocked power flags and preserves mastery', () => {
+  const haki = require('../ai/haki-system.js');
+  const original = { id: 'captain', haki: { armament: { unlocked: false, mastery: 42 } } };
+  const result = haki.syncUnlockedStyles(original, ['haki_arm', 'haki_king']);
+  assert.equal(result.synced, true);
+  assert.equal(result.changed, true);
+  assert.equal(result.character.haki.armament.unlocked, true);
+  assert.equal(result.character.haki.armament.mastery, 42);
+  assert.equal(result.character.haki.observation.unlocked, false);
+  assert.equal(result.character.haki.conquerors.unlocked, true);
+  assert.equal(original.haki.armament.unlocked, false);
+  const locked = haki.syncUnlockedStyles(result.character, []);
+  assert.equal(locked.character.haki.armament.unlocked, false);
+  assert.equal(locked.character.haki.armament.mastery, 42);
+});
+
+
 test('One Piece combat adapter applies Devil Fruit and Haki power bonuses', () => {
   const combat = require('../ai/combat-adapter.js');
   const state = { powers: ['df_zoan', 'haki_arm', 'haki_obs'] };
