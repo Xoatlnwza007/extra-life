@@ -325,6 +325,7 @@ test('crew boat purchase respects the game wallet and existing inventory', () =>
     state.own.items.push(item.id);
   };
   assert.equal(world.buyBoatForPlayerCrew(state, boat, buy).reason, 'insufficient-funds');
+  assert.equal(world.buyBoatForPlayerCrew({ world: 'op', own: { items: [] } }, boat, buy).reason, 'insufficient-funds');
   assert.equal(purchases, 0);
   state.money = 60;
   const result = world.buyBoatForPlayerCrew(state, boat, buy);
