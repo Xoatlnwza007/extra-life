@@ -133,7 +133,11 @@ crew = OnePieceCrewSystem.addBounty(crew, 30000000, 'defeated-a-warlord');
 
 The helpers support joining, leaving, assigning non-captain roles, transferring
 captaincy, looking up a member's active crew, increasing crew bounty, and
-disbanding a crew. The default capacity is 10; pass a different capacity when
+disbanding a crew. They also support reputation changes, crew-to-crew diplomatic
+relations (allied, friendly, neutral, hostile, or at-war), and resolving a
+crew encounter as a victory, defeat, or stalemate. An encounter updates both
+crews' relation scores and reputation; a configured victory reward can also
+increase the winning crew's bounty. The default capacity is 10; pass a different capacity when
 joining if the game mode uses another limit. These are data-layer primitives:
 they are not yet wired into the main game's recruitment UI, save flow, or
 story events.
@@ -146,4 +150,4 @@ Run the AI unit tests with Node.js 18 or later:
 node --test tests/ai.test.js
 ```
 
-The tests cover goal-aware action selection, negative memory weighting, memory expiry and limits, event-choice compatibility, NPC world simulation and social interactions, and pirate crew membership rules.
+The tests cover goal-aware action selection, negative memory weighting, memory expiry and limits, event-choice compatibility, NPC world simulation and social interactions, pirate crew membership rules, and crew diplomacy/encounter outcomes.
