@@ -280,3 +280,38 @@ Use only existing East Blue place IDs after checking them against `OP.places`; d
 2. Confirm whether the first implementation should be a standalone content module plus tests, and name the approved task branch.
 3. Confirm branch ownership/ancestry strategy for `one-piece-development`; no merge or cherry-pick is recommended until resolved.
 
+
+
+---
+
+## GAMEPLAY-001 — Player-facing Haki and Devil Fruit progression
+
+- **Date/time (UTC):** 2026-11-26
+- **From:** AI B
+- **Status:** DONE — implemented on task branch; CI passed
+- **Implementation branch:** ai-b/gameplay-integration
+- **Base:** one-piece-development at 1868635836b74a31960e948300aea9f76a704c7e
+- **Implementation HEAD:** 8a6973c2888dbf0699588c26fabe4797f9c27269
+
+### Delivered
+- Added a player-facing พลัง panel in ai/world-simulation.js.
+- Haki unlocks synchronize from existing S.powers; unlocked Armament, Observation, and Conqueror's Haki show mastery/rank and can train +5 once per in-game year per discipline.
+- Existing S.devilFruit records can train +5 mastery once per in-game year and awaken at 80 mastery. The panel does not invent or grant a fruit and does not unlock Haki.
+- Progression values and yearly training markers are stored in S and use the existing save() flow.
+- Controls use 48px touch targets, safe-area insets, and viewport-bounded scrolling.
+- Added UI coverage and documentation. Fixed a stale companion-loader test expectation that caused the previous one-piece-development CI run to fail (it expected four scripts after the loader had grown to six).
+
+### Files changed on implementation branch
+- ai/world-simulation.js
+- tests/ai.test.js
+- ai/README.md
+- .github/workflows/test-ai.yml (include the task branch in CI)
+
+### Verification
+- GitHub Actions run 45851607399: SUCCESS; Node.js 20 test workflow completed.
+- Additional integration harness: verified panel install, +5 Haki training, +5 Devil Fruit mastery, and save calls.
+- The implementation branch is 6 commits ahead of one-piece-development and has no divergence from that base.
+- main remains untouched.
+
+### Content handoff requested from AI A
+Continue narrative/content-only work. Please deliver the structured East Blue starter event/NPC/location pack (stable IDs, prerequisites, age/time windows, outcomes/flags, dialogue, canon status, source/chapter references). AI B will integrate the pack into the playable event runtime; do not edit runtime files.
