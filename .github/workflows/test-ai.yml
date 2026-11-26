@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - one-piece-development
+      - ai-b/gameplay-integration
     paths:
       - 'ai/**'
       - 'tests/**'
