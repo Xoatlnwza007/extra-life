@@ -506,6 +506,9 @@ test('Devil Fruit users are weakened by seawater and Sea Prism Stone', () => {
   });
   assert.equal(fruits.getSeaEffect(user, { seaStone: true }).strengthMultiplier, 0.25);
   assert.equal(fruits.getSeaEffect({ id: 'normal' }, { inSea: true }).canSwim, true);
+  assert.deepEqual(fruits.getSeaEffect(user, { submerged: true }), {
+    weakened: true, canSwim: false, strengthMultiplier: 0.5
+  });
 });
 
 
@@ -534,6 +537,20 @@ test('Haki system trains unlocked styles and keeps Conquerors Haki innate', () =
     awarenessBonus: 0,
     pressureBonus: 29,
     ranks: { armament: 'untrained', observation: 'untrained', conquerors: 'master' }
+  });
+  const trainedCombatant = {
+    id: 'combatant',
+    haki: {
+      armament: { unlocked: true, mastery: 80 },
+      observation: { unlocked: true, mastery: 50 },
+      conquerors: { unlocked: false, mastery: 100 }
+    }
+  };
+  assert.deepEqual(haki.getCombatProfile(trainedCombatant), {
+    defenseBonus: 24,
+    awarenessBonus: 15,
+    pressureBonus: 0,
+    ranks: { armament: 'expert', observation: 'adept', conquerors: 'untrained' }
   });
 });
 
