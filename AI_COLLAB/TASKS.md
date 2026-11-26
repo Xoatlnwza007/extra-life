@@ -118,3 +118,11 @@
 - **Result:** Confronting a Marine pursuit can capture the player and send them into the existing `jailUntil` / `jailed()` / `jailMonth()` flow. Job/rent are cleared, heat resets, and wanted status returns after sentence expiry.
 - **Verification:** GitHub Actions run 45853596837 succeeded.
 - **Remaining:** Location-specific Marine rosters and trial/court mechanics are future work.
+
+
+### GAMEPLAY-005 — Marine UI privacy, state binding, and monthly action-lock hardening
+- **Owner:** AI B
+- **Status:** DONE — owner-added regression tests pass
+- **Branch:** ai-b/gameplay-integration
+- **Result:** Global `S` binding supported; current player location is not disclosed before a confirmed sighting; patrol/evasion/confrontation locks are tracked independently per in-game month; panel rendering is cached.
+- **Verification:** GitHub Actions run 45853961923 succeeded.
