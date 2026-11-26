@@ -290,3 +290,38 @@ test('One Piece yearly simulation automatically advances the full living NPC pop
   assert.ok(result.profiles.Sanji);
   assert.equal(result.profiles.Deceased, undefined);
 });
+
+
+test('One Piece population remains valid across twelve annual simulation ticks', () => {
+  const npcs = [
+    { n: 'Gossip', r: 'gossip', alive: true },
+    { n: 'Grump', r: 'grump', alive: true },
+    { n: 'Kid', r: 'kid', alive: true },
+    { n: 'Shopkeeper', r: 'shop', alive: true },
+    { n: 'Doctor', r: 'kind', alive: true },
+    { n: 'Swordsman', r: 'rival', alive: true },
+    { n: 'Craftsperson', r: 'craft', alive: true }
+  ];
+  let state = { world: 'op', npcBrains: {} };
+  const actionHistory = Object.fromEntries(npcs.map(npc => [npc.n, []]));
+
+  for (let year = 0; year < 12; year++) {
+    const result = world.simulate(state, npcs, {});
+    assert.equal(result.simulatedCount, npcs.length);
+    for (const npc of npcs) {
+      const profile = result.profiles[npc.n];
+      assert.ok(profile, npc.n + ' profile should persist');
+      assert.ok(profile.memories.length <= 100, npc.n + ' memory cap should hold');
+      for (const value of Object.values(profile.needs)) {
+        assert.ok(value >= 0 && value <= 100, npc.n + ' needs should remain bounded');
+      }
+      actionHistory[npc.n].push(result.actions.find(action => action.npc === npc.n).action);
+    }
+    state = { ...state, npcBrains: result.profiles };
+  }
+
+  for (const npc of npcs) {
+    assert.equal(actionHistory[npc.n].length, 12);
+    assert.ok(new Set(actionHistory[npc.n]).size >= 1);
+  }
+});
