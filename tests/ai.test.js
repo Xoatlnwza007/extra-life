@@ -1494,8 +1494,9 @@ test('Marine UI shows wanted status, detects a patrol, and allows monthly evasio
   const body = element('body'), head = element('head');
   const doc = { body, head, createElement: element, getElementById() { return null; } };
   let saves = 0;
-  const host = { S: state, document: doc, OnePieceMarineSystem: marine, save() { saves++; } };
+  const host = { document: doc, OnePieceMarineSystem: marine, save() { saves++; } };
   const originalRandom = Math.random;
+  globalThis.S = state;
   try {
     Math.random = () => 0;
     assert.equal(marineUI.installMarineControls(host), true);
@@ -1507,6 +1508,7 @@ test('Marine UI shows wanted status, detects a patrol, and allows monthly evasio
     assert.ok(patrol);
     patrol.click();
     assert.equal(state.marineForce.wantedRecords.player.status, 'tracking');
+    assert.equal(state.marineForce.wantedRecords.player.lastKnownLocation, 'foosha_village');
     assert.equal(saves, 1);
     const evade = content.children.find(node => node.tagName === 'BUTTON' && node.textContent.includes('หลบซ่อน'));
     assert.ok(evade);
@@ -1514,11 +1516,28 @@ test('Marine UI shows wanted status, detects a patrol, and allows monthly evasio
     assert.equal(state.marineForce.wantedRecords.player.status, 'wanted');
     assert.equal(state.marineForce.wantedRecords.player.pursuit, null);
     assert.equal(state.marineActionAt.period, '1522:3');
+    assert.deepEqual(state.marineActionAt.actions, { patrol: true, evade: true });
+    const patrolAfterEvade = content.children.find(node => node.tagName === 'BUTTON' && node.textContent.includes('ตรวจสอบ'));
+    assert.ok(patrolAfterEvade.disabled, 'patrol cannot be repeated after evasion in the same month');
     assert.equal(saves, 2);
     assert.match(marineUI.getMarineControlsStyles(), /safe-area-inset/);
   } finally {
     Math.random = originalRandom;
+    delete globalThis.S;
   }
+});
+
+test('Marine wanted registration does not reveal the player location before a confirmed sighting', () => {
+  const marine = require('../ai/marine-system.js');
+  const marineUI = require('../ai/marine-ui.js');
+  const state = { world: 'op', alive: true, name: 'Hidden Pirate', flags: { bounty: 1000000 }, place: 'secret-island' };
+  const force = marineUI.getMarineForce(state, marine, '2026-11-26T00:00:00.000Z');
+  assert.equal(force.wantedRecords.player.lastKnownLocation, null);
+  const sighting = marine.evaluateSighting(force, {
+    id: 'player', name: 'Hidden Pirate', bounty: 1000000, location: null
+  }, { location: 'secret-island', cover: 100, distance: 100, random: () => 0.99 });
+  assert.equal(sighting.detected, false);
+  assert.equal(sighting.record.lastKnownLocation, null);
 });
 
 
