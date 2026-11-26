@@ -8,7 +8,9 @@
   const finite = (value, fallback = 0) => Number.isFinite(Number(value)) ? Number(value) : fallback;
 
   function getPlayerState(host = root) {
-    const state = host && host.S;
+    let state = null;
+    try { if (typeof S !== 'undefined') state = S; } catch (error) {}
+    if (!state && host && host.S) state = host.S;
     return state && state.world === 'op' && state.alive ? state : null;
   }
 
@@ -23,7 +25,7 @@
       force = api.createMarineForce({
         id: 'east-blue-marine-command',
         name: 'กองกำลังนาวิกโยธินประจำพื้นที่',
-        base: state.place || null,
+        base: null,
         strength: 48,
         intelligence: 38,
         alertness: 42,
@@ -40,7 +42,7 @@
       name: state.name || state.n || 'โจรสลัดนิรนาม',
       bounty,
       notoriety: finite(state.fame, finite(state.flags && state.flags.fame)),
-      location: state.place || null
+      location: null
     }, { at });
     state.marineForce = registered.force;
     return registered.force;
@@ -108,12 +110,33 @@
     };
     const setStatus = value => { status.textContent = value; };
     const persist = () => {
-      if (typeof host.save === 'function') host.save();
+      if (typeof save === 'function') save();
+      else if (typeof host.save === 'function') host.save();
     };
     const currentPeriod = state => String(finite(state.year)) + ':' + String(finite(state.mo));
-    const actionAvailable = (state, action) =>
-      !state.marineActionAt || state.marineActionAt.period !== currentPeriod(state) ||
-      state.marineActionAt.action !== action;
+    const actionAvailable = (state, action) => {
+      const lock = state.marineActionAt;
+      if (!lock || lock.period !== currentPeriod(state)) return true;
+      if (lock.actions && typeof lock.actions === 'object') return !lock.actions[action];
+      return lock.action !== action;
+    };
+    const markAction = (state, action) => {
+      const period = currentPeriod(state);
+      const previous = state.marineActionAt && state.marineActionAt.period === period
+        ? state.marineActionAt : { period, actions: {} };
+      const actions = { ...(previous.actions || {}) };
+      if (previous.action) actions[previous.action] = true;
+      actions[action] = true;
+      state.marineActionAt = { period, actions };
+    };
+    let renderedKey = null;
+    const viewKey = state => {
+      const record = state.marineForce && state.marineForce.wantedRecords && state.marineForce.wantedRecords.player;
+      const pursuit = record && record.pursuit;
+      return [currentPeriod(state), getBounty(state), state.place || '', record && record.status || '',
+        record && record.sightings || 0, pursuit && pursuit.phase || '', pursuit && pursuit.progress || 0,
+        pursuit && pursuit.pressure || 0].join('|');
+    };
 
     function render() {
       const state = getPlayerState(host);
@@ -150,10 +173,10 @@
           name: state.name || state.n || 'โจรสลัดนิรนาม',
           bounty,
           notoriety: finite(state.fame, finite(state.flags && state.flags.fame)),
-          location: state.place || null
+          location: null
         }, { location: state.place || null, cover: 42, distance: 35, at: now });
         state.marineForce = result.force;
-        state.marineActionAt = { period: currentPeriod(state), action: 'patrol' };
+        markAction(state, 'patrol');
         persist();
         setStatus(result.detected ? 'หน่วยลาดตระเวนพบเบาะแส! เริ่มติดตามตัวคุณแล้ว' : 'ยังไม่พบคุณ แต่ประกาศจับยังคงอยู่');
         render();
@@ -224,7 +247,7 @@
               wantedRecords: { ...force.wantedRecords, player: next },
               updatedAt: now
             };
-            state.marineActionAt = { period: currentPeriod(state), action: 'evade' };
+            markAction(state, 'evade');
             persist();
             setStatus(result.progress <= 0 ? 'คุณหลุดจากการติดตามชั่วคราว แต่ประกาศจับยังไม่ถูกยกเลิก' : 'คุณตัดร่องรอยบางส่วนได้ แต่การไล่ล่ายังไม่สิ้นสุด');
             render();
@@ -251,7 +274,7 @@
       if (!visible) {
         wrap.setAttribute('data-open', 'false');
         trigger.setAttribute('aria-expanded', 'false');
-      } else if (wrap.getAttribute('data-open') === 'true') render();
+      } else if (wrap.getAttribute('data-open') === 'true' && viewKey(getPlayerState(host)) !== renderedKey) render();
     };
     syncVisibility();
     if (typeof host.setInterval === 'function') {
