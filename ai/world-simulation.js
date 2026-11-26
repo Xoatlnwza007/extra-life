@@ -652,7 +652,7 @@
   }
 
   function canManagePirateCrew(state) {
-    if (!state || state.world !== 'op' || !state.job) return false;
+    if (!state || state.world !== 'op' || !state.alive || !state.job) return false;
     try {
       if (typeof pirate === 'function') return !!pirate(state);
     } catch (error) {}
