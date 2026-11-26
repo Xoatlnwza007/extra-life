@@ -248,3 +248,16 @@ file through a Blob URL, and `OnePieceSaveSystem.importFile(file, manager)`
 reads a user-selected File and passes its contents through the same validator.
 These are APIs only; the existing game's visible menu/buttons have not yet been
 modified to expose export/import controls.
+
+### In-game save controls
+
+`world-simulation.js` installs a compact floating **จัดการเซฟ** control after the
+document is ready. It exposes JSON export and file import in the game UI without
+editing the 3.2 MB `index.html` bundle. Import asks for confirmation, validates
+the selected JSON through the save manager, rotates the current valid save into
+the backup slot, and reloads the page after success. Files larger than 10 MB are
+rejected by the UI. The controls use the existing `extra-life-v2` storage key.
+
+Automated tests cover the browser download helper and File-like import helper.
+Actual touch interaction, browser download behavior, storage quota failures and
+the full reload flow still need manual verification in Chrome Android/Desktop.
