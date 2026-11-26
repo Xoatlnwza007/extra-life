@@ -683,7 +683,7 @@
       #extra-life-crew-tools .el-crew-head strong{font-size:15px}
       #extra-life-crew-tools .el-crew-body{display:grid;gap:9px}
       #extra-life-crew-tools .el-crew-body h4{margin:6px 0 0;font-size:13px}
-      #extra-life-crew-tools .el-crew-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;align-items:center;padding:7px 0;border-top:1px solid #d7ddd5}
+      #extra-life-crew-tools .el-crew-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(96px,auto) auto;gap:7px;align-items:center;padding:7px 0;border-top:1px solid #d7ddd5}
       #extra-life-crew-tools .el-crew-row label{min-width:0;overflow-wrap:anywhere}
       #extra-life-crew-tools .el-crew-row select{width:100%;margin-top:4px}
       #extra-life-crew-tools .el-crew-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px}
