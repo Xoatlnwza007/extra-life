@@ -1,3 +1,4 @@
 # ชีวิตตัวประกอบ
 
-เกมจำลองชีวิตตัวประกอบในโลกอนิเมะ เล่นได้ที่ https://theningkungtv-lang.github.io/extra-life/
+ต้นฉบับ เกมจำลองชีวิตตัวประกอบในโลกอนิเมะ เล่นได้ที่ https://theningkungtv-lang.github.io/extra-life/
+ผมforkเพื่อที่จะทำเล่นคนเดียวครับ โดยจะvibe code เพิ่มและแก้บางอย่าง
