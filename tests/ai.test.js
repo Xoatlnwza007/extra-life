@@ -237,3 +237,39 @@ test('Devil Fruit users are weakened by seawater and Sea Prism Stone', () => {
   assert.equal(fruits.getSeaEffect(user, { seaStone: true }).strengthMultiplier, 0.25);
   assert.equal(fruits.getSeaEffect({ id: 'normal' }, { inSea: true }).canSwim, true);
 });
+
+
+test('Haki system trains unlocked styles and keeps Conquerors Haki innate', () => {
+  const haki = require('../ai/haki-system.js');
+  const character = { id: 'fighter', haki: haki.createHakiState() };
+  assert.equal(character.haki.armament.unlocked, true);
+  assert.equal(character.haki.observation.unlocked, true);
+  assert.equal(character.haki.conquerors.unlocked, false);
+  assert.equal(haki.train(character, 'conquerors', 20).reason, 'haki-locked');
+
+  const trained = haki.train(character, 'armament', 70);
+  assert.equal(trained.character.haki.armament.mastery, 70);
+  assert.equal(character.haki.armament.mastery, 0);
+  assert.equal(haki.masteryRank(70), 'expert');
+  assert.equal(haki.train(trained.character, 'armament', 80).character.haki.armament.mastery, 100);
+
+  const bornWithConquerors = {
+    id: 'captain',
+    haki: haki.createHakiState({ hasConquerorsHaki: true })
+  };
+  const conquerors = haki.train(bornWithConquerors, 'conquerors', 95);
+  assert.equal(conquerors.character.haki.conquerors.mastery, 95);
+  assert.deepEqual(haki.getCombatProfile(conquerors.character), {
+    defenseBonus: 0,
+    awarenessBonus: 0,
+    pressureBonus: 29,
+    ranks: { armament: 'untrained', observation: 'untrained', conquerors: 'master' }
+  });
+});
+
+test('Haki training rejects invalid amounts and unknown styles', () => {
+  const haki = require('../ai/haki-system.js');
+  const character = { id: 'fighter', haki: haki.createHakiState() };
+  assert.equal(haki.train(character, 'armament', 0).reason, 'invalid-training');
+  assert.equal(haki.train(character, 'unknown', 10).reason, 'invalid-character-or-type');
+});
