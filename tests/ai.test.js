@@ -78,6 +78,16 @@ test('relationships are clamped, classified, and keep a bounded interaction hist
   assert.equal(stateApi.getRelationship(character, 'unknown'), 0);
 });
 
+test('NPC outcome recording treats a string tag as one tag, not characters', () => {
+  const character = stateApi.createCharacterState({ id: 'tag-test' });
+  const decision = {
+    action: { id: 'help', label: 'Help', tags: ['community'] },
+    ranking: [{ id: 'help', score: 10 }]
+  };
+  const updated = brain.recordOutcome(character, decision, { tags: 'kindness' });
+  assert.deepEqual(updated.memories.at(-1).tags, ['community', 'kindness']);
+});
+
 test('NPC interactions update both sides without sharing relationship state', () => {
   let alice = stateApi.createCharacterState({ id: 'alice' });
   let bob = stateApi.createCharacterState({ id: 'bob' });
