@@ -538,6 +538,37 @@
   });
 
 
+  const COMPANION_MODULES = Object.freeze([
+    { src: './ai/event-adapter.js', globalName: 'OnePieceEventAdapter' },
+    { src: './ai/crew-system.js', globalName: 'OnePieceCrewSystem' },
+    { src: './ai/devil-fruit-system.js', globalName: 'OnePieceDevilFruitSystem' },
+    { src: './ai/haki-system.js', globalName: 'OnePieceHakiSystem' }
+  ]);
+
+  function loadCompanionModules(host = root) {
+    const doc = host && host.document;
+    if (!doc || !doc.head || !doc.createElement) return Promise.resolve(false);
+    if (host.__onePieceModulesPromise) return host.__onePieceModulesPromise;
+
+    const promise = COMPANION_MODULES.reduce((chain, item) => chain.then(() => {
+      if (host[item.globalName]) return true;
+      return new Promise(resolve => {
+        const script = doc.createElement('script');
+        script.src = item.src;
+        script.async = false;
+        script.onload = () => resolve(!!host[item.globalName]);
+        script.onerror = () => {
+          host.__onePieceModuleErrors = (host.__onePieceModuleErrors || []).concat(item.src);
+          resolve(false);
+        };
+        doc.head.appendChild(script);
+      });
+    }), Promise.resolve(true));
+    host.__onePieceModulesPromise = promise;
+    host.OnePieceSystemsReady = promise;
+    return promise;
+  }
+
   function getMobileTouchStyles() {
     return `
       @media(any-pointer:coarse){
@@ -669,11 +700,12 @@
     return install();
   }
 
-  const api = Object.freeze({ simulate, simulatePopulation, saveSystem, installSaveControls, getSaveControlsStyles, getMobileTouchStyles, installMobileTouchStyles });
+  const api = Object.freeze({ simulate, simulatePopulation, saveSystem, installSaveControls, getSaveControlsStyles, getMobileTouchStyles, installMobileTouchStyles, loadCompanionModules, companionModules: COMPANION_MODULES });
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.OnePieceWorldSimulation = api;
   root.OnePieceSaveSystem = saveSystem;
   installBrowserSaveProtection(root);
   installMobileTouchStyles(root);
   scheduleSaveControls(root);
+  loadCompanionModules(root);
 })(typeof globalThis !== 'undefined' ? globalThis : this);
