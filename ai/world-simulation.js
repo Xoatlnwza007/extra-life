@@ -917,7 +917,17 @@
               setStatus('เปลี่ยนตำแหน่งไม่สำเร็จ: ' + result.reason);
               return;
             }
-            state.crews = (state.crews || []).map(item => item && item.id === crew.id ? result.crew : item);
+            const updatedCrew = {
+              ...result.crew,
+              history: [...(result.crew.history || []), {
+                type: 'role-changed',
+                characterId: member.characterId,
+                from: member.role,
+                to: role.value,
+                at: new Date().toISOString()
+              }].slice(-100)
+            };
+            state.crews = (state.crews || []).map(item => item && item.id === crew.id ? updatedCrew : item);
             persist();
             setStatus('เปลี่ยนตำแหน่งสมาชิกแล้ว');
             renderCrewPanel();
@@ -946,6 +956,7 @@
         switch (entry.type) {
           case 'joined': return characterName(entry.characterId) + ' เข้าร่วมลูกเรือ · ' + entry.role;
           case 'ship-purchased': return 'ซื้อเรือใบลำเล็กสำหรับลูกเรือ';
+          case 'role-changed': return characterName(entry.characterId) + ' เปลี่ยนตำแหน่งจาก ' + entry.from + ' เป็น ' + entry.to;
           case 'left': return characterName(entry.characterId) + ' ออกจากลูกเรือ';
           case 'captaincy-transferred': return 'เปลี่ยนกัปตันจาก ' + characterName(entry.from) + ' เป็น ' + characterName(entry.to);
           case 'bounty-increased': return 'ค่าหัวเพิ่มขึ้น ' + Number(entry.amount || 0).toLocaleString('th-TH') + ' เบรี';
