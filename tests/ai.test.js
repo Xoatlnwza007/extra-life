@@ -1441,3 +1441,30 @@ test('Roger-era preset button is installed once and selects the Roger-era birth 
   assert.equal(renders, 1);
   assert.equal(button.id, 'rogerEraPreset');
 });
+
+
+test('Roger-era content loader waits for game initialization and loads only once', async () => {
+  const scripts = [];
+  const listeners = {};
+  const host = {
+    document: {
+      readyState: 'loading',
+      head: {
+        appendChild(script) {
+          scripts.push(script.src);
+          host.OnePieceRogerEraContent = { register() {} };
+          queueMicrotask(() => script.onload());
+        }
+      },
+      createElement: () => ({}),
+      addEventListener(name, handler) { listeners[name] = handler; }
+    }
+  };
+  assert.equal(world.scheduleRogerEraContent(host), true);
+  assert.equal(scripts.length, 0);
+  listeners.DOMContentLoaded();
+  assert.equal(await host.__onePieceRogerEraPromise, true);
+  assert.equal(scripts.length, 1);
+  assert.equal(await world.loadRogerEraContent(host), true);
+  assert.equal(scripts.length, 1);
+});
