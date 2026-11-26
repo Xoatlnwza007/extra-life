@@ -549,6 +549,23 @@ test('One Piece yearly simulation automatically advances the full living NPC pop
 });
 
 
+
+test('One Piece yearly simulation advances a solo living NPC through all twelve months', () => {
+  const npcs = [{ n: 'Last Sailor', r: 'grump', alive: true }];
+  const gameState = { world: 'op', year: 1520, npcBrains: {} };
+  const result = world.simulate(gameState, npcs, { random: () => 0.25 });
+
+  assert.equal(result.simulatedCount, 1);
+  assert.equal(result.simulatedMonths, 12);
+  assert.equal(result.actionCount, 12);
+  assert.equal(result.actions.length, 12);
+  assert.equal(result.monthlyResults.length, 12);
+  assert.equal(result.simulationCalendar.year, 1520);
+  assert.equal(result.simulationCalendar.totalMonths, 12);
+  assert.ok(result.profiles['Last Sailor']);
+  assert.deepEqual(gameState.npcSimulationCalendar, result.simulationCalendar);
+});
+
 test('One Piece population remains valid across twelve annual simulation ticks', () => {
   const npcs = [
     { n: 'Gossip', r: 'gossip', alive: true },
