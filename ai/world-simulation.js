@@ -569,10 +569,11 @@
     return promise;
   }
 
-  function crewNpcId(npc) {
+  function crewNpcId(npc, index) {
     if (!npc) return null;
     if (npc.id !== undefined && npc.id !== null && String(npc.id)) return String(npc.id);
-    return npc.n ? 'npc:' + String(npc.n) : null;
+    if (!npc.n) return null;
+    return 'npc:' + (Number.isInteger(index) && index >= 0 ? index + ':' : '') + String(npc.n);
   }
 
   function getPlayerCrew(worldState, crewApi = root.OnePieceCrewSystem) {
@@ -604,7 +605,8 @@
     }
     const crew = getPlayerCrew(worldState, crewApi);
     if (!crew) return { crew: null, joined: false, reason: 'no-player-crew' };
-    const characterId = crewNpcId(npc);
+    const npcIndex = Array.isArray(worldState.npcs) ? worldState.npcs.indexOf(npc) : -1;
+    const characterId = crewNpcId(npc, npcIndex);
     if (!characterId || characterId === 'player') {
       return { crew, joined: false, reason: 'invalid-character' };
     }
@@ -780,7 +782,7 @@
       body.appendChild(make('h4', 'สมาชิกในลูกเรือ'));
       for (const member of crew.members || []) {
         const row = make('div', undefined, 'el-crew-row');
-        const npc = (state.npcs || []).find(item => crewNpcId(item) === member.characterId);
+        const npc = (state.npcs || []).find((item, index) => crewNpcId(item, index) === member.characterId);
         const label = member.characterId === 'player'
           ? (state.name || 'ผู้เล่น') + ' · กัปตัน'
           : (npc ? npc.n + ' · ' + member.role : member.characterId + ' · ' + member.role);
@@ -800,7 +802,7 @@
       body.appendChild(make('h4', 'ชวน NPC เข้าร่วม'));
       const candidates = (state.npcs || []).filter(npc => {
         if (!npc || !npc.alive) return false;
-        const id = crewNpcId(npc);
+        const id = crewNpcId(npc, (state.npcs || []).indexOf(npc));
         return id && !api.findCrewForMember(state.crews || [], id);
       });
       if (!candidates.length) {
