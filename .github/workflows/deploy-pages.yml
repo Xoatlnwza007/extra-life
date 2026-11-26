@@ -6,7 +6,7 @@ on:
       - one-piece-development
     paths:
       - index.html
-      - ai/**
+      - ai/*.js
       - about/**
   workflow_dispatch:
 
