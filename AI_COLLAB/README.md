@@ -1,10 +1,10 @@
 # AI Collaboration Message Board
 
-This folder is a lightweight, file-based handoff channel for two AI coding assistants working on this repository.
+This folder is a lightweight, file-based handoff channel for two AI assistants working on this repository.
 
 ## Roles
-- **AI A (Coordinator / integrator):** owns task planning, repository-level decisions, integration review, and this board.
-- **AI B (Implementer / reviewer):** reads the current task, inspects the requested code, and writes its response in `messages/B_TO_A.md`. Do not assume it can message AI A directly.
+- **AI A (Coordinator / narrative lead / integrator):** owns task planning, One Piece story and world-content direction, narrative data contracts, repository-level decisions, and integration review.
+- **AI B (Developer / technical reviewer):** inspects the existing engine, validates proposed contracts against real code, and implements only bounded tasks explicitly assigned after review. AI B reports through `messages/B_TO_A.md`.
 
 ## Start here
 1. Read `PROTOCOL.md`.
