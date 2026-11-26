@@ -538,12 +538,17 @@
 
 
   const COMPANION_MODULES = Object.freeze([
+    { src: './ai/decision-engine.js', globalName: 'OnePieceDecisionEngine' },
+    { src: './ai/character-state.js', globalName: 'OnePieceCharacterState' },
+    { src: './ai/npc-brain.js', globalName: 'OnePieceNPCBrain' },
     { src: './ai/event-adapter.js', globalName: 'OnePieceEventAdapter' },
     { src: './ai/crew-system.js', globalName: 'OnePieceCrewSystem' },
     { src: './ai/devil-fruit-system.js', globalName: 'OnePieceDevilFruitSystem' },
     { src: './ai/haki-system.js', globalName: 'OnePieceHakiSystem' },
     { src: './ai/progression-system.js', globalName: 'OnePieceProgressionSystem' },
-    { src: './ai/marine-system.js', globalName: 'OnePieceMarineSystem' }
+    { src: './ai/marine-system.js', globalName: 'OnePieceMarineSystem' },
+    { src: './ai/combat-adapter.js', globalName: 'OnePieceCombatAdapter' },
+    { src: './ai/marine-ui.js', globalName: 'OnePieceMarineUI' }
   ]);
 
   function loadCompanionModules(host = root) {
@@ -1044,7 +1049,7 @@
 
   function getProgressionControlsStyles() {
     return `
-      #extra-life-progression-tools{position:fixed;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:2147482990;font:14px/1.45 system-ui,sans-serif;color:#18211c;max-width:calc(100vw - 24px)}
+      #extra-life-progression-tools{position:fixed;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(82px + env(safe-area-inset-bottom,0px));z-index:2147482990;font:14px/1.45 system-ui,sans-serif;color:#18211c;max-width:calc(100vw - 24px)}
       #extra-life-progression-tools button{font:inherit;cursor:pointer;touch-action:manipulation;min-width:48px;min-height:48px;padding:10px 14px;border:1px solid #aab5aa;border-radius:10px;background:#203f32;color:#fff;font-weight:700}
       #extra-life-progression-tools .el-progression-panel{display:none;width:min(340px,calc(100vw - 24px));max-height:calc(100dvh - 90px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));overflow:auto;overscroll-behavior:contain;margin-bottom:8px;padding:14px;background:#f5f7f2;border:1px solid #aab5aa;border-radius:14px;box-shadow:0 5px 24px #0003}
       #extra-life-progression-tools[data-open="true"] .el-progression-panel{display:grid;gap:8px}
@@ -1053,7 +1058,7 @@
       #extra-life-progression-tools .el-progression-bar{height:8px;border-radius:8px;background:#dce3da;overflow:hidden}
       #extra-life-progression-tools .el-progression-bar span{display:block;height:100%;background:#347b55}
       #extra-life-progression-tools .el-progression-close{justify-self:end;background:#e7ece5;color:#18211c}
-      @media(max-width:560px){#extra-life-progression-tools{left:max(8px,env(safe-area-inset-left,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px))}#extra-life-progression-tools .el-progression-panel{width:min(340px,calc(100vw - 16px))}}
+      @media(max-width:560px){#extra-life-progression-tools{left:max(8px,env(safe-area-inset-left,0px));bottom:calc(78px + env(safe-area-inset-bottom,0px))}#extra-life-progression-tools .el-progression-panel{width:min(340px,calc(100vw - 16px))}}
     `;
   }
 
@@ -1313,5 +1318,5 @@
   installBrowserSaveProtection(root);
   installMobileTouchStyles(root);
   scheduleSaveControls(root);
-  loadCompanionModules(root).then(loaded => { if (loaded) { scheduleCrewControls(root); scheduleProgressionControls(root); } });
+  loadCompanionModules(root).then(loaded => { if (loaded) { scheduleCrewControls(root); scheduleProgressionControls(root); if (root.OnePieceMarineUI) root.OnePieceMarineUI.scheduleMarineControls(root); } });
 })(typeof globalThis !== 'undefined' ? globalThis : this);
