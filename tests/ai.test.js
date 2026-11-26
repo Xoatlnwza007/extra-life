@@ -541,3 +541,82 @@ test('save system does not discard damaged save data when both copies are invali
   assert.equal(values.get('extra-life-v2'), '{"primary":');
   assert.equal(values.get('extra-life-v2-backup'), '{"backup":');
 });
+
+
+test('save manager exports a verified save and imports it without losing the current backup', () => {
+  const values = new Map();
+  const storage = {
+    getItem: key => values.has(key) ? values.get(key) : null,
+    setItem: (key, value) => values.set(key, String(value))
+  };
+  const manager = world.saveSystem.createManager(storage);
+
+  manager.save({ captain: 'Current Captain', berries: 900 });
+  const exported = manager.exportSave();
+  assert.equal(exported.ok, true);
+  assert.match(exported.filename, /extra-life-save-v1\.json$/);
+  assert.equal(world.saveSystem.decode(exported.data).data.captain, 'Current Captain');
+
+  const importedPayload = world.saveSystem.encode({
+    captain: 'Imported Captain', berries: 1200,
+    npcSimulationCalendar: { year: 1524, month: 6, totalMonths: 30 }
+  });
+  const imported = manager.importSave(importedPayload);
+  assert.equal(imported.ok, true);
+  assert.equal(manager.load().state.captain, 'Imported Captain');
+  assert.equal(manager.load().state.npcSimulationCalendar.totalMonths, 30);
+  assert.equal(world.saveSystem.decode(values.get('extra-life-v2-backup')).data.captain, 'Current Captain');
+});
+
+test('save manager rejects invalid imports and preserves the current game save', () => {
+  const values = new Map();
+  const storage = {
+    getItem: key => values.has(key) ? values.get(key) : null,
+    setItem: (key, value) => values.set(key, String(value))
+  };
+  const manager = world.saveSystem.createManager(storage);
+  manager.save({ captain: 'Safe Captain', berries: 500 });
+  const before = values.get('extra-life-v2');
+
+  assert.equal(manager.importSave('not-json').reason, 'invalid-json');
+  const tampered = JSON.parse(world.saveSystem.encode({ captain: 'Tampered', berries: 1 }));
+  tampered.berries = 999999;
+  assert.equal(manager.importSave(JSON.stringify(tampered)).reason, 'checksum-mismatch');
+  assert.equal(values.get('extra-life-v2'), before);
+  assert.equal(manager.load().state.captain, 'Safe Captain');
+});
+
+test('save manager can import a legacy unversioned JSON file', () => {
+  const values = new Map();
+  const storage = {
+    getItem: key => values.has(key) ? values.get(key) : null,
+    setItem: (key, value) => values.set(key, String(value))
+  };
+  const manager = world.saveSystem.createManager(storage);
+  const result = manager.importSave(JSON.stringify({
+    captain: 'Old Era Captain', age: 47, npcBrains: { Robin: { memories: [] } }
+  }));
+
+  assert.equal(result.ok, true);
+  assert.equal(result.migrated, true);
+  assert.equal(manager.load().state.captain, 'Old Era Captain');
+});
+
+test('save import from a future schema is rejected without replacing local progress', () => {
+  const values = new Map();
+  const storage = {
+    getItem: key => values.has(key) ? values.get(key) : null,
+    setItem: (key, value) => values.set(key, String(value))
+  };
+  const manager = world.saveSystem.createManager(storage);
+  manager.save({ captain: 'Local Captain' });
+  const before = values.get('extra-life-v2');
+  const future = JSON.stringify({
+    captain: 'Future Captain',
+    _saveMeta: { schemaVersion: world.saveSystem.version + 1, checksum: 'future' }
+  });
+
+  assert.equal(manager.importSave(future).reason, 'future-version');
+  assert.equal(values.get('extra-life-v2'), before);
+  assert.equal(manager.load().state.captain, 'Local Captain');
+});
