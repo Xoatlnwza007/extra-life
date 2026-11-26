@@ -94,6 +94,27 @@
     };
   }
 
+  function interact(first, second, delta, options = {}) {
+    if (!first || !second || !first.id || !second.id || first.id === second.id) {
+      return { first, second };
+    }
+    const firstDelta = Number(delta);
+    const secondDelta = Number(options.replyDelta ?? delta);
+    const nextFirst = Number.isFinite(firstDelta)
+      ? adjustRelationship(first, second.id, firstDelta, {
+          event: options.event || 'interaction',
+          createdAt: options.createdAt
+        })
+      : first;
+    const nextSecond = Number.isFinite(secondDelta)
+      ? adjustRelationship(second, first.id, secondDelta, {
+          event: options.replyEvent || options.event || 'interaction',
+          createdAt: options.createdAt
+        })
+      : second;
+    return { first: nextFirst, second: nextSecond };
+  }
+
   function relationshipLabel(score) {
     const value = clamp(Number(score) || 0, -100, 100);
     if (value >= 80) return 'devoted';
@@ -120,7 +141,7 @@
     return { ...character, memories, goals, updatedAt: new Date(now).toISOString() };
   }
 
-  const api = Object.freeze({ createCharacterState, remember, addGoal, updateGoal, getRelationship, adjustRelationship, relationshipLabel, advanceTime });
+  const api = Object.freeze({ createCharacterState, remember, addGoal, updateGoal, getRelationship, adjustRelationship, interact, relationshipLabel, advanceTime });
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.OnePieceCharacterState = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
