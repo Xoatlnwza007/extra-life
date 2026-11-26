@@ -710,6 +710,7 @@ test('browser localStorage hook recovers a damaged save from backup', () => {
   const storage = new MemoryStorage();
   host.localStorage = storage;
   world.saveSystem.installBrowserProtection(host);
+  storage.setItem('extra-life-v2', JSON.stringify({ captain: 'Previous Captain' }));
   storage.setItem('extra-life-v2', JSON.stringify({ captain: 'Recoverable Captain' }));
   storage.values.set('extra-life-v2', '{damaged');
 
