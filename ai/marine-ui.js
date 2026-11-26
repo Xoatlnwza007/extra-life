@@ -121,8 +121,14 @@
       body.replaceChildren();
       const bounty = getBounty(state);
       const now = new Date().toISOString();
-      const force = getMarineForce(state, api, now);
-      const record = force.wantedRecords && force.wantedRecords.player;
+      let force = getMarineForce(state, api, now);
+      let record = force.wantedRecords && force.wantedRecords.player;
+      const gameMonth = finite(state.year) * 12 + finite(state.mo);
+      if (record && record.status === 'captured' && finite(state.flags && state.flags.jailUntil) <= gameMonth) {
+        record = { ...record, status: 'wanted', pursuit: null, confidence: Math.max(0, finite(record.confidence) - 15) };
+        force = { ...force, wantedRecords: { ...force.wantedRecords, player: record }, updatedAt: now };
+        state.marineForce = force;
+      }
       if (!bounty) {
         body.appendChild(make('p', 'ขณะนี้ยังไม่มีค่าหัว กองทัพเรือจึงยังไม่มีประกาศจับของคุณ', 'el-marine-muted'));
         return;
@@ -155,6 +161,47 @@
       body.appendChild(check);
 
       if (record && record.status === 'tracking' && record.pursuit) {
+        const confront = make('button', actionAvailable(state, 'confront') ? 'เผชิญหน้าหน่วยไล่ล่า' : 'เผชิญหน้าแล้วในเดือนนี้');
+        confront.disabled = !actionAvailable(state, 'confront');
+        confront.addEventListener('click', () => {
+          if (!actionAvailable(state, 'confront')) return setStatus('เผชิญหน้าหน่วยไล่ล่าได้อีกครั้งในเดือนเกมถัดไป');
+          const fit = finite(state.st && state.st.fit, 40);
+          const hakiMastery = Object.values(state.haki || {}).reduce((sum, item) => sum + finite(item && item.mastery), 0);
+          const fruitMastery = finite(state.devilFruit && state.devilFruit.mastery);
+          const targetStrength = Math.max(20, Math.min(100, 35 + fit * 0.45 + hakiMastery * 0.1 + fruitMastery * 0.05));
+          const crew = (state.crews || []).find(item => item && item.id === state.playerCrewId && item.status === 'active');
+          const support = Math.min(25, Math.max(0, ((crew && crew.members) || []).length - 1) * 5);
+          const result = api.resolveEncounter(record, {
+            marineStrength: force.strength,
+            targetStrength,
+            support,
+            at: now
+          });
+          if (!result.resolved) return setStatus('ไม่มีการเผชิญหน้าที่กำลังดำเนินอยู่');
+          const next = result.record;
+          state.marineForce = {
+            ...force,
+            wantedRecords: { ...force.wantedRecords, player: next },
+            updatedAt: now
+          };
+          state.marineActionAt = { period: currentPeriod(state), action: 'confront' };
+          if (result.captured) {
+            const years = bounty >= 100000000 ? 3 : bounty >= 10000000 ? 2 : 1;
+            state.flags.jailUntil = gameMonth + years * 12;
+            state.job = null;
+            state.rent = null;
+            state.heat = 0;
+            if (typeof host.say === 'function') host.say('กองทัพเรือจับกุมคุณได้ คุณถูกส่งตัวไปคุมขัง', 'bad');
+            if (typeof host.remember === 'function') host.remember('ถูกกองทัพเรือจับกุม', 'โทษจำคุก ' + years + ' ปี', 'grief', 3);
+            setStatus('ถูกจับกุมแล้ว · จำคุก ' + years + ' ปี');
+          } else {
+            if (typeof host.say === 'function') host.say('คุณฝ่าวงล้อมของกองทัพเรือและหลบหนีไปได้', 'good');
+            setStatus('คุณหลบหนีจากการเผชิญหน้าได้ แต่ค่าหัวยังคงอยู่');
+          }
+          persist();
+          render();
+        });
+        body.appendChild(confront);
         const evade = make('button', actionAvailable(state, 'evade') ? 'หลบซ่อนและตัดร่องรอย' : 'หลบหนีแล้วในเดือนนี้');
         evade.disabled = !actionAvailable(state, 'evade');
         evade.addEventListener('click', () => {
