@@ -143,3 +143,12 @@
 - **Files:** ai/world-simulation.js, tests/ai.test.js, ai/README.md
 - **Result:** Existing S.flags.df and df_* power flags now migrate into S.devilFruit with a deterministic stable ID, preserving the existing fruit name/type and enabling mastery training/awakening. No fruit is granted to characters without legacy fruit state.
 - **Verification:** GitHub Actions run 45854778043 — 67 passed, 0 failed.
+
+
+### GAMEPLAY-007 — Integrate active pirate crew into combat outcomes
+- **Owner:** AI B
+- **Status:** DONE — CI passed
+- **Files:** ai/combat-adapter.js, tests/ai.test.js, ai/README.md
+- **Result:** Active selected player crew grants +1% outgoing damage and +0.5% incoming-damage reduction per living non-player member, capped at four members. Duplicate/dead members and foreign/inactive crews do not contribute. Uses the existing combat adapter.
+- **Verification:** GitHub Actions run 45856586478 — 69 passed, 0 failed.
+- **Boundary:** No index.html changes; main untouched.
