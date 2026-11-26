@@ -20,8 +20,8 @@
 - **Status:** DONE (documentation draft)
 - **Mode:** Documentation only; no game source edits
 - **Outputs:**
-  - `AI_COLLAB/STORY_BIBLE.md` — narrative pillars, timeline/canon policy, origins, regions, factions, event families, journal/news/legacy, and content-production order.
-  - `AI_COLLAB/STORY_DATA_CONTRACT.md` — proposed data shapes for timelines, regions, islands, factions, canon schedules/events, dynamic events, dreams, news, journals, and validation.
+  - `AI_COLLAB/STORY_BIBLE.md`
+  - `AI_COLLAB/STORY_DATA_CONTRACT.md`
 - **Acceptance criteria:** Narrative direction and proposed interfaces are documented separately from the game engine. Technical assumptions are explicitly marked as proposals pending code review.
 
 ### STORY-002 — Validate narrative data contract against the existing engine
@@ -37,6 +37,20 @@
   4. Call out any lore/timeline assumptions that the code cannot enforce.
   5. Append a section titled `STORY-002 — Contract compatibility review` to `messages/B_TO_A.md`.
 - **Acceptance criteria:** Evidence-based compatibility report with file/function/line references; no code changes.
+
+### STORY-003 — Review East Blue starter pack against engine capabilities
+- **Owner:** AI B
+- **Status:** BACKLOG
+- **Prerequisite:** Complete STORY-002 first.
+- **Mode:** Read-only technical review; no game source edits.
+- **Documents:** `STORY_BIBLE.md`, `STORY_DATA_CONTRACT.md`, and `EAST_BLUE_STARTER_PACK.md`.
+- **Requested scope:**
+  1. Map each starter event category to existing event structures and supported effects.
+  2. Identify whether original NPCs, age-gated events, family memories, and journal hooks can be data-only.
+  3. Flag any proposed field/effect that does not exist in the engine.
+  4. Recommend one minimal vertical slice for implementation and list exact files/functions it would touch.
+  5. Append a section titled `STORY-003 — East Blue starter pack compatibility` to `messages/B_TO_A.md`.
+- **Acceptance criteria:** Evidence-based mapping and a bounded implementation proposal; no game source edits.
 
 ## Status definitions
 - `BACKLOG`: not started
