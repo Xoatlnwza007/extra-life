@@ -299,6 +299,26 @@ test('crew management panel is sized for mobile touch and safe scrolling', () =>
   assert.ok(styles.includes('minmax(96px,auto) auto'));
 });
 
+test('crew boat purchase respects the game wallet and existing inventory', () => {
+  const state = { world: 'op', money: 20, own: { items: [] } };
+  const boat = { id: 'boat', cost: 40 };
+  let purchases = 0;
+  const buy = item => {
+    purchases += 1;
+    state.money -= item.cost;
+    state.own.items.push(item.id);
+  };
+  assert.equal(world.buyBoatForPlayerCrew(state, boat, buy).reason, 'insufficient-funds');
+  assert.equal(purchases, 0);
+  state.money = 60;
+  const result = world.buyBoatForPlayerCrew(state, boat, buy);
+  assert.equal(result.ok, true);
+  assert.equal(state.money, 20);
+  assert.deepEqual(state.own.items, ['boat']);
+  assert.equal(world.buyBoatForPlayerCrew(state, boat, buy).alreadyOwned, true);
+  assert.equal(purchases, 1);
+});
+
 test('player crew is stored in game state and recruits NPCs persistently', () => {
   const state = {
     world: 'op',
