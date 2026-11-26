@@ -445,3 +445,99 @@ test('legacy saves without NPC simulation metadata initialize safely', () => {
   assert.equal(result.simulationCalendar.totalMonths, 12);
   assert.deepEqual(legacySave.npcSimulationCalendar, result.simulationCalendar);
 });
+
+
+test('save system migrates legacy saves into the current versioned schema', () => {
+  const values = new Map([['extra-life-v2', JSON.stringify({
+    name: 'Legacy Captain', age: 31, npcBrains: { Chopper: { memories: [] } }
+  })]]);
+  const storage = {
+    getItem: key => values.has(key) ? values.get(key) : null,
+    setItem: (key, value) => values.set(key, String(value))
+  };
+  const manager = world.saveSystem.createManager(storage);
+  const loaded = manager.load();
+
+  assert.equal(loaded.state.name, 'Legacy Captain');
+  assert.equal(loaded.migrated, true);
+  const saved = manager.save(loaded.state);
+  assert.equal(saved.ok, true);
+  const decoded = world.saveSystem.decode(values.get('extra-life-v2'));
+  assert.equal(decoded.ok, true);
+  assert.equal(decoded.fromVersion, 1);
+  assert.equal(decoded.data.name, 'Legacy Captain');
+});
+
+test('save system keeps a last-known-good backup and recovers a corrupted primary', () => {
+  const values = new Map();
+  const storage = {
+    getItem: key => values.has(key) ? values.get(key) : null,
+    setItem: (key, value) => values.set(key, String(value))
+  };
+  const manager = world.saveSystem.createManager(storage);
+
+  assert.equal(manager.save({ name: 'First Captain', age: 20 }).ok, true);
+  assert.equal(manager.save({ name: 'Second Captain', age: 21 }).ok, true);
+  assert.equal(world.saveSystem.decode(values.get('extra-life-v2-backup')).data.name, 'First Captain');
+
+  values.set('extra-life-v2', '{"broken":');
+  const loaded = manager.load();
+  assert.equal(loaded.recovered, true);
+  assert.equal(loaded.source, 'backup');
+  assert.equal(loaded.state.name, 'First Captain');
+});
+
+test('save system can recover from a missing primary using its backup', () => {
+  const values = new Map();
+  const storage = {
+    getItem: key => values.has(key) ? values.get(key) : null,
+    setItem: (key, value) => values.set(key, String(value))
+  };
+  const manager = world.saveSystem.createManager(storage);
+  manager.save({ name: 'Backup Captain', age: 42 });
+  manager.save({ name: 'Current Captain', age: 43 });
+  values.delete('extra-life-v2');
+
+  const loaded = manager.load();
+  assert.equal(loaded.recovered, true);
+  assert.equal(loaded.state.name, 'Backup Captain');
+});
+
+test('save system refuses future schema versions and detects checksum tampering', () => {
+  const values = new Map();
+  const storage = {
+    getItem: key => values.has(key) ? values.get(key) : null,
+    setItem: (key, value) => values.set(key, String(value))
+  };
+  const manager = world.saveSystem.createManager(storage);
+  const future = JSON.stringify({
+    name: 'Future Captain',
+    _saveMeta: { schemaVersion: world.saveSystem.version + 1, checksum: 'future' }
+  });
+  values.set('extra-life-v2', future);
+
+  assert.equal(manager.load().readOnly, true);
+  assert.equal(manager.save({ name: 'Overwrite Attempt' }).reason, 'future-version');
+  assert.equal(values.get('extra-life-v2'), future);
+
+  const encoded = world.saveSystem.encode({ name: 'Checksum Captain', age: 25 });
+  const altered = JSON.parse(encoded);
+  altered.age = 99;
+  assert.equal(world.saveSystem.decode(JSON.stringify(altered)).reason, 'checksum-mismatch');
+});
+
+test('save system does not discard damaged save data when both copies are invalid', () => {
+  const values = new Map([
+    ['extra-life-v2', '{"primary":'],
+    ['extra-life-v2-backup', '{"backup":']
+  ]);
+  const storage = {
+    getItem: key => values.has(key) ? values.get(key) : null,
+    setItem: (key, value) => values.set(key, String(value))
+  };
+  const loaded = world.saveSystem.createManager(storage).load();
+
+  assert.equal(loaded.state, null);
+  assert.equal(values.get('extra-life-v2'), '{"primary":');
+  assert.equal(values.get('extra-life-v2-backup'), '{"backup":');
+});
