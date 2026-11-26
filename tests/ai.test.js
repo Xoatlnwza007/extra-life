@@ -277,6 +277,7 @@ test('pirate crew panel creates a crew and recruits an NPC through its controls'
     const buyButton = panelBody.children.find(node => node.tagName === 'BUTTON' && node.textContent.startsWith('ซื้อเรือใบ'));
     buyButton.click();
     assert.deepEqual(state.own.items, ['boat']);
+    assert.ok(state.crews[0].history.some(entry => entry.type === 'ship-purchased'));
     const shipForm = panelBody.children.find(node => node.className === 'el-crew-form');
     shipForm.children[0].value = 'Going Merry';
     shipForm.children[1].click();
