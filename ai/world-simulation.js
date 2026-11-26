@@ -542,6 +542,7 @@
     { src: './ai/crew-system.js', globalName: 'OnePieceCrewSystem' },
     { src: './ai/devil-fruit-system.js', globalName: 'OnePieceDevilFruitSystem' },
     { src: './ai/haki-system.js', globalName: 'OnePieceHakiSystem' },
+    { src: './ai/progression-system.js', globalName: 'OnePieceProgressionSystem' },
     { src: './ai/marine-system.js', globalName: 'OnePieceMarineSystem' }
   ]);
 
