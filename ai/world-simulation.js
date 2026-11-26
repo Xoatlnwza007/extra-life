@@ -67,7 +67,8 @@
 
     const random = typeof context.random === 'function' ? context.random : Math.random;
     const actor = (context.actorId && living.find(npc => npc.n === context.actorId)) || living[Math.floor(random() * living.length)];
-    const now = Number.isFinite(context.now) ? context.now : Date.now();\n    let profile = stateApi.advanceTime(profiles[actor.n], now);
+    const now = Number.isFinite(context.now) ? context.now : Date.now();
+    let profile = stateApi.advanceTime(profiles[actor.n], now);
     const candidates = [
       { id: 'rest', label: 'พักผ่อนและดูแลตัวเอง', tags: ['rest', 'safety'], relief: { energy: 18, safety: 5 }, risk: 2, expectedReward: 1 },
       { id: 'socialize', label: 'พบปะพูดคุยกับคนในชุมชน', tags: ['socialize'], relief: { social: 20 }, relationshipValue: 2, expectedReward: 2 },
