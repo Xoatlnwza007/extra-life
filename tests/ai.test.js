@@ -1288,7 +1288,7 @@ test('player progression controls train unlocked Haki and fruit once per game ye
     armamentRow.children[1].click();
     assert.equal(state.haki.armament.mastery, 5);
     assert.equal(state.progressionTraining['haki:armament'], 1522);
-    assert.equal(saves, 1);
+    assert.equal(saves, 2); // Initial unlock sync plus Haki training.
     assert.equal(content.children.length > 0, true);
 
     const fruitTrain = content.children.find(node =>
@@ -1296,7 +1296,7 @@ test('player progression controls train unlocked Haki and fruit once per game ye
     assert.ok(fruitTrain);
     fruitTrain.click();
     assert.equal(state.devilFruit.mastery, 5);
-    assert.equal(saves, 2);
+    assert.equal(saves, 3);
     assert.match(world.getProgressionControlsStyles(), /any-pointer|100dvh|safe-area-inset/);
   } finally {
     delete globalThis.S;
