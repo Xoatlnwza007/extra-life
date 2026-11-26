@@ -282,7 +282,7 @@ the full reload flow still need manual verification in Chrome Android/Desktop.
 
 ## Mobile and tablet touch support
 
-The main game already has responsive layouts for narrow screens. The browser bootstrap adds touch-specific rules when the device reports a coarse pointer: primary actions and segmented controls receive larger hit areas, the bottom action bar can scroll on short phone screens, and dialogs respect display safe areas. The floating save and crew panels also use touch-sized controls and safe-area spacing. Automated tests verify these layout rules; real-device testing on Android and iPad/iPhone browsers is still required.
+The main game already has responsive layouts for narrow screens. The browser bootstrap adds touch-specific rules when the device reports a coarse pointer: primary actions and segmented controls receive larger hit areas, the bottom action bar can scroll on short phone screens, and dialogs respect display safe areas. The floating save, crew, progression, and Marine panels use touch-sized controls and safe-area spacing. The progression panel is anchored above the crew panel on the lower-left, while the Marine panel uses the lower-right, preventing the primary triggers from overlapping on narrow phone screens. Automated tests verify the anchors and layout rules; real-device testing on Android and iPad/iPhone browsers is still required.
 
 
 ## Marine intelligence and pirate pursuit
