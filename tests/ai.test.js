@@ -27,7 +27,8 @@ test('browser bootstrap loads the One Piece companion systems in dependency orde
             './ai/devil-fruit-system.js': 'OnePieceDevilFruitSystem',
             './ai/haki-system.js': 'OnePieceHakiSystem',
             './ai/progression-system.js': 'OnePieceProgressionSystem',
-            './ai/marine-system.js': 'OnePieceMarineSystem'
+            './ai/marine-system.js': 'OnePieceMarineSystem',
+            './ai/marine-ui.js': 'OnePieceMarineUI'
           };
           host[globals[script.src]] = {};
           queueMicrotask(() => script.onload());
@@ -43,10 +44,11 @@ test('browser bootstrap loads the One Piece companion systems in dependency orde
     './ai/devil-fruit-system.js',
     './ai/haki-system.js',
     './ai/progression-system.js',
-    './ai/marine-system.js'
+    './ai/marine-system.js',
+    './ai/marine-ui.js'
   ]);
   assert.equal(await world.loadCompanionModules(host), true);
-  assert.equal(scripts.length, 6);
+  assert.equal(scripts.length, 7);
 });
 
 test('browser bootstrap reports a missing companion module without stopping later loads', async () => {
@@ -1467,4 +1469,53 @@ test('Roger-era content loader waits for game initialization and loads only once
   assert.equal(scripts.length, 1);
   assert.equal(await world.loadRogerEraContent(host), true);
   assert.equal(scripts.length, 1);
+});
+
+
+test('Marine UI shows wanted status, detects a patrol, and allows monthly evasion', () => {
+  const marine = require('../ai/marine-system.js');
+  const marineUI = require('../ai/marine-ui.js');
+  const state = {
+    world: 'op', alive: true, name: 'Test Pirate', year: 1522, mo: 3,
+    place: 'foosha_village', flags: { bounty: 1000000 }, marineForce: null
+  };
+  function element(tag) {
+    return {
+      tagName: tag.toUpperCase(), children: [], attributes: {}, listeners: {}, hidden: false,
+      appendChild(child) { this.children.push(child); return child; },
+      replaceChildren(...children) { this.children = children; },
+      setAttribute(key, value) { this.attributes[key] = String(value); },
+      getAttribute(key) { return this.attributes[key] || null; },
+      addEventListener(name, handler) { this.listeners[name] = handler; },
+      click() { if (!this.disabled && this.listeners.click) this.listeners.click({ target: this }); }
+    };
+  }
+  const body = element('body'), head = element('head');
+  const doc = { body, head, createElement: element, getElementById() { return null; } };
+  let saves = 0;
+  const host = { S: state, document: doc, OnePieceMarineSystem: marine, save() { saves++; } };
+  const originalRandom = Math.random;
+  try {
+    Math.random = () => 0;
+    assert.equal(marineUI.installMarineControls(host), true);
+    const wrap = body.children.find(node => node.id === 'extra-life-marine-tools');
+    assert.ok(wrap);
+    wrap.children[1].click();
+    const content = wrap.children[0].children[1];
+    const patrol = content.children.find(node => node.tagName === 'BUTTON' && node.textContent.includes('ตรวจสอบ'));
+    assert.ok(patrol);
+    patrol.click();
+    assert.equal(state.marineForce.wantedRecords.player.status, 'tracking');
+    assert.equal(saves, 1);
+    const evade = content.children.find(node => node.tagName === 'BUTTON' && node.textContent.includes('หลบซ่อน'));
+    assert.ok(evade);
+    evade.click();
+    assert.equal(state.marineForce.wantedRecords.player.status, 'wanted');
+    assert.equal(state.marineForce.wantedRecords.player.pursuit, null);
+    assert.equal(state.marineActionAt.period, '1522:3');
+    assert.equal(saves, 2);
+    assert.match(marineUI.getMarineControlsStyles(), /safe-area-inset/);
+  } finally {
+    Math.random = originalRandom;
+  }
 });
