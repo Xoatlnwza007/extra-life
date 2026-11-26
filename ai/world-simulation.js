@@ -537,9 +537,97 @@
     }
   });
 
-  const api = Object.freeze({ simulate, simulatePopulation, saveSystem });
+
+  function installSaveControls(host = root) {
+    const doc = host && host.document;
+    if (!doc || !doc.createElement || !doc.body) return false;
+    if (doc.getElementById('extra-life-save-tools')) return true;
+
+    const style = doc.createElement('style');
+    style.textContent = `
+      #extra-life-save-tools{position:fixed;right:12px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:2147483000;font:14px/1.45 system-ui,sans-serif;color:#18211c}
+      #extra-life-save-tools button{font:inherit;cursor:pointer;border:1px solid #aab5aa;border-radius:10px;padding:10px 13px;background:#f5f7f2;color:#18211c;box-shadow:0 2px 12px #0002}
+      #extra-life-save-tools .el-save-trigger{background:#203f32;color:#fff;border-color:#203f32;font-weight:700}
+      #extra-life-save-tools .el-save-panel{display:none;width:min(290px,calc(100vw - 24px));margin-bottom:8px;padding:12px;background:#f5f7f2;border:1px solid #aab5aa;border-radius:14px;box-shadow:0 5px 24px #0003}
+      #extra-life-save-tools[data-open="true"] .el-save-panel{display:grid;gap:8px}
+      #extra-life-save-tools .el-save-panel p{margin:0 0 4px;font-size:13px}
+      #extra-life-save-tools .el-save-status{min-height:1.4em;font-size:12px;color:#405348;overflow-wrap:anywhere}
+      #extra-life-save-tools .el-save-close{justify-self:end;padding:5px 9px}
+      @media(prefers-reduced-motion:no-preference){#extra-life-save-tools .el-save-panel{animation:elSaveIn .12s ease-out}@keyframes elSaveIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}}
+    `;
+    const wrap = doc.createElement('div');
+    wrap.id = 'extra-life-save-tools';
+    wrap.innerHTML = '<div class="el-save-panel" role="dialog" aria-label="จัดการไฟล์เซฟ"><p><strong>จัดการไฟล์เซฟ</strong></p><button type="button" data-action="export">ส่งออกไฟล์เซฟ</button><button type="button" data-action="import">นำเข้าไฟล์เซฟ</button><div class="el-save-status" role="status" aria-live="polite"></div><button type="button" class="el-save-close" data-action="close">ปิด</button></div><button type="button" class="el-save-trigger" aria-expanded="false">จัดการเซฟ</button><input type="file" accept=".json,application/json" hidden>';
+    doc.head && doc.head.appendChild(style);
+    doc.body.appendChild(wrap);
+
+    const panel = wrap.querySelector('.el-save-panel');
+    const trigger = wrap.querySelector('.el-save-trigger');
+    const input = wrap.querySelector('input[type="file"]');
+    const status = wrap.querySelector('.el-save-status');
+    const manager = createSaveManager(host.localStorage);
+    const setStatus = message => { status.textContent = message; };
+
+    trigger.addEventListener('click', () => {
+      const open = wrap.getAttribute('data-open') !== 'true';
+      wrap.setAttribute('data-open', String(open));
+      trigger.setAttribute('aria-expanded', String(open));
+    });
+    wrap.addEventListener('click', async event => {
+      const action = event.target && event.target.getAttribute('data-action');
+      if (!action) return;
+      if (action === 'close') {
+        wrap.setAttribute('data-open', 'false');
+        trigger.setAttribute('aria-expanded', 'false');
+      } else if (action === 'export') {
+        const result = saveSystem.downloadExport(manager, host);
+        setStatus(result.ok ? 'ส่งออกไฟล์สำเร็จ: ' + result.filename :
+          result.reason === 'missing' ? 'ยังไม่พบข้อมูลเซฟ' : 'ส่งออกไม่สำเร็จ: ' + result.reason);
+      } else if (action === 'import') {
+        input.value = '';
+        input.click();
+      }
+    });
+    input.addEventListener('change', async () => {
+      const file = input.files && input.files[0];
+      if (!file) return;
+      if (file.size > 10 * 1024 * 1024) {
+        setStatus('ไฟล์มีขนาดเกิน 10 MB');
+        return;
+      }
+      const confirmed = typeof host.confirm !== 'function' ||
+        host.confirm('นำเข้าไฟล์เซฟนี้หรือไม่? เซฟปัจจุบันจะถูกเก็บเป็น Backup ก่อน');
+      if (!confirmed) {
+        setStatus('ยกเลิกการนำเข้าแล้ว');
+        return;
+      }
+      const result = await saveSystem.importFile(file, manager);
+      if (!result.ok) {
+        setStatus('นำเข้าไม่สำเร็จ: ' + result.reason);
+        return;
+      }
+      setStatus('นำเข้าสำเร็จ กำลังโหลดเกมใหม่…');
+      if (host.location && typeof host.location.reload === 'function') {
+        host.setTimeout(() => host.location.reload(), 250);
+      }
+    });
+    return true;
+  }
+
+  function scheduleSaveControls(host = root) {
+    if (!host || !host.document) return false;
+    const install = () => installSaveControls(host);
+    if (host.document.readyState === 'loading') {
+      host.document.addEventListener('DOMContentLoaded', install, { once: true });
+      return true;
+    }
+    return install();
+  }
+
+  const api = Object.freeze({ simulate, simulatePopulation, saveSystem, installSaveControls });
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.OnePieceWorldSimulation = api;
   root.OnePieceSaveSystem = saveSystem;
   installBrowserSaveProtection(root);
+  scheduleSaveControls(root);
 })(typeof globalThis !== 'undefined' ? globalThis : this);
