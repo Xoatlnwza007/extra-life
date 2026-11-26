@@ -108,3 +108,13 @@
 - **Result:** Bounty-bearing living One Piece characters can inspect wanted status, check for patrol sightings, and evade active pursuit. Each action type is limited to once per in-game month; bounty remains after evasion.
 - **Verification:** GitHub Actions run 45853281096 succeeded.
 - **Known gap:** Arrest/prison/release consequences and location-specific Marine rosters remain future engineering tasks.
+
+
+### GAMEPLAY-004 — Connect Marine capture to the existing prison loop
+- **Owner:** AI B
+- **Status:** DONE — implementation and CI passed
+- **Branch:** ai-b/gameplay-integration; PR #1 draft against one-piece-development
+- **Files:** ai/marine-ui.js, tests/ai.test.js, ai/README.md
+- **Result:** Confronting a Marine pursuit can capture the player and send them into the existing `jailUntil` / `jailed()` / `jailMonth()` flow. Job/rent are cleared, heat resets, and wanted status returns after sentence expiry.
+- **Verification:** GitHub Actions run 45853596837 succeeded.
+- **Remaining:** Location-specific Marine rosters and trial/court mechanics are future work.
