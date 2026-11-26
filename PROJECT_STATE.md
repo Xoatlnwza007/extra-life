@@ -79,12 +79,12 @@ Treat these as open until verified against current `main`.
 ## 7. Roadmap — execute in this order
 
 ### P0 — Establish a safe playable baseline on main
-- [ ] Inspect `main` tree, game bootstrap, One Piece world registration, save/load, time progression, event execution and test setup.
-- [ ] Compare feature-branch modules against `main`; identify missing files, API mismatches and dependencies.
-- [ ] Run the existing test suite on the current main baseline and record the exact result.
-- [ ] Port the highest-value, low-risk modules in small steps, starting with progression, Marine UI and crew combat adapter only after validating their integration points.
-- [ ] Add/adjust CI so One Piece module tests run for main pushes and pull requests.
-- [ ] Update this file after each completed slice.
+- [x] Inspect `main` tree, game bootstrap, One Piece world registration, save/load, time progression, event execution and test setup.
+- [x] Compare feature-branch modules against `main`; identify missing files, API mismatches and dependencies.
+- [x] Establish a Node test harness on `main` (no prior test suite existed there) and record the passing baseline.
+- [x] Port and wire the core low-risk modules: NPC state/brain, event adapter, crew, Devil Fruit, Haki, progression, Marine intelligence/UI and combat adapter.
+- [x] Add CI so One Piece module tests run for `main` pushes and pull requests.
+- [x] Update this file after each completed slice.
 
 ### P1 — Make a coherent One Piece playable loop
 - [ ] Verify character creation / era selection / birth year / age progression for One Piece.
@@ -146,3 +146,31 @@ Do not call the project playable-complete until a new/existing player can:
 
 - Collaboration board HEAD after replacing obsolete ownership instructions: `12d4ebf9ca3e918083eb5ab952301117bc600f0c`.
 - Handoff verification: root `PROJECT_STATE.md` exists on `main`; `AI_COLLAB/START_HERE.md` points every future session to it first. The branch refs were re-fetched after writes and matched these SHAs.
+
+
+## 11. Development log — 2026-11-26 (main integration slice)
+
+### Repository changes
+- Added the missing modular runtime files under `ai/`: `decision-engine.js`, `character-state.js`, `npc-brain.js`, `event-adapter.js`, `crew-system.js`, `devil-fruit-system.js`, `haki-system.js`, `progression-system.js`, `marine-system.js`, `combat-adapter.js`, and `marine-ui.js`. Sources were selectively ported from the previously tested engineering branch after inspecting the main runtime's expected globals.
+- Updated `ai/world-simulation.js` to load all 11 companion modules in dependency order: decision engine → character state → NPC brain → event adapter → crew → Devil Fruit → Haki → progression → Marine rules → combat adapter → Marine UI.
+- Added Marine UI scheduling after the companion load completes.
+- Ported the full player-facing progression panel: yearly +5 training actions for unlocked Haki and existing Devil Fruit users, awakening at 80 mastery, and deterministic migration of legacy Devil Fruit flags into a progression record. Training actions are limited once per game year and saved through the existing game save function.
+- Separated the floating progression panel from the crew panel using mobile-safe offsets.
+- Added `<script src="./ai/world-simulation.js"></script>` after the game's existing inline script in `index.html`.
+- Connected One Piece NPC population simulation to the existing `nextYear()` flow. Each yearly advance simulates nearby living canon cast entries from `castNear(S)`, persists NPC profiles/calendar on `S`, and adds at most one background activity line to the current log. Sea-danger context is true only when `S.place === 'sea'`.
+- Connected the existing battle damage hooks to `OnePieceCombatAdapter` for One Piece only. Other anime worlds retain their existing modifiers.
+- Added `tests/ai.test.js` with 15 tests and `.github/workflows/test-ai.yml` targeting `main` pushes and PRs.
+
+### Verification
+- Latest verified `main` HEAD at this checkpoint: `c7546054efc008a31d03bb89466d43445bd66402`.
+- GitHub Actions run: `45862044639` — **15 passed, 0 failed, 0 skipped**.
+- Automated tests cover companion load order, NPC state/decisions, crew membership, fruit constraints and explicit water exposure, Haki progression, progression coordinator, Marine detection, One Piece-only combat modifiers, versioned save round-trip, twelve-month NPC calendar, mobile panel offsets, runtime script insertion, combat/NPC loop wiring, legacy fruit migration, and once-per-year training.
+- The first attempt to transplant the progression UI omitted the existing crew scheduler; CI caught the missing function. The scheduler was restored and the latest run is green.
+- No browser runtime session, real Android phone, or tablet has been tested. The CI tests execute under Node.js and inspect the HTML wiring; they are not a substitute for a browser/device test.
+
+### Remaining limitations / next work
+- The One Piece event adapter is loaded but not yet connected to a concrete in-game NPC/event choice flow.
+- Marine UI and capture logic are loaded; verify the full panel interactions in a browser and test jail/sentence expiry against the existing game functions.
+- Verify end-to-end save/reload in a real browser, including backup recovery and the timing of the runtime script relative to the game's initial resume check.
+- Verify that nearby cast selection and background NPC simulation produce sensible volume and do not create excessive log noise over long saves.
+- Next concrete engineering task: build a browser-level smoke test for the actual bootstrap and progression/Marine panels; then tighten the event adapter integration and verify save/reload behavior.
