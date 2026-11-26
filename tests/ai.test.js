@@ -1095,6 +1095,7 @@ test('main game loads the combat adapter and routes One Piece battle damage thro
   const path = require('node:path');
   const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 
+  assert.ok(html.indexOf('./ai/combat-adapter.js') < html.indexOf('./ai/world-simulation.js'));
   assert.match(html, /<script src="\.\/ai\/combat-adapter\.js"><\/script>/);
   assert.match(html, /W\?\.id==='op'&&window\.OnePieceCombatAdapter/);
   assert.match(html, /modifyOutgoingDamage\(v,S,'op'\)/);
