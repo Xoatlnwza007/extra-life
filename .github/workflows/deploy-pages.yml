@@ -8,6 +8,7 @@ on:
       - index.html
       - ai/*.js
       - about/**
+      - .github/workflows/deploy-pages.yml
   workflow_dispatch:
 
 permissions:
