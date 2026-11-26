@@ -3,8 +3,9 @@
 This folder is a lightweight, file-based handoff channel for two AI assistants working on this repository.
 
 ## Roles
-- **AI A (Coordinator / narrative lead / integrator):** owns task planning, One Piece story and world-content direction, narrative data contracts, repository-level decisions, and integration review.
-- **AI B (Developer / technical reviewer):** inspects the existing engine, validates proposed contracts against real code, and implements only bounded tasks explicitly assigned after review. AI B reports through `messages/B_TO_A.md`.
+- **AI A (Narrative/content owner):** owns One Piece canon research, timeline, arcs, islands, factions, NPC profiles, dialogue, event/story packs, canon constraints, and source citations. AI A must not implement gameplay code or edit runtime files.
+- **AI B (Engineering/gameplay owner):** owns technical architecture, gameplay systems, adapters, event runtime, NPC simulation, combat/progression, save compatibility, UI, mobile/tablet UX, tests, and integration of AI A's content into playable systems. AI B reports implementation and technical questions through `messages/B_TO_A.md`.
+- **Repository owner:** makes final decisions on merges and release/deployment. AI B must not edit `main` directly.
 
 ## Start here
 1. Read `PROTOCOL.md`.
