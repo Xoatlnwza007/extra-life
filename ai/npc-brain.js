@@ -36,7 +36,7 @@
     };
     const event = outcome.event || ('ทำกิจกรรม: ' + (action.label || action.name || action.id));
     return stateApi.remember(next, event, {
-      tags: [...new Set([...(Array.isArray(action.tags) ? action.tags : []), ...(outcome.tags || [])])],
+      tags: [...new Set([...(Array.isArray(action.tags) ? action.tags : []), ...(Array.isArray(outcome.tags) ? outcome.tags : outcome.tags ? [outcome.tags] : [])].map(String))],
       importance: outcome.importance ?? 1,
       polarity: outcome.polarity || 'positive',
       source: 'npc-action'
