@@ -164,7 +164,7 @@
       if (record && record.pursuit) {
         body.appendChild(make('p', 'การไล่ล่า: ' + record.pursuit.phase + ' · ความคืบหน้า ' + Math.round(record.pursuit.progress) + '% · แรงกดดัน ' + Math.round(record.pursuit.pressure), 'el-marine-muted'));
       }
-      const check = make('button', actionAvailable(state, 'patrol') ? 'ตรวจสอบการลาดตระเวน' : 'ตรวจลาดตระเวนแล้วในเดือนนี้');
+      const check = make('button', actionAvailable(state, 'patrol') ? 'ตรวจสอบการลาดตระเวน' : 'ตรวจสอบการลาดตระเวนแล้วในเดือนนี้');
       check.disabled = !actionAvailable(state, 'patrol') || (record && record.status === 'captured');
       check.addEventListener('click', () => {
         if (!actionAvailable(state, 'patrol')) return setStatus('ตรวจสอบการลาดตระเวนได้อีกครั้งในเดือนเกมถัดไป');
