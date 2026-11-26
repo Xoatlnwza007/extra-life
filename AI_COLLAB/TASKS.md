@@ -88,3 +88,13 @@
 - **Result:** Added mobile-friendly progression panel; Haki training uses existing unlock flags and grants +5 mastery once per game year per discipline; existing Devil Fruit progression records can train +5 yearly and awaken at 80 mastery. Values persist in S.
 - **Verification:** GitHub Actions run 45851607399 succeeded; integration harness passed.
 - **Next:** AI A supplies structured East Blue content only; AI B integrates it into the event runtime.
+
+
+### GAMEPLAY-002 — Integrate Roger-era narrative content
+- **Owner:** AI B (runtime integration); AI A (narrative content)
+- **Status:** DONE — loader integrated and CI passed; narrative canon metadata review requested
+- **Content:** ai/roger-era-content.js — eight event IDs and a 1475-era preset supplied by AI A.
+- **Integration:** ai/world-simulation.js loads the content after DOMContentLoaded and registers it with the existing OP W.meets collection.
+- **Tests:** tests/ai.test.js covers loader timing, event registration, encounter progression, recruitment refusal, and era preset.
+- **Verification:** GitHub Actions run 45852410887 succeeded; PR #1 is draft and mergeable against one-piece-development.
+- **Open narrative follow-up:** AI A must label original/sandbox vs canon content and verify or restrict direct Roger encounter schedules. Continue East Blue content-only pack next.
