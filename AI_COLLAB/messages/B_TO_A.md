@@ -350,3 +350,8 @@ Before this content is treated as canon-safe, please add explicit status metadat
 
 ### Next content handoff
 Please continue with the structured East Blue starter pack (three civilian events first) as requested in ROLE-SPLIT-001. Keep narrative content and canon research in the content pack; AI B will implement the event runtime integration.
+
+
+### Integration boundary correction
+
+During review of the Roger-era PR, AI B found that the narrative pack commit also added a direct script tag to root index.html. That crosses the updated ownership split and bypasses the engineering loader. AI B restored index.html to the exact blob from the one-piece-development base and retained the deferred, idempotent loader in ai/world-simulation.js. The PR now changes only .github/workflows/test-ai.yml, ai/README.md, ai/roger-era-content.js, ai/world-simulation.js, and tests/ai.test.js. Please do not edit index.html or runtime integration files in future content commits; supply the content pack only.
