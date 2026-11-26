@@ -1049,130 +1049,248 @@
 
   function getProgressionControlsStyles() {
     return `
-      #extra-life-progression-tools{position:fixed;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(82px + env(safe-area-inset-bottom,0px));z-index:2147482990;font:14px/1.45 system-ui,sans-serif;color:#18211c;max-width:calc(100vw - 24px)}
-      #extra-life-progression-tools button{font:inherit;cursor:pointer;touch-action:manipulation;min-width:48px;min-height:48px;padding:10px 14px;border:1px solid #aab5aa;border-radius:10px;background:#203f32;color:#fff;font-weight:700}
-      #extra-life-progression-tools .el-progression-panel{display:none;width:min(340px,calc(100vw - 24px));max-height:calc(100dvh - 90px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));overflow:auto;overscroll-behavior:contain;margin-bottom:8px;padding:14px;background:#f5f7f2;border:1px solid #aab5aa;border-radius:14px;box-shadow:0 5px 24px #0003}
-      #extra-life-progression-tools[data-open="true"] .el-progression-panel{display:grid;gap:8px}
-      #extra-life-progression-tools .el-progression-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #dce3da}
-      #extra-life-progression-tools .el-progression-muted{font-size:12px;color:#526257}
-      #extra-life-progression-tools .el-progression-bar{height:8px;border-radius:8px;background:#dce3da;overflow:hidden}
-      #extra-life-progression-tools .el-progression-bar span{display:block;height:100%;background:#347b55}
-      #extra-life-progression-tools .el-progression-close{justify-self:end;background:#e7ece5;color:#18211c}
-      @media(max-width:560px){#extra-life-progression-tools{left:max(8px,env(safe-area-inset-left,0px));bottom:calc(78px + env(safe-area-inset-bottom,0px))}#extra-life-progression-tools .el-progression-panel{width:min(340px,calc(100vw - 16px))}}
+      #extra-life-progression-tools{position:fixed;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(82px + env(safe-area-inset-bottom,0px));z-index:2147482998;font:14px/1.45 system-ui,sans-serif;color:#18211c;max-width:calc(100vw - 24px)}
+      #extra-life-progression-tools button{font:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;border:1px solid #aab5aa;border-radius:10px;min-width:48px;min-height:48px;padding:10px 14px;background:#f5f7f2;color:#18211c}
+      #extra-life-progression-tools .el-progression-trigger{background:#263e62;color:#fff;border-color:#263e62;font-weight:700}
+      #extra-life-progression-tools .el-progression-panel{display:none;width:min(360px,calc(100vw - 24px));max-height:calc(100dvh - 48px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));overflow:auto;overscroll-behavior:contain;margin-bottom:8px;padding:12px;background:#f5f7f2;border:1px solid #aab5aa;border-radius:14px;box-shadow:0 5px 24px #0003}
+      #extra-life-progression-tools[data-open="true"] .el-progression-panel{display:grid;gap:9px}
+      #extra-life-progression-tools .el-progression-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid #d8ded6}
+      #extra-life-progression-tools .el-progression-row span{min-width:0;overflow-wrap:anywhere}
+      #extra-life-progression-tools .el-progression-row button{flex:0 0 auto}
+      #extra-life-progression-tools .el-progression-muted{font-size:12px;color:#536257;margin:0}
+      #extra-life-progression-tools .el-progression-status{min-height:1.4em;font-size:12px;color:#405348;overflow-wrap:anywhere}
+      @media(max-width:480px){#extra-life-progression-tools{left:max(8px,env(safe-area-inset-left,0px));bottom:calc(78px + env(safe-area-inset-bottom,0px))}#extra-life-progression-tools .el-progression-panel{width:min(340px,calc(100vw - 16px))}}
+      @media(max-height:520px) and (orientation:landscape){#extra-life-progression-tools .el-progression-panel{max-height:calc(100dvh - 24px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}}
     `;
+  }
+
+
+  function syncLegacyDevilFruitProgression(state, api) {
+    if (!state || state.devilFruit || !api || typeof api.consumeFruit !== 'function') return false;
+    state.flags = state.flags || {};
+    let name = state.flags.df || null;
+    if (!name && typeof dfOf === 'function') {
+      try { dfOf(state); name = state.flags.df || null; } catch (error) {}
+    }
+    if (!name) return false;
+
+    const typeFlags = ['df_para', 'df_zoan', 'df_logia'];
+    let typeFlag = typeFlags.find(flag => Array.isArray(state.powers) && state.powers.includes(flag));
+    if (!typeFlag && typeof DFRUIT !== 'undefined' && Array.isArray(DFRUIT)) {
+      const legacyEntry = DFRUIT.find(entry => entry && entry[0] === name);
+      typeFlag = legacyEntry && legacyEntry[2];
+    }
+    const typeByFlag = { df_para: 'paramecia', df_zoan: 'zoan', df_logia: 'logia' };
+    const type = typeByFlag[typeFlag];
+    if (!type) return false;
+
+    let hash = 2166136261;
+    for (let i = 0; i < String(name).length; i++) {
+      hash ^= String(name).charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    const fruit = {
+      id: 'op_df_' + type + '_' + (hash >>> 0).toString(36),
+      name: String(name),
+      type,
+      rarity: 'legacy'
+    };
+    const character = { ...state, id: String(state.id || 'player') };
+    const result = api.consumeFruit(character, fruit, { at: state.flags.dfConsumedAt });
+    if (!result.consumed) return false;
+    state.devilFruit = result.character.devilFruit;
+    return true;
   }
 
   function installProgressionControls(host = root) {
     const doc = host && host.document;
-    const progression = host && host.OnePieceProgressionSystem;
-    if (!doc || !doc.body || !doc.createElement || !progression) return false;
+    const api = host && host.OnePieceProgressionSystem;
+    if (!doc || !doc.body || !doc.createElement || !api) return false;
     if (doc.getElementById('extra-life-progression-tools')) return true;
+
     const style = doc.createElement('style');
     style.textContent = getProgressionControlsStyles();
     if (doc.head) doc.head.appendChild(style);
     const wrap = doc.createElement('div');
     wrap.id = 'extra-life-progression-tools';
+    wrap.hidden = true;
     const panel = doc.createElement('section');
     panel.className = 'el-progression-panel';
+    panel.hidden = true;
     panel.setAttribute('role', 'dialog');
-    panel.setAttribute('aria-label', 'สถานะพลัง');
+    panel.setAttribute('aria-label', 'พัฒนาพลังฮาคิและผลปีศาจ');
+    const heading = doc.createElement('strong');
+    heading.textContent = 'พัฒนาพลัง';
+    const close = doc.createElement('button');
+    close.type = 'button';
+    close.textContent = 'ปิด';
+    const body = doc.createElement('div');
+    const status = doc.createElement('p');
+    status.className = 'el-progression-status';
+    status.setAttribute('role', 'status');
+    status.setAttribute('aria-live', 'polite');
+    panel.appendChild(heading);
+    panel.appendChild(body);
+    panel.appendChild(status);
+    panel.appendChild(close);
     const trigger = doc.createElement('button');
     trigger.type = 'button';
+    trigger.className = 'el-progression-trigger';
     trigger.textContent = 'พลัง';
     trigger.setAttribute('aria-expanded', 'false');
     wrap.appendChild(panel);
     wrap.appendChild(trigger);
     doc.body.appendChild(wrap);
-    const make = (tag, value, className) => {
+
+    const make = (tag, text, className) => {
       const node = doc.createElement(tag);
-      if (value !== undefined) node.textContent = value;
+      if (text !== undefined) node.textContent = text;
       if (className) node.className = className;
       return node;
     };
-    const render = () => {
+    const button = (label, handler) => {
+      const node = make('button', label);
+      node.type = 'button';
+      node.addEventListener('click', handler);
+      return node;
+    };
+    const setStatus = message => { status.textContent = message; };
+    let renderedYear = null;
+    const persist = () => {
+      try {
+        if (typeof save === 'function') save();
+        else if (host && typeof host.save === 'function') host.save();
+      } catch (error) { setStatus('บันทึกไม่สำเร็จ: ' + error.message); }
+    };
+    const currentYear = state => Number.isFinite(Number(state.year)) ? Number(state.year) : null;
+    const trainingUsed = (state, key) => {
+      const year = currentYear(state);
+      return year !== null && state.progressionTraining &&
+        state.progressionTraining[key] === year;
+    };
+    const markTraining = (state, key) => {
+      const year = currentYear(state);
+      if (year === null) return;
+      state.progressionTraining = { ...(state.progressionTraining || {}), [key]: year };
+    };
+
+    function render() {
       const state = currentOnePieceState(host);
-      if (!state || !state.alive) {
-        panel.replaceChildren(make('p', 'สถานะพลังจะแสดงเมื่อเริ่มเกม One Piece'));
-        return;
-      }
-      const synced = progression.syncCharacter(state);
-      if (!synced.ok) {
-        panel.replaceChildren(make('p', 'ระบบพลังยังโหลดไม่ครบ'));
-        return;
-      }
-      if (synced.changed) {
+      if (!state || !state.alive) return;
+      renderedYear = currentYear(state);
+      body.replaceChildren();
+      let changed = false;
+      const synced = api.syncCharacter(state);
+      if (synced.ok && synced.changed) {
         state.haki = synced.character.haki;
-        try {
-          if (typeof save === 'function') save();
-          else if (typeof host.save === 'function') host.save();
-        } catch (error) {}
+        changed = true;
       }
-      const summary = progression.getSummary(state);
-      panel.replaceChildren(make('strong', 'ความชำนาญ Haki และผลปีศาจ'));
-      const names = { armament: 'Armament Haki', observation: 'Observation Haki', conquerors: "Conqueror's Haki" };
+      if (syncLegacyDevilFruitProgression(state, api)) changed = true;
+      if (changed) persist();
+      const summary = api.getSummary(state);
+      if (!summary.ready) {
+        body.appendChild(make('p', 'ระบบพัฒนาพลังยังไม่พร้อม', 'el-progression-muted'));
+        return;
+      }
+      body.appendChild(make('p', 'ฝึกได้อย่างละ 1 ครั้งต่อปีเกม · เพิ่มความชำนาญครั้งละ 5 แต้ม', 'el-progression-muted'));
+      body.appendChild(make('h4', 'ฮาคิ'));
+      const labels = {
+        armament: 'ฮาคิเกราะ',
+        observation: 'ฮาคิสังเกต',
+        conquerors: 'ฮาคิราชัน'
+      };
       for (const type of ['armament', 'observation', 'conquerors']) {
-        const item = summary.haki[type];
+        const styleState = summary.haki[type];
         const row = make('div', undefined, 'el-progression-row');
-        const left = make('div');
-        left.appendChild(make('strong', names[type]));
-        left.appendChild(make('div', item.unlocked ? item.rank + ' · ' + item.mastery + '%' : 'ยังไม่ปลดล็อก', 'el-progression-muted'));
-        const right = make('span', item.unlocked ? item.mastery + '%' : 'ล็อก');
-        row.appendChild(left);
-        row.appendChild(right);
-        panel.appendChild(row);
-        if (item.unlocked) {
-          const bar = make('div', undefined, 'el-progression-bar');
-          const fill = make('span');
-          fill.style.width = item.mastery + '%';
-          bar.appendChild(fill);
-          panel.appendChild(bar);
+        const detail = make('span', labels[type] + ' · ' +
+          (styleState.unlocked ? styleState.mastery + '/100 · ' + styleState.rank : 'ยังไม่ปลุกพลัง'));
+        row.appendChild(detail);
+        if (styleState.unlocked) {
+          const used = trainingUsed(state, 'haki:' + type);
+          const train = button(used ? 'ฝึกแล้ว' : '+5 ฝึกฝน', () => {
+            if (trainingUsed(state, 'haki:' + type)) return setStatus('ฮาคิชนิดนี้ฝึกได้อีกครั้งในปีเกมถัดไป');
+            const result = api.trainHaki(state, type, 5);
+            if (!result.trained) return setStatus('ฝึกไม่สำเร็จ: ' + result.reason);
+            state.haki = result.character.haki;
+            markTraining(state, 'haki:' + type);
+            persist();
+            setStatus(labels[type] + ' เพิ่มขึ้น ' + result.gained + ' แต้ม');
+            render();
+          });
+          train.disabled = used || styleState.mastery >= 100;
+          row.appendChild(train);
         }
+        body.appendChild(row);
       }
-      panel.appendChild(make('strong', 'ผลปีศาจ'));
+
+      body.appendChild(make('h4', 'ผลปีศาจ'));
       if (!summary.devilFruit) {
-        panel.appendChild(make('p', 'ยังไม่มีผลปีศาจ'));
+        body.appendChild(make('p', 'ยังไม่มีข้อมูลผลปีศาจที่กินแล้ว', 'el-progression-muted'));
       } else {
         const fruit = summary.devilFruit;
-        panel.appendChild(make('div', fruit.name + ' · ' + fruit.type));
-        panel.appendChild(make('div', 'Mastery ' + fruit.mastery + '% · ' + (fruit.awakened ? 'Awakened' : 'ยังไม่ Awakening'), 'el-progression-muted'));
-        const bar = make('div', undefined, 'el-progression-bar');
-        const fill = make('span');
-        fill.style.width = fruit.mastery + '%';
-        bar.appendChild(fill);
-        panel.appendChild(bar);
+        body.appendChild(make('p', fruit.name + ' · ' + fruit.type + ' · ความชำนาญ ' + fruit.mastery + '/100' +
+          (fruit.awakened ? ' · ปลุกพลังแล้ว' : ''), 'el-progression-muted'));
+        if (!fruit.awakened) {
+          const used = trainingUsed(state, 'fruit');
+          const train = button(used ? 'ฝึกผลปีศาจแล้ว' : '+5 ฝึกผลปีศาจ', () => {
+            if (trainingUsed(state, 'fruit')) return setStatus('ฝึกผลปีศาจได้อีกครั้งในปีเกมถัดไป');
+            const result = api.trainFruit(state, 5);
+            if (!result.trained) return setStatus('ฝึกไม่สำเร็จ: ' + result.reason);
+            state.devilFruit = result.character.devilFruit;
+            markTraining(state, 'fruit');
+            persist();
+            setStatus('ความชำนาญผลปีศาจเพิ่มขึ้น ' + result.gained + ' แต้ม');
+            render();
+          });
+          train.disabled = used || fruit.mastery >= 100;
+          body.appendChild(train);
+          const awaken = button('ลองปลุกพลัง (ต้องมี 80 แต้ม)', () => {
+            const result = api.awakenFruit(state, { requiredMastery: 80 });
+            if (!result.awakened) return setStatus(result.reason === 'insufficient-mastery'
+              ? 'ความชำนาญยังไม่ถึง ' + result.required + ' แต้ม' : 'ปลุกพลังไม่สำเร็จ: ' + result.reason);
+            state.devilFruit = result.character.devilFruit;
+            persist();
+            setStatus('ปลุกพลังผลปีศาจสำเร็จ');
+            render();
+          });
+          awaken.disabled = fruit.mastery < 80;
+          body.appendChild(awaken);
+        }
       }
-      const note = make('p', 'การฝึกและ Awakening จะเชื่อมกับกิจกรรมเกมในขั้นถัดไป', 'el-progression-muted');
-      panel.appendChild(note);
-      const close = make('button', 'ปิด', 'el-progression-close');
-      close.type = 'button';
-      close.addEventListener('click', () => {
-        wrap.setAttribute('data-open', 'false');
-        trigger.setAttribute('aria-expanded', 'false');
-      });
-      panel.appendChild(close);
-    };
+    }
+
     trigger.addEventListener('click', () => {
-      const open = wrap.getAttribute('data-open') !== 'true';
+      const open = panel.hidden;
+      panel.hidden = !open;
       wrap.setAttribute('data-open', String(open));
       trigger.setAttribute('aria-expanded', String(open));
       if (open) render();
     });
+    close.addEventListener('click', () => {
+      panel.hidden = true;
+      wrap.setAttribute('data-open', 'false');
+      trigger.setAttribute('aria-expanded', 'false');
+    });
+    const syncVisibility = () => {
+      const state = currentOnePieceState(host);
+      const visible = !!(state && state.alive);
+      wrap.hidden = !visible;
+      if (!visible) {
+        panel.hidden = true;
+        wrap.setAttribute('data-open', 'false');
+        trigger.setAttribute('aria-expanded', 'false');
+      } else if (!panel.hidden && currentYear(state) !== renderedYear) render();
+    };
+    syncVisibility();
+    if (typeof host.setInterval === 'function') {
+      host.__onePieceProgressionUiTimer = host.setInterval(syncVisibility, 1000);
+    }
     return true;
   }
 
   function scheduleProgressionControls(host = root) {
     if (!host || !host.document) return false;
     const install = () => installProgressionControls(host);
-    if (host.document.readyState === 'loading') {
-      host.document.addEventListener('DOMContentLoaded', install, { once: true });
-      return true;
-    }
-    return install();
-  }
-
-  function scheduleCrewControls(host = root) {
-    if (!host || !host.document) return false;
-    const install = () => installCrewControls(host);
     if (host.document.readyState === 'loading') {
       host.document.addEventListener('DOMContentLoaded', install, { once: true });
       return true;
