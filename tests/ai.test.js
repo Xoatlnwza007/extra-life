@@ -217,6 +217,15 @@ test('social NPC actions create memories and bilateral relationships', () => {
   assert.ok(result.profiles['Kind B'].memories.some(memory => memory.source === 'npc-interaction'));
 });
 
+test('crew management panel is sized for mobile touch and safe scrolling', () => {
+  const styles = world.getCrewControlsStyles();
+  assert.match(styles, /min-height:44px/);
+  assert.match(styles, /touch-action:manipulation/);
+  assert.match(styles, /max-height:70dvh/);
+  assert.match(styles, /safe-area-inset-left/);
+  assert.match(styles, /max-width:380px/);
+});
+
 test('player crew is stored in game state and recruits NPCs persistently', () => {
   const state = {
     world: 'op',
