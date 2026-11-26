@@ -2711,6 +2711,15 @@ async function nextYear(){
   S.year++;S.age++;S.ap=3;S.ft=FT_MAX;S.mo=0;S.mt=0;S.mood=null;S.fx=[];S.cap='';S.log.push({y:S.year,a:S.age,items:[]});
   if(!S.flags.titan)upkeep();
   await runYearEvents();
+  if(S.alive&&S.world==='op'&&window.OnePieceSystemsReady&&window.OnePieceWorldSimulation){
+    try{
+      await window.OnePieceSystemsReady;
+      const nearby=castNear(S);
+      const population=nearby.map(id=>({n:id,r:W.castMeta?.[id]?.r||'practical',alive:!castGone(id)}));
+      const result=window.OnePieceWorldSimulation.simulate(S,population,{seaDanger:opSea(S)});
+      if(result&&result.stories&&result.stories.length)say('ความเคลื่อนไหวรอบตัว: '+result.stories[0],'news');
+    }catch(error){console.warn('One Piece NPC simulation skipped',error);}
+  }
   if(S.alive&&S.flags.titan){if(S.flags.titanY!==S.year)W.titanYear(S);}
   else if(S.alive){
     for(const m of W.miles){if(!S.alive)break;if((m.once&&S.done[m.id])||!m.when(S))continue;if(m.once)S.done[m.id]=1;await runEv(m,'mile');}
@@ -10890,8 +10899,8 @@ const lkPathName=S=>{const t=S.traits||[];return t.includes('kind')||t.includes(
 function lkGain(k,why){if(!S||lkHas(k))return;const [id,n]=LKM[k];gainPower(id,`${why} คุณทะลุกำแพงของตัวเอง ออร่าสี${{str:'แดง',spd:'ฟ้า',end:'เขียว',tec:'ชมพู',ovc:'ม่วง'}[k]}ลุกขึ้นรอบตัว นี่คือการบรรลุ${n}`);remember(`บรรลุ${n}`,why,'power',3);
   if(lkMN(S)>=2&&!hasP('lk_path')&&(S.sk?.fight||0)>=80)setTimeout(()=>{try{if(!hasP('lk_path')){S.flags.lkPath=lkPathName(S);gainPower('lk_path',`คุณรู้แล้วว่าจะใช้หมัดทำอะไร เส้นทางของคุณคือ "${S.flags.lkPath}"`);}}catch(e){}},0);}
 /* battle: masteries change the numbers, and fighting back from the edge is how a wall breaks in the manhwa */
-const btModOut=v=>{if(!S||W?.id!=='lookism')return v;let m=1;if(lkHas('str'))m*=1.25;if(lkHas('tec')&&chance(.25))m*=1.5;if(hasP('lk_path'))m*=1.15;if(hasP('lk_gap'))m*=1.2;if(hasP('lk_unc')&&(S.flags.uncCtl||0)>=5)m*=1.15;return Math.round(v*m);};
-const btModIn=(d,heavy)=>{if(!S||W?.id!=='lookism')return d;let m=1;if(lkHas('end'))m*=.72;if(hasP('lk_bone'))m*=.85;if(lkHas('spd')&&chance(.18))m=0;return Math.round(d*m);};
+const btModOut=v=>{if(S&&W?.id==='op'&&window.OnePieceCombatAdapter)return window.OnePieceCombatAdapter.modifyOutgoingDamage(v,S,'op');if(!S||W?.id!=='lookism')return v;let m=1;if(lkHas('str'))m*=1.25;if(lkHas('tec')&&chance(.25))m*=1.5;if(hasP('lk_path'))m*=1.15;if(hasP('lk_gap'))m*=1.2;if(hasP('lk_unc')&&(S.flags.uncCtl||0)>=5)m*=1.15;return Math.round(v*m);};
+const btModIn=(d,heavy)=>{if(S&&W?.id==='op'&&window.OnePieceCombatAdapter)return window.OnePieceCombatAdapter.modifyIncomingDamage(d,S,'op');if(!S||W?.id!=='lookism')return d;let m=1;if(lkHas('end'))m*=.72;if(hasP('lk_bone'))m*=.85;if(lkHas('spd')&&chance(.18))m=0;return Math.round(d*m);};
 {const b0=battle;battle=async function(E,o){const r=await b0.apply(this,arguments);try{if(S&&W?.id==='lookism'&&r&&r.r!=='skip'){const low=r.hp!=null&&r.hp<=Math.max(12,(S.st.hp||60)*.25);
   if(r.r==='lose'&&lkHas('ovc')&&chance(.35)){r.r='win';say('ร่างกายของคุณควรจะล้มไปแล้ว แต่ออร่าสีม่วงลุกขึ้นอีกครั้ง คุณยังยืนอยู่ และคนที่ล้มคืออีกฝ่าย','power');}
   if(r.r==='win'&&low&&(E?.pow||0)>=myPow()-5&&chance(.3)){const opts=Object.keys(LKM).filter(k=>!lkHas(k));if(opts.length){const k=r.hp<8?'ovc':pick(opts.filter(x=>x!=='ovc').concat(opts.includes('ovc')?['ovc']:[]));lkGain(k,`การต่อสู้กับ${E?.n||'คู่ต่อสู้'}ดันคุณไปถึงขีดสุด`);}}}}catch(e){}return r;};}
