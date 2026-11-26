@@ -200,3 +200,40 @@ test('world simulation initializes and returns persistent NPC profiles', () => {
   assert.ok(result.profiles[npc.n].memories.length >= 1);
   assert.ok(result.action);
 });
+
+
+test('Devil Fruit system enforces one fruit, mastery and awakening rules', () => {
+  const fruits = require('../ai/devil-fruit-system.js');
+  const made = fruits.createFruit({ id: 'mera-test', name: 'Mera Mera no Mi', type: 'logia' });
+  assert.equal(made.created, true);
+  const invalid = fruits.createFruit({ name: 'Unknown Fruit', type: 'mythical' });
+  assert.equal(invalid.created, false);
+
+  const luffy = { id: 'luffy', name: 'Luffy' };
+  const consumed = fruits.consumeFruit(luffy, made.fruit, { at: '2026-01-01T00:00:00.000Z' });
+  assert.equal(consumed.consumed, true);
+  assert.equal(consumed.character.devilFruit.mastery, 0);
+  assert.equal(fruits.consumeFruit(consumed.character, made.fruit).reason, 'already-has-devil-fruit');
+  assert.equal(fruits.consumeFruit({ id: 'ace' }, consumed.fruit).reason, 'fruit-already-consumed');
+
+  assert.equal(fruits.awaken(consumed.character).reason, 'insufficient-mastery');
+  const trained = fruits.trainMastery(consumed.character, 85);
+  assert.equal(trained.character.devilFruit.mastery, 85);
+  const awakened = fruits.awaken(trained.character, { at: '2026-02-01T00:00:00.000Z' });
+  assert.equal(awakened.awakened, true);
+  assert.equal(fruits.awaken(awakened.character).reason, 'already-awakened');
+  assert.equal(fruits.trainMastery({ id: 'none' }, 10).reason, 'no-devil-fruit');
+});
+
+test('Devil Fruit users are weakened by seawater and Sea Prism Stone', () => {
+  const fruits = require('../ai/devil-fruit-system.js');
+  const user = { id: 'user', devilFruit: { id: 'fruit-1', name: 'Test', type: 'paramecia' } };
+  assert.deepEqual(fruits.getSeaEffect(user), {
+    weakened: false, canSwim: true, strengthMultiplier: 1
+  });
+  assert.deepEqual(fruits.getSeaEffect(user, { inSea: true }), {
+    weakened: true, canSwim: false, strengthMultiplier: 0.5
+  });
+  assert.equal(fruits.getSeaEffect(user, { seaStone: true }).strengthMultiplier, 0.25);
+  assert.equal(fruits.getSeaEffect({ id: 'normal' }, { inSea: true }).canSwim, true);
+});
