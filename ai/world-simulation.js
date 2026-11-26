@@ -593,7 +593,7 @@
     const existing = getPlayerCrew(worldState, crewApi);
     if (existing) return { ok: false, reason: 'already-has-crew', crew: existing };
     const crewName = String(name || '').trim() || 'โจรสลัดไร้นาม';
-    const crew = crewApi.createCrew({ name: crewName, captainId: 'player' });
+    const crew = crewApi.createCrew({ name: crewName, captainId: 'player', shipName: worldState.flags && worldState.flags.shipName });
     worldState.crews = (Array.isArray(worldState.crews) ? worldState.crews : []).concat(crew);
     worldState.playerCrewId = crew.id;
     worldState.flags = worldState.flags || {};
@@ -853,11 +853,13 @@
         ship.type = 'text';
         ship.maxLength = 40;
         ship.placeholder = 'ชื่อเรือ';
-        ship.value = crew.shipName || '';
+        ship.value = crew.shipName || (state.flags && state.flags.shipName) || '';
         ship.setAttribute('aria-label', 'ชื่อเรือ');
         const saveShip = makeButton('บันทึกเรือ', () => {
           const updated = { ...crew, shipName: ship.value.trim() || null };
           state.crews = (state.crews || []).map(item => item && item.id === crew.id ? updated : item);
+          state.flags = state.flags || {};
+          state.flags.shipName = updated.shipName;
           persist();
           setStatus('บันทึกชื่อเรือแล้ว');
         });
