@@ -1107,6 +1107,44 @@
     `;
   }
 
+
+  function syncLegacyDevilFruitProgression(state, api) {
+    if (!state || state.devilFruit || !api || typeof api.consumeFruit !== 'function') return false;
+    state.flags = state.flags || {};
+    let name = state.flags.df || null;
+    if (!name && typeof dfOf === 'function') {
+      try { dfOf(state); name = state.flags.df || null; } catch (error) {}
+    }
+    if (!name) return false;
+
+    const typeFlags = ['df_para', 'df_zoan', 'df_logia'];
+    let typeFlag = typeFlags.find(flag => Array.isArray(state.powers) && state.powers.includes(flag));
+    if (!typeFlag && typeof DFRUIT !== 'undefined' && Array.isArray(DFRUIT)) {
+      const legacyEntry = DFRUIT.find(entry => entry && entry[0] === name);
+      typeFlag = legacyEntry && legacyEntry[2];
+    }
+    const typeByFlag = { df_para: 'paramecia', df_zoan: 'zoan', df_logia: 'logia' };
+    const type = typeByFlag[typeFlag];
+    if (!type) return false;
+
+    let hash = 2166136261;
+    for (let i = 0; i < String(name).length; i++) {
+      hash ^= String(name).charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    const fruit = {
+      id: 'op_df_' + type + '_' + (hash >>> 0).toString(36),
+      name: String(name),
+      type,
+      rarity: 'legacy'
+    };
+    const character = { ...state, id: String(state.id || 'player') };
+    const result = api.consumeFruit(character, fruit, { at: state.flags.dfConsumedAt });
+    if (!result.consumed) return false;
+    state.devilFruit = result.character.devilFruit;
+    return true;
+  }
+
   function installProgressionControls(host = root) {
     const doc = host && host.document;
     const api = host && host.OnePieceProgressionSystem;
@@ -1184,11 +1222,14 @@
       if (!state || !state.alive) return;
       renderedYear = currentYear(state);
       body.replaceChildren();
+      let changed = false;
       const synced = api.syncCharacter(state);
       if (synced.ok && synced.changed) {
         state.haki = synced.character.haki;
-        persist();
+        changed = true;
       }
+      if (syncLegacyDevilFruitProgression(state, api)) changed = true;
+      if (changed) persist();
       const summary = api.getSummary(state);
       if (!summary.ready) {
         body.appendChild(make('p', 'ระบบพัฒนาพลังยังไม่พร้อม', 'el-progression-muted'));
