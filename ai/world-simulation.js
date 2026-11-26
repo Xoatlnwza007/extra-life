@@ -592,9 +592,12 @@
     }
     const existing = getPlayerCrew(worldState, crewApi);
     if (existing) return { ok: false, reason: 'already-has-crew', crew: existing };
-    const crew = crewApi.createCrew({ name, captainId: 'player' });
+    const crewName = String(name || '').trim() || 'โจรสลัดไร้นาม';
+    const crew = crewApi.createCrew({ name: crewName, captainId: 'player' });
     worldState.crews = (Array.isArray(worldState.crews) ? worldState.crews : []).concat(crew);
     worldState.playerCrewId = crew.id;
+    worldState.flags = worldState.flags || {};
+    worldState.flags.crew = crew.name;
     return { ok: true, crew };
   }
 
@@ -712,11 +715,7 @@
   }
 
   function canManagePirateCrew(state) {
-    if (!state || state.world !== 'op' || !state.alive || !state.job) return false;
-    try {
-      if (typeof pirate === 'function') return !!pirate(state);
-    } catch (error) {}
-    return state.job.id === 'pirate' || state.job.id === 'pcapt';
+    return !!(state && state.world === 'op' && state.alive && state.job && state.job.id === 'pcapt');
   }
 
   function currentOnePieceState(host = root) {
@@ -806,6 +805,7 @@
         name.type = 'text';
         name.maxLength = 40;
         name.placeholder = 'ชื่อกลุ่มโจรสลัด';
+        name.value = state.flags && state.flags.crew ? state.flags.crew : '';
         name.setAttribute('aria-label', 'ชื่อกลุ่มโจรสลัด');
         const create = makeButton('สร้าง', () => {
           const result = createPlayerCrew(state, name.value.trim() || 'โจรสลัดไร้นาม', api);
