@@ -44,7 +44,7 @@ test('browser bootstrap loads the One Piece companion systems in dependency orde
     './ai/marine-system.js'
   ]);
   assert.equal(await world.loadCompanionModules(host), true);
-  assert.equal(scripts.length, 4);
+  assert.equal(scripts.length, 5);
 });
 
 test('browser bootstrap reports a missing companion module without stopping later loads', async () => {
