@@ -467,6 +467,9 @@ html.calm *{animation:none!important;transition:none!important}
 </div>
 
 <script src="./ai/decision-engine.js"></script>
+<script src="./ai/character-state.js"></script>
+<script src="./ai/npc-brain.js"></script>
+<script src="./ai/world-simulation.js"></script>
 <script>
 /* ===== helpers ===== */
 const $=s=>document.querySelector(s);
@@ -2763,6 +2766,7 @@ async function nextYear(){
   }
   if(S.alive&&chance(.35))say(outlawNow()?'ข่าวจากหมู่บ้านเก่า: '+pick(W.newsFor(S)):pick(W.newsFor(S)),'news');
   if(S.alive&&!S.flags.titan)naturalDeath();
+  if(S.alive&&W.id==='op'&&window.OnePieceWorldSimulation){S.npcs=S.npcs||NPCROLES.map(makeNpc);const npcTurn=OnePieceWorldSimulation.simulate(S,S.npcs,{seaDanger:opSea(S)});S.npcBrains=npcTurn.profiles;if(npcTurn.story)say(npcTurn.story,'side');}
   const cur=S.log[S.log.length-1];if(!cur.items.length)say(pick(W.quiet),'quiet');
   busy=false;save();render();if(!S.alive)setTimeout(afterDeath,350);
 }
