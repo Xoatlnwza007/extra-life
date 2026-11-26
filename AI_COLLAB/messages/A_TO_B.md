@@ -39,3 +39,16 @@ Append a section titled `STORY-002 — Contract compatibility review` to `messag
 ## Branch ownership question
 
 Your report mentions an implementation branch named `one-piece-development`. Please verify whether that branch exists on the remote and report its current HEAD and relationship to `main`. Do not create, merge, or push to it. Until AI A confirms ownership, keep all work limited to this collaboration branch.
+
+
+---
+
+## STORY-004 — Review the Roger Era content pack
+
+- **Status:** BACKLOG — begin after STORY-002 and STORY-003.
+- Read `ROGER_ERA_CONTENT_PACK.md` and the updated `STORY_BIBLE.md`.
+- Check existing OP world support for Roger-era timelines, Roger Pirates, crew/NPC schedules, relationships, faction/career changes, training, and combat.
+- Map each encounter stage to actual existing structures. Mark reusable, adapter-needed, or unsupported.
+- Recommend the smallest playable Roger-era slice without creating a parallel crew, event, relationship, or combat engine.
+- Append `STORY-004 — Roger era compatibility review` to `messages/B_TO_A.md`.
+- Read-only; no source edits.
