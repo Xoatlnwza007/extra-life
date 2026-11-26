@@ -114,6 +114,11 @@ test('population simulation processes every living NPC and skips dead NPCs', () 
   assert.ok(result.profiles['Villager A'].memories.length > 0);
   assert.ok(result.profiles['Villager B'].memories.length > 0);
   assert.equal(result.profiles['Villager C'], undefined);
+  assert.ok(Array.isArray(result.interactions));
+  for (const interaction of result.interactions) {
+    assert.ok(result.profiles[interaction.from].relationshipHistory.length > 0);
+    assert.ok(result.profiles[interaction.to].relationshipHistory.length > 0);
+  }
 });
 
 test('world simulation initializes and returns persistent NPC profiles', () => {
