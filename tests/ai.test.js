@@ -281,6 +281,7 @@ test('pirate crew panel creates a crew and recruits an NPC through its controls'
     shipForm.children[0].value = 'Going Merry';
     shipForm.children[1].click();
     assert.equal(state.crews[0].shipName, 'Going Merry');
+    assert.equal(state.flags.shipName, 'Going Merry');
 
     const recruitRow = panelBody.children[panelBody.children.length - 1];
     recruitRow.children[1].click();
