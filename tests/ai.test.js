@@ -64,6 +64,20 @@ test('event adapter returns the original selected choice object', () => {
   assert.equal(result.choice, choices[1]);
 });
 
+test('relationships are clamped, classified, and keep a bounded interaction history', () => {
+  let character = stateApi.createCharacterState({ id: 'social-npc' });
+  character = stateApi.adjustRelationship(character, 'player', 65, { event: 'player helped the village' });
+  assert.equal(stateApi.getRelationship(character, 'player'), 65);
+  assert.equal(stateApi.relationshipLabel(65), 'trusted');
+  character = stateApi.adjustRelationship(character, 'player', 80, { event: 'another act of kindness' });
+  assert.equal(stateApi.getRelationship(character, 'player'), 100);
+  assert.equal(character.relationshipHistory.at(-1).delta, 35);
+  character = stateApi.adjustRelationship(character, 'player', -250, { event: 'betrayal' });
+  assert.equal(stateApi.getRelationship(character, 'player'), -100);
+  assert.equal(stateApi.relationshipLabel(-100), 'nemesis');
+  assert.equal(stateApi.getRelationship(character, 'unknown'), 0);
+});
+
 test('world simulation initializes and returns persistent NPC profiles', () => {
   const npc = { n: 'Test villager', r: 'kind', alive: true };
   const result = world.simulate({ npcBrains: {} }, [npc], {});
