@@ -300,6 +300,8 @@ test('pirate crew panel creates a crew and recruits an NPC through its controls'
       { type: 'bounty-increased', amount: 2500000, at: '2026-11-26T00:00:00.000Z' },
       { type: 'reputation-changed', delta: 5, reputation: 45, at: '2026-11-25T00:00:00.000Z' }
     );
+    trigger.click();
+    trigger.click();
     const historyEntries = panel.children[1].children.filter(node =>
       node.className === 'el-crew-muted' && /ค่าหัวเพิ่มขึ้น|ชื่อเสียงเปลี่ยน/.test(node.textContent)
     );
