@@ -123,7 +123,7 @@
       ...(worldState || {}),
       npcBrains: { ...((worldState && worldState.npcBrains) || {}) }
     };
-    const previous = currentState.simulationCalendar || {};
+    const previous = currentState.npcSimulationCalendar || currentState.simulationCalendar || {};
     let calendarYear = Number.isFinite(Number(previous.year))
       ? Number(previous.year) : (Number(currentState.year) || 0);
     let calendarMonth = Number.isInteger(previous.month)
@@ -166,6 +166,13 @@
       });
     }
 
+    const simulationCalendar = { year: calendarYear, month: calendarMonth, totalMonths };
+    // The existing game loop only copies npcBrains from the result. Persist the
+    // clock on S itself so the existing save(S) path retains month progress.
+    if (worldState && typeof worldState === 'object') {
+      worldState.npcSimulationCalendar = simulationCalendar;
+    }
+
     return {
       profiles: currentState.npcBrains,
       actions,
@@ -175,7 +182,7 @@
       simulatedCount: living.length,
       actionCount: actions.length,
       simulatedMonths: 12,
-      simulationCalendar: { year: calendarYear, month: calendarMonth, totalMonths },
+      simulationCalendar,
       story: stories.length ? stories.join('。') : null
     };
   }
