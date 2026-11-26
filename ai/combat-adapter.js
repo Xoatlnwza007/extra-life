@@ -9,6 +9,47 @@
   const masteryOf = style => style && style.unlocked
     ? clamp(Number(style.mastery) || 0, 0, 100) : 0;
 
+
+  function getCrewSupport(state) {
+    if (!state || !Array.isArray(state.crews) || !state.playerCrewId) {
+      return { memberCount: 0, supportedMembers: 0, outgoing: 1, incoming: 1 };
+    }
+    const crew = state.crews.find(item => item && item.id === state.playerCrewId && item.status === 'active');
+    if (!crew || !Array.isArray(crew.members)) {
+      return { memberCount: 0, supportedMembers: 0, outgoing: 1, incoming: 1 };
+    }
+    const includesPlayer = crew.captainId === 'player' ||
+      crew.members.some(member => member && String(member.characterId) === 'player');
+    if (!includesPlayer) {
+      return { memberCount: 0, supportedMembers: 0, outgoing: 1, incoming: 1 };
+    }
+
+    const npcById = new Map();
+    (Array.isArray(state.npcs) ? state.npcs : []).forEach((npc, index) => {
+      if (!npc || npc.alive === false) return;
+      const id = npc.id !== undefined && npc.id !== null && String(npc.id)
+        ? String(npc.id)
+        : (npc.n ? 'npc:' + index + ':' + String(npc.n) : null);
+      if (id) npcById.set(id, npc);
+    });
+    const seen = new Set();
+    for (const member of crew.members) {
+      if (!member || member.characterId == null) continue;
+      const id = String(member.characterId);
+      if (!id || id === 'player' || seen.has(id)) continue;
+      if (npcById.size && !npcById.has(id) && id.startsWith('npc:')) continue;
+      seen.add(id);
+    }
+    const memberCount = seen.size;
+    const supportedMembers = Math.min(4, memberCount);
+    return {
+      memberCount,
+      supportedMembers,
+      outgoing: 1 + supportedMembers * 0.01,
+      incoming: 1 - supportedMembers * 0.005
+    };
+  }
+
   function getModifiers(state, worldId) {
     if (worldId !== 'op' || !state) {
       return { outgoing: 1, incoming: 1 };
@@ -35,6 +76,13 @@
     const conquerors = masteryOf(haki.conquerors);
     outgoing *= 1 + armament * 0.0008 + conquerors * 0.0006;
     incoming *= 1 - armament * 0.0005 - observation * 0.0008;
+
+    // A living player's active crew can provide bounded support in combat.
+    // Only a crew that actually contains the player is considered; dead known
+    // NPCs and duplicate roster entries do not add a bonus.
+    const crewSupport = getCrewSupport(state);
+    outgoing *= crewSupport.outgoing;
+    incoming *= crewSupport.incoming;
 
     // Fruit mastery and awakening only apply when a fruit progression record
     // exists. A fruit's type can also identify the baseline power family.
@@ -64,7 +112,7 @@
     return Math.max(0, Math.round(value * getModifiers(state, worldId).incoming));
   }
 
-  const api = Object.freeze({ getModifiers, modifyOutgoingDamage, modifyIncomingDamage });
+  const api = Object.freeze({ getCrewSupport, getModifiers, modifyOutgoingDamage, modifyIncomingDamage });
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.OnePieceCombatAdapter = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
