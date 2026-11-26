@@ -616,6 +616,23 @@
     return true;
   }
 
+  function buyBoatForPlayerCrew(worldState, boatDefinition, buyFunction) {
+    if (!worldState || worldState.world !== 'op') {
+      return { ok: false, reason: 'unsupported-world' };
+    }
+    const items = worldState.own && Array.isArray(worldState.own.items) ? worldState.own.items : [];
+    if (items.includes('boat')) return { ok: true, alreadyOwned: true };
+    if (!boatDefinition || typeof buyFunction !== 'function') {
+      return { ok: false, reason: 'unavailable' };
+    }
+    const cost = Number(boatDefinition.cost);
+    if (!Number.isFinite(cost) || cost < 0 || Number(worldState.money) < cost) {
+      return { ok: false, reason: 'insufficient-funds' };
+    }
+    buyFunction(boatDefinition);
+    return { ok: true, alreadyOwned: false };
+  }
+
   function syncPlayerCrew(worldState, crewApi = root.OnePieceCrewSystem) {
     if (!worldState || worldState.world !== 'op' || !crewApi) {
       return { ok: false, reason: 'unsupported-world', crew: null, changed: false };
@@ -804,22 +821,50 @@
       body.appendChild(make('strong', crew.name));
       body.appendChild(make('div', 'สมาชิก ' + (crew.members || []).length + '/10 · ค่าหัวกลุ่ม ' + (crew.bounty || 0).toLocaleString('th-TH') + ' เบรี', 'el-crew-muted'));
 
-      const shipForm = make('div', undefined, 'el-crew-form');
-      const ship = doc.createElement('input');
-      ship.type = 'text';
-      ship.maxLength = 40;
-      ship.placeholder = 'ชื่อเรือ';
-      ship.value = crew.shipName || '';
-      ship.setAttribute('aria-label', 'ชื่อเรือ');
-      const saveShip = makeButton('บันทึกเรือ', () => {
-        const updated = { ...crew, shipName: ship.value.trim() || null };
-        state.crews = (state.crews || []).map(item => item && item.id === crew.id ? updated : item);
-        persist();
-        setStatus('บันทึกชื่อเรือแล้ว');
-      });
-      shipForm.appendChild(ship);
-      shipForm.appendChild(saveShip);
-      body.appendChild(shipForm);
+      const ownsBoat = !!(state.own && Array.isArray(state.own.items) && state.own.items.includes('boat'));
+      if (!ownsBoat) {
+        body.appendChild(make('p', 'ลูกเรือยังไม่มีเรือ ซื้อเรือใบลำเล็กก่อนจึงจะตั้งชื่อเรือได้', 'el-crew-muted'));
+        let boatDefinition = null;
+        try {
+          if (typeof W !== 'undefined' && W && Array.isArray(W.shop)) {
+            boatDefinition = W.shop.find(item => item.id === 'boat') || null;
+          }
+        } catch (error) {}
+        const purchase = makeButton(
+          boatDefinition ? 'ซื้อเรือใบลำเล็ก · ' + boatDefinition.cost + ' เบรี' : 'เรือยังไม่พร้อมซื้อ',
+          () => {
+            let buyFunction = null;
+            try { if (typeof buy === 'function') buyFunction = buy; } catch (error) {}
+            const result = buyBoatForPlayerCrew(state, boatDefinition, buyFunction);
+            if (!result.ok) {
+              setStatus(result.reason === 'insufficient-funds' ? 'เงินไม่พอซื้อเรือ' : 'ยังซื้อเรือไม่ได้');
+              return;
+            }
+            persist();
+            setStatus('ซื้อเรือแล้ว');
+            renderCrewPanel();
+          }
+        );
+        purchase.disabled = !boatDefinition || Number(state.money) < Number(boatDefinition.cost);
+        body.appendChild(purchase);
+      } else {
+        const shipForm = make('div', undefined, 'el-crew-form');
+        const ship = doc.createElement('input');
+        ship.type = 'text';
+        ship.maxLength = 40;
+        ship.placeholder = 'ชื่อเรือ';
+        ship.value = crew.shipName || '';
+        ship.setAttribute('aria-label', 'ชื่อเรือ');
+        const saveShip = makeButton('บันทึกเรือ', () => {
+          const updated = { ...crew, shipName: ship.value.trim() || null };
+          state.crews = (state.crews || []).map(item => item && item.id === crew.id ? updated : item);
+          persist();
+          setStatus('บันทึกชื่อเรือแล้ว');
+        });
+        shipForm.appendChild(ship);
+        shipForm.appendChild(saveShip);
+        body.appendChild(shipForm);
+      }
 
       body.appendChild(make('h4', 'สมาชิกในลูกเรือ'));
       for (const member of crew.members || []) {
@@ -1061,7 +1106,7 @@
     return install();
   }
 
-  const api = Object.freeze({ simulate, simulatePopulation, saveSystem, installSaveControls, getSaveControlsStyles, getMobileTouchStyles, installMobileTouchStyles, loadCompanionModules, companionModules: COMPANION_MODULES, crewNpcId, getPlayerCrew, createPlayerCrew, recruitNpcToPlayerCrew, removeNpcFromPlayerCrew, syncPlayerCrew, recordCrewNpcInteraction, canManagePirateCrew, getCrewControlsStyles, installCrewControls, scheduleCrewControls });
+  const api = Object.freeze({ simulate, simulatePopulation, saveSystem, installSaveControls, getSaveControlsStyles, getMobileTouchStyles, installMobileTouchStyles, loadCompanionModules, companionModules: COMPANION_MODULES, crewNpcId, getPlayerCrew, createPlayerCrew, recruitNpcToPlayerCrew, removeNpcFromPlayerCrew, syncPlayerCrew, recordCrewNpcInteraction, buyBoatForPlayerCrew, canManagePirateCrew, getCrewControlsStyles, installCrewControls, scheduleCrewControls });
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.OnePieceWorldSimulation = api;
   root.OnePieceSaveSystem = saveSystem;
