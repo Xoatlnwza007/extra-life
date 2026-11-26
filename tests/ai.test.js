@@ -121,6 +121,19 @@ test('population simulation processes every living NPC and skips dead NPCs', () 
   }
 });
 
+test('social NPC actions create memories and bilateral relationships', () => {
+  const npcs = [
+    { n: 'Kind A', r: 'kind', alive: true },
+    { n: 'Kind B', r: 'kind', alive: true }
+  ];
+  const result = world.simulatePopulation({ npcBrains: {} }, npcs, {});
+  assert.equal(result.interactions.length, 2);
+  assert.ok(stateApi.getRelationship(result.profiles['Kind A'], 'op-npc-Kind B') > 0);
+  assert.ok(stateApi.getRelationship(result.profiles['Kind B'], 'op-npc-Kind A') > 0);
+  assert.ok(result.profiles['Kind A'].memories.some(memory => memory.source === 'npc-interaction'));
+  assert.ok(result.profiles['Kind B'].memories.some(memory => memory.source === 'npc-interaction'));
+});
+
 test('world simulation initializes and returns persistent NPC profiles', () => {
   const npc = { n: 'Test villager', r: 'kind', alive: true };
   const result = world.simulate({ npcBrains: {} }, [npc], {});
