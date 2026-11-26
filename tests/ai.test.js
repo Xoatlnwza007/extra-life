@@ -93,6 +93,17 @@ test('game touch stylesheet adapts controls for phones and tablets', () => {
 });
 
 
+
+test('floating progression and crew controls do not share the same mobile anchor', () => {
+  const progressionStyles = world.getProgressionControlsStyles();
+  const crewStyles = world.getCrewControlsStyles();
+  const marineStyles = require('../ai/marine-ui.js').getMarineControlsStyles();
+  assert.match(progressionStyles, /bottom:calc\(82px \+ env\(safe-area-inset-bottom/);
+  assert.match(progressionStyles, /max-width:480px[^}]*bottom:calc\(78px \+ env\(safe-area-inset-bottom/);
+  assert.match(crewStyles, /bottom:calc\(18px \+ env\(safe-area-inset-bottom/);
+  assert.match(marineStyles, /bottom:calc\(82px \+ env\(safe-area-inset-bottom/);
+});
+
 test('save controls provide mobile-safe touch targets and viewport spacing', () => {
   const styles = world.getSaveControlsStyles();
   assert.match(styles, /min-width:48px/);
