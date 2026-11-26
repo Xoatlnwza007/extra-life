@@ -466,6 +466,7 @@ html.calm *{animation:none!important;transition:none!important}
   </div>
 </div>
 
+<script src="./ai/decision-engine.js"></script>
 <script>
 /* ===== helpers ===== */
 const $=s=>document.querySelector(s);
@@ -2571,7 +2572,40 @@ function autoAct(){
   if(!S.alive||S.flags.titan||(S.ap??0)<=0)return;
   const cats=ACTS.filter(a=>!a.free&&S.age>=minOf(a)&&(a.id==='doc'?(S.money>=5||S.age<16):actOpts(a.menu).some(o=>S.money>=Math.max(0,o.c||0))));
   if(!cats.length)return;
-  const a=wpickBy(cats,x=>actWeight(x.id));
+  let a=null;
+  if(window.OnePieceDecisionEngine){
+    const actionMeta={
+      learn:{tags:['study','knowledge','goal'],relief:{knowledge:12},reward:3},
+      train:{tags:['train','strength','combat'],relief:{strength:18},reward:5},
+      date:{tags:['love','social','relationship'],relief:{social:24,happiness:8},reward:3},
+      fun:{tags:['rest','joy','recovery'],relief:{happiness:22,energy:8},reward:2},
+      doc:{tags:['heal','survival','health'],relief:{health:38},reward:4}
+    };
+    const candidates=cats.map(x=>{
+      const meta=actionMeta[x.id]||{tags:[x.id],relief:{},reward:0};
+      return {id:x.id,tags:meta.tags,relief:meta.relief,risk:x.id==='train'?8:x.id==='date'?3:0,
+        expectedReward:meta.reward+actWeight(x.id),resourceCost:x.id==='doc'&&S.age>=16?5:0,
+        available:true};
+    });
+    const preferences={};
+    for(const trait of S.traits||[]){
+      const pref=TRAITS[trait]?.act||{};
+      preferences[trait]={};
+      for(const [key,value] of Object.entries(pref)){
+        const tag=({study:'study',train:'train',love:'love',fun:'rest',doc:'heal'})[key]||key;
+        preferences[trait][tag]=Math.log(Math.max(0.05,Number(value)||1));
+      }
+    }
+    const decision=window.OnePieceDecisionEngine.decide({
+      needs:{health:S.st.hp,happiness:S.st.joy,energy:S.st.fit,knowledge:S.st.iq,
+        strength:S.st.fit,social:S.partner?.love??18},
+      traits:S.traits||[],personalityPreferences:preferences,
+      goals:S.aiGoals||[],memories:S.memories||[],riskTolerance:55
+    },candidates,{resourcePressure:S.money<30?35:0});
+    a=cats.find(x=>x.id===decision.action?.id)||null;
+    S.aiLastDecision=decision.ranking.slice(0,5);
+  }
+  if(!a)a=wpickBy(cats,x=>actWeight(x.id));
   if(a.id==='doc'){doDoc();return;}
   const os=actOpts(a.menu).filter(o=>S.money>=Math.max(0,o.c||0));
   const o=wpickBy(os,o=>{let w=1;for(const k in o.sk||{})w+=(S.sk?.[k]||0)/20;if((o.c||0)<=0&&S.money<30)w*=2.5;if((o.c||0)>S.money*.3)w*=.3;return w;});
