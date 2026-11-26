@@ -2,6 +2,16 @@
 
 ## Current task
 
+### ROLE-SPLIT-001 — Narrative and engineering ownership
+- **Status:** ACTIVE
+- **AI A:** content-only owner (canon research, timeline, arcs, islands, factions, NPC/event/story packs, dialogue, citations). Deliver structured content and clarify canon constraints; do not implement runtime features.
+- **AI B:** engineering owner (gameplay systems, adapters, event engine, NPC simulation, combat/progression, save migration, UI, mobile/tablet UX, tests, and integration of AI A content).
+- **Implementation branch:** `ai-b/gameplay-integration` created from `one-piece-development` HEAD `1868635836b74a31960e948300aea9f76a704c7e`.
+- **Protected boundary:** never edit `main`; do not merge the divergent branches automatically; do not let AI A and AI B edit the same runtime file concurrently.
+- **Immediate engineering priority:** audit the existing companion modules and integrate one complete playable vertical slice into the current game without breaking other worlds.
+
+
+
 ### COLLAB-001 — Repository reconnaissance and work split
 - **Owner:** AI B
 - **Status:** DONE — report received and reviewed by AI A
