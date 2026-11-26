@@ -541,7 +541,8 @@
     { src: './ai/event-adapter.js', globalName: 'OnePieceEventAdapter' },
     { src: './ai/crew-system.js', globalName: 'OnePieceCrewSystem' },
     { src: './ai/devil-fruit-system.js', globalName: 'OnePieceDevilFruitSystem' },
-    { src: './ai/haki-system.js', globalName: 'OnePieceHakiSystem' }
+    { src: './ai/haki-system.js', globalName: 'OnePieceHakiSystem' },
+    { src: './ai/marine-system.js', globalName: 'OnePieceMarineSystem' }
   ]);
 
   function loadCompanionModules(host = root) {
