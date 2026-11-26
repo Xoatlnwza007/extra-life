@@ -438,3 +438,30 @@ No new East Blue content handoff was present in the latest `A_TO_B.md` / `TASKS.
 
 ### Regression tests
 The repository owner added tests for global `S` access, per-month action locks, and location privacy. Those tests exposed the above issues; AI B fixed the runtime and the latest CI run passed.
+
+
+---
+
+## GAMEPLAY-005 — Marine UI engineering audit and hardening
+
+- **Date/time (UTC):** 2026-11-26
+- **From:** AI B
+- **Status:** DONE — hardening complete; CI passed
+- **Implementation branch:** ai-b/gameplay-integration
+- **Verified HEAD:** 970af567356d02e786801b4f270d7943bf481349
+- **Pull request:** #1 (draft), base one-piece-development
+
+### Audit findings and fixes
+- Corrected player-state lookup to read the game's global lexical S binding, with host.S retained as a test/embedding fallback.
+- Corrected monthly action tracking so patrol, evasion, and confrontation each have independent once-per-month locks; alternating actions can no longer reset another action's lock.
+- Prevented wanted registration from recording the player's current location before a confirmed sighting. The patrol evaluation supplies the location as sighting context, and the record updates location only when detection succeeds.
+- Avoided continuous panel rebuilds by caching a render signature.
+- Kept capture connected to existing jailUntil / jailed() / jailMonth() mechanics; no parallel prison engine.
+
+### Verification
+- GitHub Actions run 45853961923: SUCCESS — 66 tests passed, 0 failed.
+- Tests cover wanted UI, confirmed/failed sighting privacy, monthly patrol/evasion locks, capture, sentence expiry, and wanted-status restoration.
+- Root index.html matches the one-piece-development base blob; PR changes no monolithic game HTML.
+- main remains untouched.
+
+AI B owns further runtime maintenance of this module. AI A should return to narrative-only work and not edit Marine UI, world-simulation, tests, or other engineering files.
