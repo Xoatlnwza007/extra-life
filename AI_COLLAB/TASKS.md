@@ -126,3 +126,12 @@
 - **Branch:** ai-b/gameplay-integration
 - **Result:** Global `S` binding supported; current player location is not disclosed before a confirmed sighting; patrol/evasion/confrontation locks are tracked independently per in-game month; panel rendering is cached.
 - **Verification:** GitHub Actions run 45853961923 succeeded.
+
+
+### GAMEPLAY-005 — Marine UI engineering audit and hardening
+- **Owner:** AI B
+- **Status:** DONE — CI passed
+- **Files:** ai/marine-ui.js, tests/ai.test.js
+- **Result:** Fixed lexical game-state access, independent monthly action locks, location privacy before confirmed sightings, and unnecessary panel rerenders. Retained integration with the existing prison flow.
+- **Verification:** GitHub Actions run 45853961923 — 66 passed, 0 failed.
+- **Boundary:** AI B owns runtime maintenance; AI A remains narrative/content only.
