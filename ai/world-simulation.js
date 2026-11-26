@@ -480,5 +480,7 @@
 
   const api = Object.freeze({ simulate, simulatePopulation, saveSystem });
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
-  root.OnePieceWorldSimulation = api;\n  root.OnePieceSaveSystem = saveSystem;\n  installBrowserSaveProtection(root);
+  root.OnePieceWorldSimulation = api;
+  root.OnePieceSaveSystem = saveSystem;
+  installBrowserSaveProtection(root);
 })(typeof globalThis !== 'undefined' ? globalThis : this);
