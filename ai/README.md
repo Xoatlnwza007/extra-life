@@ -173,9 +173,13 @@ The main battle loop now uses `ai/combat-adapter.js` for baseline bonuses from
 existing unlocked power IDs in `S.powers`. Paramecia, Zoan and Logia fruits
 provide distinct offensive bonuses; Zoan and Logia also provide durability
 bonuses. Armament Haki improves outgoing and incoming damage, Observation Haki
-reduces incoming damage, and Conqueror's Haki improves outgoing damage. These
-are unlock-based baseline effects, not mastery-scaled effects. The separate
-Haki mastery helper is still not synchronized with the main game's power flags.
+reduces incoming damage, and Conqueror's Haki improves outgoing damage. The
+adapter additionally accepts optional `state.haki` and `state.devilFruit`
+progression records: unlocked Haki mastery scales its relevant combat effects,
+while Devil Fruit mastery and awakening add bounded offensive/durability
+scaling. Existing saves without these records retain their original unlock-only
+behavior. The game does not yet expose training controls or persist these
+optional progression records.
 
 The adapter is loaded before the main inline game script and is only applied
 when the active world is One Piece. Other anime worlds and characters without
@@ -293,3 +297,14 @@ the game layer remains responsible for saving state and presenting UI.
 The module is loaded by the browser companion bootstrap as
 `OnePieceMarineSystem`. It is currently an engine/API layer and is not yet
 wired to the player's bounty UI or a visible Marine encounter panel.
+
+
+### Mastery-aware combat adapter
+
+The combat adapter remains backward-compatible with legacy saves that only
+contain `S.powers`. If the game state also contains a Haki record from
+`OnePieceHakiSystem` at `state.haki`, unlocked mastery adds gradual outgoing
+or incoming damage modifiers. If it contains a Devil Fruit progression record
+at `state.devilFruit`, fruit type supplies the baseline family modifier and
+mastery/awakening add bounded scaling. These optional fields are not currently
+created or persisted by the main game UI; callers must initialize and save them.
