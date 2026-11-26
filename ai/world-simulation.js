@@ -910,13 +910,30 @@
       body.appendChild(make('h4', 'บันทึกลูกเรือ'));
       const history = (crew.history || []).slice(-5).reverse();
       if (!history.length) body.appendChild(make('p', 'ยังไม่มีบันทึกกิจกรรม', 'el-crew-muted'));
+      const characterName = characterId => {
+        if (characterId === 'player') return state.name || 'ผู้เล่น';
+        const npc = (state.npcs || []).find((item, index) => crewNpcId(item, index) === characterId);
+        return npc ? npc.n : characterId || 'ไม่ทราบชื่อ';
+      };
+      const historyMessage = entry => {
+        switch (entry.type) {
+          case 'joined': return characterName(entry.characterId) + ' เข้าร่วมลูกเรือ · ' + entry.role;
+          case 'left': return characterName(entry.characterId) + ' ออกจากลูกเรือ';
+          case 'captaincy-transferred': return 'เปลี่ยนกัปตันจาก ' + characterName(entry.from) + ' เป็น ' + characterName(entry.to);
+          case 'bounty-increased': return 'ค่าหัวเพิ่มขึ้น ' + Number(entry.amount || 0).toLocaleString('th-TH') + ' เบรี';
+          case 'reputation-changed': return 'ชื่อเสียงเปลี่ยน ' + (Number(entry.delta) > 0 ? '+' : '') + Number(entry.delta || 0) + ' · ปัจจุบัน ' + Number(entry.reputation || 0);
+          case 'relation-changed': return 'ความสัมพันธ์กับกลุ่มอื่นเปลี่ยนเป็น ' + (entry.label || 'neutral');
+          case 'crew-encounter': return entry.outcome === 'victory' ? 'ชนะการปะทะกับกลุ่มโจรสลัด' : entry.outcome === 'defeat' ? 'พ่ายแพ้ในการปะทะกับกลุ่มโจรสลัด' : 'ปะทะกับกลุ่มโจรสลัดโดยไม่มีผู้ชนะ';
+          case 'disbanded': return 'ยุบกลุ่มโจรสลัด · ' + (entry.reason || 'ไม่ระบุเหตุผล');
+          default: return 'กิจกรรมลูกเรือ · ' + String(entry.type || 'ไม่ทราบประเภท');
+        }
+      };
       for (const entry of history) {
-        const npc = (state.npcs || []).find((item, index) => crewNpcId(item, index) === entry.characterId);
-        const memberName = entry.characterId === 'player' ? (state.name || 'ผู้เล่น') : (npc ? npc.n : entry.characterId);
-        const message = entry.type === 'joined'
-          ? memberName + ' เข้าร่วมลูกเรือ · ' + entry.role
-          : entry.type === 'left' ? memberName + ' ออกจากลูกเรือ' : memberName + ' · ' + entry.type;
-        body.appendChild(make('div', message, 'el-crew-muted'));
+        const date = entry.at ? new Date(entry.at) : null;
+        const dateLabel = date && Number.isFinite(date.getTime())
+          ? date.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }) + ' · '
+          : '';
+        body.appendChild(make('div', dateLabel + historyMessage(entry), 'el-crew-muted'));
       }
 
       body.appendChild(make('h4', 'ชวน NPC เข้าร่วม'));
