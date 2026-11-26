@@ -1065,3 +1065,26 @@ test('browser localStorage hook preserves the previous save when storage quota i
   assert.equal(stillSaved.data.captain, 'Safe Captain');
   assert.equal(backup.data.captain, 'Safe Captain');
 });
+
+
+test('One Piece combat adapter applies Devil Fruit and Haki power bonuses', () => {
+  const combat = require('../ai/combat-adapter.js');
+  const state = { powers: ['df_zoan', 'haki_arm', 'haki_obs'] };
+  const modifiers = combat.getModifiers(state, 'op');
+
+  assert.equal(modifiers.outgoing, 1.12 * 1.15);
+  assert.ok(Math.abs(modifiers.incoming - (0.88 * 0.90 * 0.90)) < 1e-12);
+  assert.equal(combat.modifyOutgoingDamage(100, state, 'op'), 129);
+  assert.equal(combat.modifyIncomingDamage(100, state, 'op'), 71);
+});
+
+test('One Piece combat adapter leaves other worlds and unpowered characters unchanged', () => {
+  const combat = require('../ai/combat-adapter.js');
+  assert.deepEqual(combat.getModifiers({ powers: ['haki_arm'] }, 'naruto'), {
+    outgoing: 1, incoming: 1
+  });
+  assert.equal(combat.modifyOutgoingDamage(40, { powers: [] }, 'op'), 40);
+  assert.equal(combat.modifyIncomingDamage(40, { powers: [] }, 'op'), 40);
+  assert.equal(combat.modifyOutgoingDamage(-5, { powers: ['haki_arm'] }, 'op'), 0);
+  assert.equal(combat.modifyIncomingDamage(Infinity, { powers: [] }, 'op'), 0);
+});
