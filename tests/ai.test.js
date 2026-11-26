@@ -1088,3 +1088,15 @@ test('One Piece combat adapter leaves other worlds and unpowered characters unch
   assert.equal(combat.modifyOutgoingDamage(-5, { powers: ['haki_arm'] }, 'op'), 0);
   assert.equal(combat.modifyIncomingDamage(Infinity, { powers: [] }, 'op'), 0);
 });
+
+
+test('main game loads the combat adapter and routes One Piece battle damage through it', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+
+  assert.match(html, /<script src="\.\/ai\/combat-adapter\.js"><\/script>/);
+  assert.match(html, /W\?\.id==='op'&&window\.OnePieceCombatAdapter/);
+  assert.match(html, /modifyOutgoingDamage\(v,S,'op'\)/);
+  assert.match(html, /modifyIncomingDamage\(d,S,'op'\)/);
+});
