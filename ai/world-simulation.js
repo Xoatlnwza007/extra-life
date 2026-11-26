@@ -819,7 +819,7 @@
       }
 
       body.appendChild(make('strong', crew.name));
-      body.appendChild(make('div', 'สมาชิก ' + (crew.members || []).length + '/10 · ค่าหัวกลุ่ม ' + (crew.bounty || 0).toLocaleString('th-TH') + ' เบรี', 'el-crew-muted'));
+      body.appendChild(make('div', 'สมาชิก ' + (crew.members || []).length + '/10 · ค่าหัวกลุ่ม ' + (crew.bounty || 0).toLocaleString('th-TH') + ' เบรี · ชื่อเสียง ' + (crew.reputation || 0), 'el-crew-muted'));
 
       const ownsBoat = !!(state.own && Array.isArray(state.own.items) && state.own.items.includes('boat'));
       if (!ownsBoat) {
@@ -905,6 +905,18 @@
           row.appendChild(make('span', ''));
         }
         body.appendChild(row);
+      }
+
+      body.appendChild(make('h4', 'บันทึกลูกเรือ'));
+      const history = (crew.history || []).slice(-5).reverse();
+      if (!history.length) body.appendChild(make('p', 'ยังไม่มีบันทึกกิจกรรม', 'el-crew-muted'));
+      for (const entry of history) {
+        const npc = (state.npcs || []).find((item, index) => crewNpcId(item, index) === entry.characterId);
+        const memberName = entry.characterId === 'player' ? (state.name || 'ผู้เล่น') : (npc ? npc.n : entry.characterId);
+        const message = entry.type === 'joined'
+          ? memberName + ' เข้าร่วมลูกเรือ · ' + entry.role
+          : entry.type === 'left' ? memberName + ' ออกจากลูกเรือ' : memberName + ' · ' + entry.type;
+        body.appendChild(make('div', message, 'el-crew-muted'));
       }
 
       body.appendChild(make('h4', 'ชวน NPC เข้าร่วม'));
