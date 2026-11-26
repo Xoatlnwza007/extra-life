@@ -217,6 +217,35 @@ test('social NPC actions create memories and bilateral relationships', () => {
   assert.ok(result.profiles['Kind B'].memories.some(memory => memory.source === 'npc-interaction'));
 });
 
+test('player crew is stored in game state and recruits NPCs persistently', () => {
+  const state = {
+    world: 'op',
+    name: 'Monkey D. Luffy',
+    npcs: [
+      { id: 'npc-nami', n: 'Nami', alive: true },
+      { n: 'Zoro', alive: true },
+      { n: 'Lost Villager', alive: false }
+    ]
+  };
+  const created = world.createPlayerCrew(state, 'Straw Hat Pirates', crews);
+  assert.equal(created.ok, true);
+  assert.equal(created.crew.captainId, 'player');
+  assert.equal(world.getPlayerCrew(state, crews).id, created.crew.id);
+  assert.equal(world.createPlayerCrew(state, 'Second Crew', crews).reason, 'already-has-crew');
+
+  const joined = world.recruitNpcToPlayerCrew(state, state.npcs[0], 'navigator', crews);
+  assert.equal(joined.joined, true);
+  assert.equal(joined.member.characterId, 'npc-nami');
+  assert.equal(world.recruitNpcToPlayerCrew(state, state.npcs[0], 'navigator', crews).reason, 'already-member');
+  assert.equal(world.recruitNpcToPlayerCrew(state, state.npcs[2], 'fighter', crews).reason, 'invalid-recruitment');
+
+  const saved = JSON.parse(JSON.stringify(state));
+  assert.equal(world.getPlayerCrew(saved, crews).members.length, 2);
+  const left = world.removeNpcFromPlayerCrew(saved, 'npc-nami', crews);
+  assert.equal(left.left, true);
+  assert.equal(world.getPlayerCrew(saved, crews).members.length, 1);
+});
+
 test('crew system manages membership, roles, captaincy and bounty', () => {
   let crew = crews.createCrew({ id: 'straw-test', name: 'Test Pirates', captainId: 'luffy', bounty: 100 });
   let result = crews.joinCrew(crew, 'zoro', 'swordsman', { capacity: 3 });
