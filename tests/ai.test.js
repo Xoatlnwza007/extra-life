@@ -284,7 +284,12 @@ test('One Piece yearly simulation automatically advances the full living NPC pop
   ];
   const result = world.simulate({ world: 'op', npcBrains: {} }, npcs, {});
   assert.equal(result.simulatedCount, 3);
-  assert.equal(result.actions.length, 3);
+  assert.equal(result.simulatedMonths, 12);
+  assert.equal(result.actionCount, 36);
+  assert.equal(result.actions.length, 36);
+  assert.equal(result.monthlyResults.length, 12);
+  assert.deepEqual(result.monthlyResults.map(month => month.month), Array.from({ length: 12 }, (_, i) => i + 1));
+  assert.equal(result.simulationCalendar.totalMonths, 12);
   assert.ok(result.profiles.Nami);
   assert.ok(result.profiles.Usopp);
   assert.ok(result.profiles.Sanji);
@@ -315,13 +320,16 @@ test('One Piece population remains valid across twelve annual simulation ticks',
       for (const value of Object.values(profile.needs)) {
         assert.ok(value >= 0 && value <= 100, npc.n + ' needs should remain bounded');
       }
-      actionHistory[npc.n].push(result.actions.find(action => action.npc === npc.n).action);
+      const monthlyActions = result.actions.filter(action => action.npc === npc.n);
+      assert.equal(monthlyActions.length, 12);
+      actionHistory[npc.n].push(...monthlyActions.map(action => action.action));
     }
-    state = { ...state, npcBrains: result.profiles };
+    state = { ...state, npcBrains: result.profiles, simulationCalendar: result.simulationCalendar };
   }
 
+  assert.equal(state.simulationCalendar.totalMonths, 144);
   for (const npc of npcs) {
-    assert.equal(actionHistory[npc.n].length, 12);
+    assert.equal(actionHistory[npc.n].length, 144);
     assert.ok(new Set(actionHistory[npc.n]).size >= 1);
   }
 });
