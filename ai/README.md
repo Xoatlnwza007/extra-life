@@ -10,12 +10,11 @@ Load the core scripts in this order before the game code that creates or updates
 <script src="./ai/decision-engine.js"></script>
 <script src="./ai/character-state.js"></script>
 <script src="./ai/npc-brain.js"></script>
-<script src="./ai/event-adapter.js"></script>
+<script src="./ai/combat-adapter.js"></script>
 <script src="./ai/world-simulation.js"></script>
-<script src="./ai/crew-system.js"></script>
 ```
 
-In the main browser game, `world-simulation.js` also loads `event-adapter.js`, `crew-system.js`, `devil-fruit-system.js`, and `haki-system.js` sequentially. The resulting promise is exposed as `OnePieceSystemsReady`; failed companion loads are recorded in `__onePieceModuleErrors`.
+In the main browser game, `index.html` loads `combat-adapter.js` before the battle code. `world-simulation.js` also loads `event-adapter.js`, `crew-system.js`, `devil-fruit-system.js`, and `haki-system.js` sequentially. The resulting promise is exposed as `OnePieceSystemsReady`; failed companion loads are recorded in `__onePieceModuleErrors`.
 
 ## Create and persist an NPC
 
