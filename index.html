@@ -2716,7 +2716,7 @@ async function nextYear(){
       await window.OnePieceSystemsReady;
       const nearby=castNear(S);
       const population=nearby.map(id=>({n:id,r:W.castMeta?.[id]?.r||'practical',alive:!castGone(id)}));
-      const result=window.OnePieceWorldSimulation.simulate(S,population,{seaDanger:opSea(S)});
+      const result=window.OnePieceWorldSimulation.simulate(S,population,{seaDanger:S.place==='sea'});
       if(result&&result.stories&&result.stories.length)say('ความเคลื่อนไหวรอบตัว: '+result.stories[0],'news');
     }catch(error){console.warn('One Piece NPC simulation skipped',error);}
   }
