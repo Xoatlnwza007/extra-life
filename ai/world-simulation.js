@@ -810,6 +810,27 @@
           : (npc ? npc.n + ' · ' + member.role : member.characterId + ' · ' + member.role);
         row.appendChild(make('label', label));
         if (member.characterId !== 'player') {
+          const role = doc.createElement('select');
+          role.setAttribute('aria-label', 'เปลี่ยนตำแหน่งของ ' + (npc ? npc.n : member.characterId));
+          for (const roleName of api.DEFAULT_ROLES.filter(value => value !== 'captain')) {
+            const option = doc.createElement('option');
+            option.value = roleName;
+            option.textContent = roleName;
+            option.selected = roleName === member.role;
+            role.appendChild(option);
+          }
+          role.addEventListener('change', () => {
+            const result = api.setMemberRole(crew, member.characterId, role.value);
+            if (!result.updated) {
+              setStatus('เปลี่ยนตำแหน่งไม่สำเร็จ: ' + result.reason);
+              return;
+            }
+            state.crews = (state.crews || []).map(item => item && item.id === crew.id ? result.crew : item);
+            persist();
+            setStatus('เปลี่ยนตำแหน่งสมาชิกแล้ว');
+            renderCrewPanel();
+          });
+          row.appendChild(role);
           row.appendChild(makeButton('ออกจากกลุ่ม', () => {
             const result = removeNpcFromPlayerCrew(state, member.characterId, api);
             setStatus(result.left ? 'นำสมาชิกออกจากกลุ่มแล้ว' : 'ทำรายการไม่สำเร็จ');
