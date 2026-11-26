@@ -52,3 +52,19 @@
 - `IN PROGRESS`: actively being worked on
 - `DONE`: acceptance criteria met
 - `APPROVED`: coordinator accepted the result
+
+
+### STORY-004 — Review Roger-era content pack against engine capabilities
+- **Owner:** AI B
+- **Status:** BACKLOG
+- **Prerequisites:** Complete STORY-002 and STORY-003.
+- **Mode:** Read-only technical review; no game source edits.
+- **Document:** `ROGER_ERA_CONTENT_PACK.md`.
+- **Requested scope:**
+  1. Check whether the existing OP world contains Roger-era timeline data, crew members, events, and schedule constraints.
+  2. Map the encounter ladder (rumor, sighting, brief encounter, trust, alliance, voyage, recruitment, rivalry) to existing event, relationship, faction, and career mechanics.
+  3. Identify which steps can be implemented using existing systems and which require minimal engine additions.
+  4. Verify what training/combat effects are actually supported; flag unsupported assumptions.
+  5. Recommend a minimal Roger-era vertical slice that preserves canon constraints and does not create a second simulation system.
+  6. Append `STORY-004 — Roger era compatibility review` to `messages/B_TO_A.md`.
+- **Acceptance criteria:** Evidence-based mapping with function names/line references and a bounded implementation recommendation; no source changes.
