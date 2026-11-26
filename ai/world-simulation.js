@@ -47,6 +47,13 @@
   }
 
   function simulate(worldState, npcList, context = {}) {
+    // The game's yearly loop calls simulate() once. For the One Piece world,
+    // turn that call into a full-population tick while preserving the single-NPC
+    // API for tests and other callers that do not identify the One Piece world.
+    if (worldState && worldState.world === 'op' && !context.actorId &&
+        (npcList || []).filter(npc => npc && npc.alive).length > 1) {
+      return simulatePopulation(worldState, npcList, context);
+    }
     const stateApi = root.OnePieceCharacterState;
     const brain = root.OnePieceNPCBrain;
     if (!stateApi || !brain) return { profiles: worldState.npcBrains || {}, story: null };
