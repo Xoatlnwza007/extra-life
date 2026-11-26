@@ -315,9 +315,9 @@ test('pirate crew panel creates a crew and recruits an NPC through its controls'
     const historyEntries = panel.children[1].children.filter(node =>
       node.className === 'el-crew-muted' && /ค่าหัวเพิ่มขึ้น|ชื่อเสียงเปลี่ยน/.test(node.textContent)
     );
-    assert.equal(historyEntries.length, 2);
-    const bountyHistory = historyEntries.find(node => node.textContent.includes('ค่าหัวเพิ่มขึ้น'));
-    const reputationHistory = historyEntries.find(node => node.textContent.includes('ชื่อเสียงเปลี่ยน'));
+    assert.equal(historyEntries.length, 4);
+    const bountyHistory = historyEntries.find(node => node.textContent.includes('2,500,000'));
+    const reputationHistory = historyEntries.find(node => node.textContent.includes('ชื่อเสียงเปลี่ยน +5'));
     assert.ok(bountyHistory.textContent.includes('ค่าหัวเพิ่มขึ้น 2,500,000 เบรี'));
     assert.ok(reputationHistory.textContent.includes('ชื่อเสียงเปลี่ยน +5'));
   } finally {
