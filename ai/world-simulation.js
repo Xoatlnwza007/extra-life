@@ -166,5 +166,7 @@
     };
   }
 
-  root.OnePieceWorldSimulation = Object.freeze({ simulate, simulatePopulation });
+  const api = Object.freeze({ simulate, simulatePopulation });
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  root.OnePieceWorldSimulation = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
