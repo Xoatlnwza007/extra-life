@@ -233,3 +233,18 @@ The automated tests cover legacy migration, version metadata, checksum
 validation, backup rotation, missing/corrupt primary recovery, preservation of
 damaged copies, and future-version write protection. Browser refresh and
 real-device storage-quota behavior still require manual browser testing.
+
+### Save export and import
+
+`OnePieceSaveSystem.createManager(storage)` now exposes `exportSave()` and
+`importSave(raw)`. Export returns a verified, versioned JSON payload and a
+suggested filename. Import validates JSON shape, schema version and checksum
+before changing the current save; the current valid save is rotated into the
+backup slot first. Legacy unversioned JSON is accepted and upgraded, while
+future-version or tampered files are rejected without replacing local progress.
+
+For browser UI, `OnePieceSaveSystem.downloadExport(manager)` downloads the JSON
+file through a Blob URL, and `OnePieceSaveSystem.importFile(file, manager)`
+reads a user-selected File and passes its contents through the same validator.
+These are APIs only; the existing game's visible menu/buttons have not yet been
+modified to expose export/import controls.
