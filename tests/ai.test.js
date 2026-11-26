@@ -227,6 +227,8 @@ test('pirate crew management is limited to active One Piece pirate careers', () 
 
 test('pirate crew panel creates a crew and recruits an NPC through its controls', () => {
   const previousState = globalThis.S;
+  const previousWorld = globalThis.W;
+  const previousBuy = globalThis.buy;
   function element(tag) {
     return {
       tagName: tag.toUpperCase(), children: [], attributes: {}, listeners: {}, value: '',
@@ -248,11 +250,13 @@ test('pirate crew panel creates a crew and recruits an NPC through its controls'
   };
   const state = {
     world: 'op', alive: true, job: { id: 'pirate' }, name: 'Luffy',
-    flags: { bounty: 0 }, fame: 0, dark: 0,
+    flags: { bounty: 0 }, fame: 0, dark: 0, money: 100, own: { items: [] },
     npcs: [{ id: 'nami', n: 'Nami', alive: true, d: 'navigator' }],
     crews: []
   };
   globalThis.S = state;
+  globalThis.W = { shop: [{ id: 'boat', n: 'เรือใบลำเล็ก', cost: 40 }] };
+  globalThis.buy = item => { state.money -= item.cost; state.own.items.push(item.id); };
   const host = { document: doc, OnePieceCrewSystem: crews, setInterval: () => 1 };
   try {
     assert.equal(world.installCrewControls(host), true);
@@ -270,6 +274,14 @@ test('pirate crew panel creates a crew and recruits an NPC through its controls'
     assert.equal(state.crews.length, 1);
     assert.equal(state.crews[0].captainId, 'player');
 
+    const buyButton = panelBody.children.find(node => node.tagName === 'BUTTON' && node.textContent.startsWith('ซื้อเรือใบ'));
+    buyButton.click();
+    assert.deepEqual(state.own.items, ['boat']);
+    const shipForm = panelBody.children.find(node => node.className === 'el-crew-form');
+    shipForm.children[0].value = 'Going Merry';
+    shipForm.children[1].click();
+    assert.equal(state.crews[0].shipName, 'Going Merry');
+
     const recruitRow = panelBody.children[panelBody.children.length - 1];
     recruitRow.children[1].click();
     assert.equal(state.crews[0].members.length, 2);
@@ -286,6 +298,10 @@ test('pirate crew panel creates a crew and recruits an NPC through its controls'
   } finally {
     if (previousState === undefined) delete globalThis.S;
     else globalThis.S = previousState;
+    if (previousWorld === undefined) delete globalThis.W;
+    else globalThis.W = previousWorld;
+    if (previousBuy === undefined) delete globalThis.buy;
+    else globalThis.buy = previousBuy;
   }
 });
 
