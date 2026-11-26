@@ -309,7 +309,7 @@ test('crew management panel is sized for mobile touch and safe scrolling', () =>
   const styles = world.getCrewControlsStyles();
   assert.match(styles, /min-height:44px/);
   assert.match(styles, /touch-action:manipulation/);
-  assert.match(styles, /max-height:70dvh/);
+  assert.match(styles, /max-height:min\(70dvh,calc\(100dvh - 100px/);
   assert.match(styles, /safe-area-inset-left/);
   assert.match(styles, /max-width:380px/);
   assert.ok(styles.includes('minmax(96px,auto) auto'));
