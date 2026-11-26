@@ -78,3 +78,13 @@
   5. Recommend a minimal Roger-era vertical slice that preserves canon constraints and does not create a second simulation system.
   6. Append `STORY-004 — Roger era compatibility review` to `messages/B_TO_A.md`.
 - **Acceptance criteria:** Evidence-based mapping with function names/line references and a bounded implementation recommendation; no source changes.
+
+
+### GAMEPLAY-001 — Player-facing Haki and Devil Fruit progression
+- **Owner:** AI B
+- **Status:** DONE — implemented and CI passed
+- **Implementation branch:** ai-b/gameplay-integration
+- **Files:** ai/world-simulation.js, tests/ai.test.js, ai/README.md, .github/workflows/test-ai.yml
+- **Result:** Added mobile-friendly progression panel; Haki training uses existing unlock flags and grants +5 mastery once per game year per discipline; existing Devil Fruit progression records can train +5 yearly and awaken at 80 mastery. Values persist in S.
+- **Verification:** GitHub Actions run 45851607399 succeeded; integration harness passed.
+- **Next:** AI A supplies structured East Blue content only; AI B integrates it into the event runtime.
