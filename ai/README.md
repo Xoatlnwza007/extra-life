@@ -319,3 +319,14 @@ game layer to migrate an existing character without granting Haki that has not
 been unlocked. The function returns a new character object and does not mutate
 the input. Call it when loading or updating a character's power unlocks, then
 persist the returned `character.haki` with the normal game save.
+
+
+### Unified character progression coordinator
+
+`progression-system.js` coordinates Haki and Devil Fruit progression through
+one immutable character-state API. It synchronizes unlocked Haki styles from
+the character's existing `powers`, supports Haki and fruit training, fruit
+consumption and awakening, exposes sea/Seastone weakness, and builds a compact
+progress summary for UI use. It is loaded as `OnePieceProgressionSystem`.
+The coordinator does not itself award training points, spend currency, or save
+the character; game rules and persistence remain owned by the main game layer.
