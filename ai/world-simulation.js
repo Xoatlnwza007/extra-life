@@ -1298,6 +1298,16 @@
     return install();
   }
 
+  function scheduleCrewControls(host = root) {
+    if (!host || !host.document) return false;
+    const install = () => installCrewControls(host);
+    if (host.document.readyState === 'loading') {
+      host.document.addEventListener('DOMContentLoaded', install, { once: true });
+      return true;
+    }
+    return install();
+  }
+
   function getMobileTouchStyles() {
     return `
       @media(any-pointer:coarse){
