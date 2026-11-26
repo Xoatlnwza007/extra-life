@@ -569,6 +569,65 @@
     return promise;
   }
 
+  function crewNpcId(npc) {
+    if (!npc) return null;
+    if (npc.id !== undefined && npc.id !== null && String(npc.id)) return String(npc.id);
+    return npc.n ? 'npc:' + String(npc.n) : null;
+  }
+
+  function getPlayerCrew(worldState, crewApi = root.OnePieceCrewSystem) {
+    if (!worldState || !crewApi) return null;
+    const crews = Array.isArray(worldState.crews) ? worldState.crews : [];
+    if (worldState.playerCrewId) {
+      const selected = crews.find(crew => crew && crew.id === worldState.playerCrewId && crew.status === 'active');
+      if (selected) return selected;
+    }
+    return typeof crewApi.findCrewForMember === 'function'
+      ? crewApi.findCrewForMember(crews, 'player') : null;
+  }
+
+  function createPlayerCrew(worldState, name, crewApi = root.OnePieceCrewSystem) {
+    if (!worldState || worldState.world !== 'op' || !crewApi) {
+      return { ok: false, reason: 'unsupported-world' };
+    }
+    const existing = getPlayerCrew(worldState, crewApi);
+    if (existing) return { ok: false, reason: 'already-has-crew', crew: existing };
+    const crew = crewApi.createCrew({ name, captainId: 'player' });
+    worldState.crews = (Array.isArray(worldState.crews) ? worldState.crews : []).concat(crew);
+    worldState.playerCrewId = crew.id;
+    return { ok: true, crew };
+  }
+
+  function recruitNpcToPlayerCrew(worldState, npc, role = 'fighter', crewApi = root.OnePieceCrewSystem) {
+    if (!worldState || worldState.world !== 'op' || !crewApi || !npc || !npc.alive) {
+      return { crew: null, joined: false, reason: 'invalid-recruitment' };
+    }
+    const crew = getPlayerCrew(worldState, crewApi);
+    if (!crew) return { crew: null, joined: false, reason: 'no-player-crew' };
+    const characterId = crewNpcId(npc);
+    if (!characterId || characterId === 'player') {
+      return { crew, joined: false, reason: 'invalid-character' };
+    }
+    const result = crewApi.joinCrew(crew, characterId, role, { capacity: 10 });
+    if (result.joined) {
+      worldState.crews = worldState.crews.map(item => item && item.id === crew.id ? result.crew : item);
+    }
+    return result;
+  }
+
+  function removeNpcFromPlayerCrew(worldState, characterId, crewApi = root.OnePieceCrewSystem) {
+    if (!worldState || worldState.world !== 'op' || !crewApi) {
+      return { crew: null, left: false, reason: 'unsupported-world' };
+    }
+    const crew = getPlayerCrew(worldState, crewApi);
+    if (!crew) return { crew: null, left: false, reason: 'no-player-crew' };
+    const result = crewApi.leaveCrew(crew, characterId);
+    if (result.left) {
+      worldState.crews = worldState.crews.map(item => item && item.id === crew.id ? result.crew : item);
+    }
+    return result;
+  }
+
   function getMobileTouchStyles() {
     return `
       @media(any-pointer:coarse){
@@ -700,7 +759,7 @@
     return install();
   }
 
-  const api = Object.freeze({ simulate, simulatePopulation, saveSystem, installSaveControls, getSaveControlsStyles, getMobileTouchStyles, installMobileTouchStyles, loadCompanionModules, companionModules: COMPANION_MODULES });
+  const api = Object.freeze({ simulate, simulatePopulation, saveSystem, installSaveControls, getSaveControlsStyles, getMobileTouchStyles, installMobileTouchStyles, loadCompanionModules, companionModules: COMPANION_MODULES, crewNpcId, getPlayerCrew, createPlayerCrew, recruitNpcToPlayerCrew, removeNpcFromPlayerCrew });
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.OnePieceWorldSimulation = api;
   root.OnePieceSaveSystem = saveSystem;
