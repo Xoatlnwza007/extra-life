@@ -306,8 +306,10 @@ test('pirate crew panel creates a crew and recruits an NPC through its controls'
       node.className === 'el-crew-muted' && /ค่าหัวเพิ่มขึ้น|ชื่อเสียงเปลี่ยน/.test(node.textContent)
     );
     assert.equal(historyEntries.length, 2);
-    assert.ok(historyEntries[0].textContent.includes('ค่าหัวเพิ่มขึ้น 2,500,000 เบรี'));
-    assert.ok(historyEntries[1].textContent.includes('ชื่อเสียงเปลี่ยน +5'));
+    const bountyHistory = historyEntries.find(node => node.textContent.includes('ค่าหัวเพิ่มขึ้น'));
+    const reputationHistory = historyEntries.find(node => node.textContent.includes('ชื่อเสียงเปลี่ยน'));
+    assert.ok(bountyHistory.textContent.includes('ค่าหัวเพิ่มขึ้น 2,500,000 เบรี'));
+    assert.ok(reputationHistory.textContent.includes('ชื่อเสียงเปลี่ยน +5'));
   } finally {
     if (previousState === undefined) delete globalThis.S;
     else globalThis.S = previousState;
