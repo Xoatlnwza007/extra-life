@@ -39,6 +39,39 @@
     };
   }
 
+  function syncUnlockedStyles(character, powers = []) {
+    if (!character || typeof character !== 'object') {
+      return { synced: false, reason: 'invalid-character', character };
+    }
+    const unlockedPowers = new Set(Array.isArray(powers) ? powers : []);
+    const current = character.haki && typeof character.haki === 'object'
+      ? character.haki : {};
+    const nextHaki = {};
+    const powerByType = {
+      armament: 'haki_arm',
+      observation: 'haki_obs',
+      conquerors: 'haki_king'
+    };
+    for (const type of TYPES) {
+      const previous = current[type] || {};
+      const unlocked = unlockedPowers.has(powerByType[type]);
+      nextHaki[type] = {
+        ...previous,
+        unlocked,
+        mastery: clamp(Number(previous.mastery) || 0, 0, 100)
+      };
+    }
+    return {
+      synced: true,
+      changed: TYPES.some(type =>
+        !current[type] ||
+        current[type].unlocked !== nextHaki[type].unlocked ||
+        current[type].mastery !== nextHaki[type].mastery
+      ),
+      character: { ...character, haki: nextHaki }
+    };
+  }
+
   function masteryRank(value) {
     const mastery = clamp(Number(value) || 0, 0, 100);
     if (mastery >= 90) return 'master';
@@ -67,7 +100,7 @@
     };
   }
 
-  const api = Object.freeze({ TYPES, createHakiState, train, masteryRank, getCombatProfile });
+  const api = Object.freeze({ TYPES, createHakiState, syncUnlockedStyles, train, masteryRank, getCombatProfile });
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.OnePieceHakiSystem = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
