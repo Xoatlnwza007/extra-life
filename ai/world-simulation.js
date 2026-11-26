@@ -105,6 +105,10 @@
     return { profiles, story, actor: actor.n, action: chosen.id, ranking: decision.ranking };
   }
 
+  function stateApiForInteractions() {
+    return root.OnePieceCharacterState;
+  }
+
   // Optional full-population pass. The existing simulate() API remains unchanged.
   function simulatePopulation(worldState, npcList, context = {}) {
     const living = (npcList || []).filter(npc => npc && npc.alive);
@@ -114,12 +118,40 @@
     };
     const actions = [];
     const stories = [];
+    const interactions = [];
 
-    for (const npc of living) {
+    for (let index = 0; index < living.length; index++) {
+      const npc = living[index];
       const result = simulate(currentState, living, { ...context, actorId: npc.n });
       currentState = { ...currentState, npcBrains: result.profiles };
       if (result.action) {
         actions.push({ npc: npc.n, action: result.action, ranking: result.ranking });
+        const socialAction = result.action === 'help' || result.action === 'socialize';
+        if (socialAction && living.length > 1) {
+          const partner = living[(index + 1) % living.length];
+          const first = currentState.npcBrains[npc.n];
+          const second = currentState.npcBrains[partner.n];
+          const delta = result.action === 'help' ? 5 : 2;
+          const event = result.action === 'help'
+            ? npc.n + ' ช่วยเหลือ ' + partner.n
+            : npc.n + ' ได้พูดคุยกับ ' + partner.n;
+          const pair = stateApiForInteractions().interact(first, second, delta, {
+            replyDelta: result.action === 'help' ? 1 : 2,
+            event
+          });
+          const api = stateApiForInteractions();
+          currentState.npcBrains[npc.n] = api.remember(pair.first, event, {
+            tags: ['social', result.action], importance: 2, source: 'npc-interaction'
+          });
+          currentState.npcBrains[partner.n] = api.remember(pair.second, event, {
+            tags: ['social', result.action], importance: 1, source: 'npc-interaction'
+          });
+          interactions.push({
+            from: npc.n, to: partner.n, type: result.action,
+            fromDelta: delta, toDelta: result.action === 'help' ? 1 : 2,
+            event
+          });
+        }
       }
       if (result.story) stories.push(result.story);
     }
@@ -127,6 +159,7 @@
     return {
       profiles: currentState.npcBrains,
       actions,
+      interactions,
       stories,
       simulatedCount: actions.length,
       story: stories.length ? stories.join('。') : null
