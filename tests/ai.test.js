@@ -25,7 +25,8 @@ test('browser bootstrap loads the One Piece companion systems in dependency orde
             './ai/event-adapter.js': 'OnePieceEventAdapter',
             './ai/crew-system.js': 'OnePieceCrewSystem',
             './ai/devil-fruit-system.js': 'OnePieceDevilFruitSystem',
-            './ai/haki-system.js': 'OnePieceHakiSystem'
+            './ai/haki-system.js': 'OnePieceHakiSystem',
+            './ai/marine-system.js': 'OnePieceMarineSystem'
           };
           host[globals[script.src]] = {};
           queueMicrotask(() => script.onload());
@@ -39,7 +40,8 @@ test('browser bootstrap loads the One Piece companion systems in dependency orde
     './ai/event-adapter.js',
     './ai/crew-system.js',
     './ai/devil-fruit-system.js',
-    './ai/haki-system.js'
+    './ai/haki-system.js',
+    './ai/marine-system.js'
   ]);
   assert.equal(await world.loadCompanionModules(host), true);
   assert.equal(scripts.length, 4);
@@ -59,7 +61,8 @@ test('browser bootstrap reports a missing companion module without stopping late
           const globals = {
             './ai/crew-system.js': 'OnePieceCrewSystem',
             './ai/devil-fruit-system.js': 'OnePieceDevilFruitSystem',
-            './ai/haki-system.js': 'OnePieceHakiSystem'
+            './ai/haki-system.js': 'OnePieceHakiSystem',
+            './ai/marine-system.js': 'OnePieceMarineSystem'
           };
           host[globals[script.src]] = {};
           queueMicrotask(() => script.onload());
@@ -1101,4 +1104,55 @@ test('main game loads the combat adapter and routes One Piece battle damage thro
   assert.match(html, /W\?\.id==='op'&&window\.OnePieceCombatAdapter/);
   assert.match(html, /modifyOutgoingDamage\(v,S,'op'\)/);
   assert.match(html, /modifyIncomingDamage\(d,S,'op'\)/);
+});
+
+
+test('Marine intelligence registers wanted pirates and detects sightings using seeded probability', () => {
+  const marines = require('../ai/marine-system.js');
+  let force = marines.createMarineForce({
+    id: 'marine-east-blue', intelligence: 100, alertness: 100
+  });
+  const result = marines.evaluateSighting(force, {
+    id: 'pirate-1', name: 'Blue Dagger', bounty: 50000000,
+    notoriety: 80, location: 'Shells Town'
+  }, {
+    location: 'Shells Town', distance: 0, cover: 0,
+    random: () => 0, at: '2026-01-01T00:00:00.000Z'
+  });
+  force = result.force;
+  assert.equal(result.detected, true);
+  assert.equal(result.record.status, 'tracking');
+  assert.equal(result.record.sightings, 1);
+  assert.equal(marines.getActivePursuits(force).length, 1);
+});
+
+test('Marine pursuit progresses from investigation to pursuit and resolves capture', () => {
+  const marines = require('../ai/marine-system.js');
+  const force = marines.createMarineForce({ id: 'marine-grand-line' });
+  const registered = marines.registerWanted(force, {
+    id: 'pirate-2', name: 'Storm Fox', bounty: 120000000
+  }, { at: '2026-01-01T00:00:00.000Z' });
+  const sighting = marines.evaluateSighting(registered.force, {
+    id: 'pirate-2', name: 'Storm Fox', bounty: 120000000
+  }, { random: () => 0, at: '2026-01-02T00:00:00.000Z' });
+  const advanced = marines.advancePursuit(sighting.record, {
+    evidence: 100, targetMovement: 0, resources: 100,
+    at: '2026-01-03T00:00:00.000Z'
+  });
+  assert.equal(advanced.phase, 'pursuing');
+  const outcome = marines.resolveEncounter(advanced.record, {
+    marineStrength: 100, targetStrength: 1, support: 100,
+    random: () => 0, at: '2026-01-04T00:00:00.000Z'
+  });
+  assert.equal(outcome.resolved, true);
+  assert.equal(outcome.captured, true);
+  assert.equal(outcome.record.status, 'captured');
+  assert.equal(marines.getActivePursuits({ wantedRecords: { [outcome.record.targetId]: outcome.record } }).length, 0);
+});
+
+test('Marine system rejects zero-bounty targets and cannot advance a resolved pursuit', () => {
+  const marines = require('../ai/marine-system.js');
+  const force = marines.createMarineForce();
+  assert.equal(marines.registerWanted(force, { id: 'civilian', bounty: 0 }).reason, 'no-bounty');
+  assert.equal(marines.advancePursuit({ status: 'captured' }).reason, 'no-active-pursuit');
 });
