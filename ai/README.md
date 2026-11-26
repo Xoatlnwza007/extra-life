@@ -92,9 +92,10 @@ The annual world simulator maintains role-based NPC profiles, seeds long-term go
 
 ### Simulate every living NPC
 
-The original `simulate(worldState, npcList, context)` function remains a
-single-NPC annual step for compatibility with the existing game loop. For a
-full-population pass, call the optional `simulatePopulation` helper:
+The `simulate(worldState, npcList, context)` function remains compatible with
+single-actor callers. In the actual One Piece game loop, a call with
+`world: 'op'` automatically advances the full living NPC population. The
+`simulatePopulation` helper is also available for explicit population passes:
 
 ```js
 const result = OnePieceWorldSimulation.simulatePopulation(S, npcList, {
@@ -108,9 +109,10 @@ It processes each living NPC once, carries updated profiles forward between
 steps, skips dead NPCs, and returns per-NPC actions plus story summaries. When
 an NPC helps or socializes, the pass also records a bilateral interaction,
 updates both relationship scores, and stores the event in both NPC memories.
-This helper is additive; it is not automatically wired into the game's annual
-loop yet. Integrate it only after checking the existing game-loop performance
-and save flow.
+The One Piece yearly loop is already wired to this population pass. The game
+currently advances this system once per in-game year; the master plan's
+one-turn-per-month cadence is not implemented yet. NPC profiles are held in
+`S.npcBrains`, so persistence still depends on the existing save/load flow.
 
 ## Pirate crews
 
