@@ -186,3 +186,14 @@ const result = OnePieceHakiSystem.train({ id: 'captain', haki }, 'armament', 10)
 ```
 
 Load `haki-system.js` after the other AI helper scripts.
+
+
+## Automatic One Piece population turns
+
+The existing game's annual loop calls `OnePieceWorldSimulation.simulate(S, S.npcs, context)`
+once per year. When the state identifies the One Piece world (`world: 'op'`),
+that call now advances every living NPC through the population simulator,
+retaining each NPC's profile and recording social interactions. Other callers
+and tests without the One Piece world identifier retain the original
+single-actor `simulate()` behavior. This connects the population system to
+the game's current yearly loop without changing the large `index.html`.
