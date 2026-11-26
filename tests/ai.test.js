@@ -296,6 +296,16 @@ test('pirate crew panel creates a crew and recruits an NPC through its controls'
     roleSelect.value = 'cook';
     roleSelect.dispatch('change');
     assert.equal(state.crews[0].members.find(member => member.characterId === 'nami').role, 'cook');
+    state.crews[0].history.push(
+      { type: 'bounty-increased', amount: 2500000, at: '2026-11-26T00:00:00.000Z' },
+      { type: 'reputation-changed', delta: 5, reputation: 45, at: '2026-11-25T00:00:00.000Z' }
+    );
+    const historyEntries = panel.children[1].children.filter(node =>
+      node.className === 'el-crew-muted' && /ค่าหัวเพิ่มขึ้น|ชื่อเสียงเปลี่ยน/.test(node.textContent)
+    );
+    assert.equal(historyEntries.length, 2);
+    assert.ok(historyEntries[0].textContent.includes('ค่าหัวเพิ่มขึ้น 2,500,000 เบรี'));
+    assert.ok(historyEntries[1].textContent.includes('ชื่อเสียงเปลี่ยน +5'));
   } finally {
     if (previousState === undefined) delete globalThis.S;
     else globalThis.S = previousState;
