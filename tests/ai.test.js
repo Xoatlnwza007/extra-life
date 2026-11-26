@@ -257,7 +257,8 @@ test('pirate crew panel creates a crew and recruits an NPC through its controls'
   globalThis.S = state;
   globalThis.W = { shop: [{ id: 'boat', n: 'เรือใบลำเล็ก', cost: 40 }] };
   globalThis.buy = item => { state.money -= item.cost; state.own.items.push(item.id); };
-  const host = { document: doc, OnePieceCrewSystem: crews, setInterval: () => 1 };
+  let crewUiTick = null;
+  const host = { document: doc, OnePieceCrewSystem: crews, setInterval: callback => { crewUiTick = callback; return 1; } };
   try {
     assert.equal(world.installCrewControls(host), true);
     const wrap = body.children.find(node => node.id === 'extra-life-crew-tools');
@@ -298,6 +299,13 @@ test('pirate crew panel creates a crew and recruits an NPC through its controls'
     roleSelect.value = 'cook';
     roleSelect.dispatch('change');
     assert.equal(state.crews[0].members.find(member => member.characterId === 'nami').role, 'cook');
+    state.flags.bounty = 2000000;
+    state.fame = 30;
+    state.dark = 5;
+    crewUiTick();
+    assert.equal(state.crews[0].bounty, 2000000);
+    assert.equal(state.crews[0].reputation, 25);
+    assert.ok(state.crews[0].history.some(entry => entry.type === 'bounty-increased'));
     state.crews[0].history.push(
       { type: 'bounty-increased', amount: 2500000, at: '2026-11-26T00:00:00.000Z' },
       { type: 'reputation-changed', delta: 5, reputation: 45, at: '2026-11-25T00:00:00.000Z' }
