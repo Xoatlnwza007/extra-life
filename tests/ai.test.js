@@ -225,6 +225,60 @@ test('pirate crew management is limited to active One Piece pirate careers', () 
   assert.equal(world.canManagePirateCrew({ world: 'op', alive: false, job: { id: 'pirate' } }), false);
 });
 
+test('pirate crew panel creates a crew and recruits an NPC through its controls', () => {
+  const previousState = globalThis.S;
+  function element(tag) {
+    return {
+      tagName: tag.toUpperCase(), children: [], attributes: {}, listeners: {},
+      appendChild(child) { this.children.push(child); return child; },
+      replaceChildren(...children) { this.children = children; },
+      setAttribute(key, value) { this.attributes[key] = String(value); },
+      getAttribute(key) { return this.attributes[key] || null; },
+      addEventListener(name, handler) { this.listeners[name] = handler; },
+      click() { if (this.listeners.click) this.listeners.click({ target: this }); }
+    };
+  }
+  const head = element('head');
+  const body = element('body');
+  const doc = {
+    head, body, readyState: 'complete',
+    createElement: element,
+    getElementById(id) { return body.children.find(node => node.id === id) || null; }
+  };
+  const state = {
+    world: 'op', alive: true, job: { id: 'pirate' }, name: 'Luffy',
+    flags: { bounty: 0 }, fame: 0, dark: 0,
+    npcs: [{ id: 'nami', n: 'Nami', alive: true, d: 'navigator' }],
+    crews: []
+  };
+  globalThis.S = state;
+  const host = { document: doc, OnePieceCrewSystem: crews, setInterval: () => 1 };
+  try {
+    assert.equal(world.installCrewControls(host), true);
+    const wrap = body.children.find(node => node.id === 'extra-life-crew-tools');
+    assert.ok(wrap);
+    assert.equal(wrap.hidden, false);
+    const panel = wrap.children[0];
+    const trigger = wrap.children[1];
+    trigger.click();
+    assert.equal(panel.hidden, false);
+
+    const panelBody = panel.children[1];
+    const createButton = panelBody.children[1].children[1];
+    createButton.click();
+    assert.equal(state.crews.length, 1);
+    assert.equal(state.crews[0].captainId, 'player');
+
+    const recruitRow = panelBody.children[panelBody.children.length - 1];
+    recruitRow.children[1].click();
+    assert.equal(state.crews[0].members.length, 2);
+    assert.ok(state.crews[0].members.some(member => member.characterId === 'nami'));
+  } finally {
+    if (previousState === undefined) delete globalThis.S;
+    else globalThis.S = previousState;
+  }
+});
+
 test('crew management panel is sized for mobile touch and safe scrolling', () => {
   const styles = world.getCrewControlsStyles();
   assert.match(styles, /min-height:44px/);
