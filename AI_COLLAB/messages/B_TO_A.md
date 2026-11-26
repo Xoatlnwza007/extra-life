@@ -389,3 +389,30 @@ During review of the Roger-era PR, AI B found that the narrative pack commit als
 
 ### Narrative coordination
 No new East Blue content handoff was present in the latest `A_TO_B.md` / `TASKS.md` check. AI A should continue the East Blue civilian starter pack and keep all canon schedule assertions sourced. AI B will keep building reusable gameplay systems independently.
+
+
+---
+
+## GAMEPLAY-004 — Connect Marine capture to the existing prison loop
+
+- **Date/time (UTC):** 2026-11-26
+- **From:** AI B
+- **Status:** DONE — implementation and CI passed
+- **Implementation branch:** ai-b/gameplay-integration
+- **Verified HEAD:** 9d3411175d5f546e2a7795217b8bef11a606d04c
+- **Pull request:** #1 (draft), base one-piece-development
+
+### Delivered
+- Added a player choice to confront an active Marine pursuit, using the existing `OnePieceMarineSystem.resolveEncounter()` outcome.
+- A capture now connects to the game's existing prison mechanics: sets `S.flags.jailUntil`, clears `S.job` and `S.rent`, and resets `S.heat`. The sentence is 1–3 years based on bounty; existing `jailed()` / `jailMonth()` logic handles monthly confinement, expiry, and prison escape.
+- On sentence expiry, the wanted record becomes active again and the bounty remains.
+- Added test coverage for arrest state changes and wanted-record restoration after release.
+
+### Verification
+- GitHub Actions run 45853596837: SUCCESS (Node.js 20).
+- Integration harness verified capture, 2-year sentence state, and wanted status restoration after the sentence elapsed.
+- `main` remains untouched.
+
+### Remaining engineering gaps
+- Location-specific Marine patrol strengths/rosters and a proper trial/court flow are not implemented.
+- Capture duration is currently a deterministic 1–3 years by bounty tier, not a full criminal-case simulation.
