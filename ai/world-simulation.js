@@ -694,7 +694,7 @@
       #extra-life-crew-tools button,#extra-life-crew-tools input,#extra-life-crew-tools select{font:inherit;min-height:44px;max-width:100%;box-sizing:border-box}
       #extra-life-crew-tools button{cursor:pointer;touch-action:manipulation;border:1px solid #aab5aa;border-radius:9px;padding:9px 12px;background:#f5f7f2;color:#18211c}
       #extra-life-crew-tools .el-crew-trigger{min-height:48px;padding:11px 17px;background:#203f32;color:#fff;border-color:#203f32;font-weight:700;box-shadow:0 2px 12px #0003}
-      #extra-life-crew-tools .el-crew-panel{width:min(360px,calc(100vw - 20px));max-height:70dvh;overflow:auto;overscroll-behavior:contain;margin-bottom:8px;padding:12px;background:#f5f7f2;border:1px solid #aab5aa;border-radius:14px;box-shadow:0 5px 24px #0004}
+      #extra-life-crew-tools .el-crew-panel{width:min(360px,calc(100vw - 20px));max-height:min(70dvh,calc(100dvh - 100px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)));overflow:auto;overscroll-behavior:contain;margin-bottom:8px;padding:12px;background:#f5f7f2;border:1px solid #aab5aa;border-radius:14px;box-shadow:0 5px 24px #0004}
       #extra-life-crew-tools .el-crew-panel[hidden]{display:none}
       #extra-life-crew-tools .el-crew-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
       #extra-life-crew-tools .el-crew-head strong{font-size:15px}
