@@ -620,3 +620,59 @@ test('save import from a future schema is rejected without replacing local progr
   assert.equal(values.get('extra-life-v2'), before);
   assert.equal(manager.load().state.captain, 'Local Captain');
 });
+
+
+test('browser save helpers download exports and import selected JSON files', async () => {
+  const values = new Map();
+  const storage = {
+    getItem: key => values.has(key) ? values.get(key) : null,
+    setItem: (key, value) => values.set(key, String(value))
+  };
+  const manager = world.saveSystem.createManager(storage);
+  manager.save({ captain: 'Browser Captain', age: 29 });
+
+  let clicked = false;
+  let revoked = false;
+  let downloadedBlob;
+  const anchor = {
+    style: {},
+    click() { clicked = true; },
+    remove() { this.removed = true; }
+  };
+  const host = {
+    Blob: class {
+      constructor(parts, options) { downloadedBlob = { parts, options }; }
+    },
+    URL: {
+      createObjectURL() { return 'blob:save-export'; },
+      revokeObjectURL(url) { revoked = url === 'blob:save-export'; }
+    },
+    document: {
+      body: { appendChild(node) { assert.equal(node, anchor); } },
+      createElement(tag) { assert.equal(tag, 'a'); return anchor; }
+    }
+  };
+  const download = world.saveSystem.downloadExport(manager, host);
+  assert.equal(download.ok, true);
+  assert.equal(clicked, true);
+  assert.equal(anchor.removed, true);
+  assert.equal(revoked, true);
+  assert.equal(downloadedBlob.options.type, 'application/json;charset=utf-8');
+  assert.equal(JSON.parse(downloadedBlob.parts[0]).captain, 'Browser Captain');
+
+  const imported = await world.saveSystem.importFile({
+    text: async () => JSON.stringify({ captain: 'File Import Captain', age: 35 })
+  }, manager);
+  assert.equal(imported.ok, true);
+  assert.equal(imported.migrated, true);
+  assert.equal(manager.load().state.captain, 'File Import Captain');
+});
+
+test('browser save helpers reject unsupported download and import inputs', async () => {
+  const manager = world.saveSystem.createManager({
+    getItem: () => null,
+    setItem: () => {}
+  });
+  assert.equal(world.saveSystem.downloadExport(manager, {}).reason, 'unsupported');
+  assert.equal((await world.saveSystem.importFile({}, manager)).reason, 'unsupported');
+});
