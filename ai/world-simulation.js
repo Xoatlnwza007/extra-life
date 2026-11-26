@@ -798,6 +798,7 @@
     doc.body.appendChild(wrap);
 
     const setStatus = message => { status.textContent = message; };
+    let renderedYear = null;
     const persist = () => {
       try {
         if (typeof save === 'function') save();
@@ -1180,6 +1181,7 @@
     function render() {
       const state = currentOnePieceState(host);
       if (!state || !state.alive) return;
+      renderedYear = currentYear(state);
       body.replaceChildren();
       const synced = api.syncCharacter(state);
       if (synced.ok && synced.changed) {
@@ -1278,7 +1280,7 @@
         panel.hidden = true;
         wrap.setAttribute('data-open', 'false');
         trigger.setAttribute('aria-expanded', 'false');
-      } else if (!panel.hidden) render();
+      } else if (!panel.hidden && currentYear(state) !== renderedYear) render();
     };
     syncVisibility();
     if (typeof host.setInterval === 'function') {
@@ -1435,5 +1437,5 @@
   installBrowserSaveProtection(root);
   installMobileTouchStyles(root);
   scheduleSaveControls(root);
-  loadCompanionModules(root).then(loaded => { if (loaded) { scheduleCrewControls(root); scheduleProgressionControls(root); scheduleRogerEraContent(root); } });
+  loadCompanionModules(root).then(loaded => { if (loaded) { scheduleCrewControls(root); scheduleProgressionControls(root); } scheduleRogerEraContent(root); });
 })(typeof globalThis !== 'undefined' ? globalThis : this);
