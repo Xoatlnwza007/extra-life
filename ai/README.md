@@ -104,7 +104,9 @@ S.npcBrains = result.profiles;
 ```
 
 It processes each living NPC once, carries updated profiles forward between
-steps, skips dead NPCs, and returns per-NPC actions plus story summaries.
+steps, skips dead NPCs, and returns per-NPC actions plus story summaries. When
+an NPC helps or socializes, the pass also records a bilateral interaction,
+updates both relationship scores, and stores the event in both NPC memories.
 This helper is additive; it is not automatically wired into the game's annual
 loop yet. Integrate it only after checking the existing game-loop performance
 and save flow.
