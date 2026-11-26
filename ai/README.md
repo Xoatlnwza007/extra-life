@@ -10,6 +10,7 @@ Load the scripts in this order before the game code that creates or updates NPCs
 <script src="./ai/decision-engine.js"></script>
 <script src="./ai/character-state.js"></script>
 <script src="./ai/npc-brain.js"></script>
+<script src="./ai/world-simulation.js"></script>
 ```
 
 ## Create and persist an NPC
@@ -64,6 +65,14 @@ if (decision.action) {
 
 The returned `ranking` includes each candidate's score and scoring reasons, which can be used for debugging or NPC activity logs. The adapter selects an action; it does not execute game effects itself.
 
-## Current integration boundary
+## Current game integration
 
-The modules are committed on `one-piece-development`, but the legacy game entry point (`index.html`) has not yet been modified to load or call them. Integration should happen at the existing NPC activity-selection and save/load boundaries, after confirming those exact hooks in the large legacy file. This avoids replacing or destabilizing the original game loop.
+`index.html` loads all four modules before the main game script. In the One Piece world, the annual `nextYear()` cycle calls `OnePieceWorldSimulation.simulate()` after the year's main events. The simulator:
+
+- gives recurring neighborhood NPCs stable AI profiles based on their role and personality;
+- seeds a role-specific long-term goal (for example, a shopkeeper wants to grow the shop, while a rival wants to become stronger);
+- chooses one autonomous activity per in-game year using needs, goals, personality, memories, risk tolerance, and travel danger;
+- records the chosen activity as a memory and updates needs/goal progress;
+- stores profiles in `S.npcBrains`, which is part of the existing `S` save object and therefore persists through the game's existing `localStorage` save/load flow.
+
+This is an initial annual simulation layer, not yet a full real-time NPC economy or a complete crew/relationship system. Existing game events and player choices remain in control of the main life simulation.
