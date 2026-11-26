@@ -158,7 +158,7 @@ Zoan and Logia fruit records, consuming a fruit (one per character and one
 consumer per fruit record), training mastery from 0–100, and awakening at a
 configurable mastery threshold (80 by default). `getSeaEffect` reports the
 baseline swimming/weakness effect in seawater and a stronger penalty for Sea
-Prism Stone exposure. The main game already has its own Devil Fruit discovery event and power flags. This helper remains a separate mastery/awakening data model; it is loaded by the browser bootstrap but is not yet synchronized with the game's existing `S.flags.df` / `S.powers` values or combat outcomes.
+Prism Stone exposure. The main game already has its own Devil Fruit discovery event and power flags. The player-facing progression panel migrates existing `S.flags.df` and `S.powers` into `S.devilFruit` for legacy saves, then persists mastery and awakening through the existing save flow. `combat-adapter.js` consumes those progression values during One Piece battles.
 
 Load this module after the other AI helpers:
 
@@ -195,7 +195,7 @@ cover the modifier combinations, world isolation and invalid damage inputs.
 from 0–100. Armament and Observation are available by default; Conqueror's
 Haki must be marked as innate when creating the character's Haki state.
 Training is bounded, and `getCombatProfile` converts mastery into simple
-defense, awareness and pressure bonuses plus rank labels. The main game already contains Haki-related power flags. This helper is loaded by the browser bootstrap, but mastery values are not yet synchronized with those existing flags or applied to the main game's combat calculations.
+defense, awareness and pressure bonuses plus rank labels. The main game already contains Haki-related power flags. The player-facing progression panel synchronizes unlocked Haki styles from those flags and persists mastery. `combat-adapter.js` consumes the resulting mastery values during One Piece battles.
 
 ```js
 const haki = OnePieceHakiSystem.createHakiState({ hasConquerorsHaki: true });
