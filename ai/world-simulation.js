@@ -1052,6 +1052,41 @@
   }
 
 
+
+  function loadRogerEraContent(host = root) {
+    const doc = host && host.document;
+    if (!doc || !doc.head || !doc.createElement) return Promise.resolve(false);
+    if (host.OnePieceRogerEraContent) return Promise.resolve(true);
+    if (host.__onePieceRogerEraPromise) return host.__onePieceRogerEraPromise;
+    const promise = new Promise(resolve => {
+      const script = doc.createElement('script');
+      script.src = './ai/roger-era-content.js';
+      script.async = false;
+      script.onload = () => resolve(!!host.OnePieceRogerEraContent);
+      script.onerror = () => {
+        host.__onePieceContentErrors = (host.__onePieceContentErrors || []).concat(script.src);
+        resolve(false);
+      };
+      doc.head.appendChild(script);
+    });
+    host.__onePieceRogerEraPromise = promise;
+    return promise;
+  }
+
+  function scheduleRogerEraContent(host = root) {
+    if (!host || !host.document) return false;
+    const doc = host.document;
+    if (doc.readyState === 'loading') {
+      if (!host.__onePieceRogerEraScheduled) {
+        host.__onePieceRogerEraScheduled = true;
+        doc.addEventListener('DOMContentLoaded', () => { loadRogerEraContent(host); }, { once: true });
+      }
+      return true;
+    }
+    loadRogerEraContent(host);
+    return true;
+  }
+
   // Player-facing Haki and Devil Fruit mastery controls.
   // Training is limited to once per in-game year per discipline to prevent UI spam.
   function getProgressionControlsStyles() {
@@ -1393,12 +1428,12 @@
     return install();
   }
 
-  const api = Object.freeze({ simulate, simulatePopulation, saveSystem, installProgressionControls, scheduleProgressionControls, getProgressionControlsStyles, installSaveControls, getSaveControlsStyles, getMobileTouchStyles, installMobileTouchStyles, loadCompanionModules, companionModules: COMPANION_MODULES, crewNpcId, getPlayerCrew, createPlayerCrew, recruitNpcToPlayerCrew, removeNpcFromPlayerCrew, syncPlayerCrew, recordCrewNpcInteraction, buyBoatForPlayerCrew, canManagePirateCrew, getCrewControlsStyles, installCrewControls, scheduleCrewControls });
+  const api = Object.freeze({ simulate, simulatePopulation, saveSystem, installProgressionControls, scheduleProgressionControls, getProgressionControlsStyles, loadRogerEraContent, scheduleRogerEraContent, installSaveControls, getSaveControlsStyles, getMobileTouchStyles, installMobileTouchStyles, loadCompanionModules, companionModules: COMPANION_MODULES, crewNpcId, getPlayerCrew, createPlayerCrew, recruitNpcToPlayerCrew, removeNpcFromPlayerCrew, syncPlayerCrew, recordCrewNpcInteraction, buyBoatForPlayerCrew, canManagePirateCrew, getCrewControlsStyles, installCrewControls, scheduleCrewControls });
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.OnePieceWorldSimulation = api;
   root.OnePieceSaveSystem = saveSystem;
   installBrowserSaveProtection(root);
   installMobileTouchStyles(root);
   scheduleSaveControls(root);
-  loadCompanionModules(root).then(loaded => { if (loaded) { scheduleCrewControls(root); scheduleProgressionControls(root); } });
+  loadCompanionModules(root).then(loaded => { if (loaded) { scheduleCrewControls(root); scheduleProgressionControls(root); scheduleRogerEraContent(root); } });
 })(typeof globalThis !== 'undefined' ? globalThis : this);
