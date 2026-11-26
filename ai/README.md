@@ -138,7 +138,7 @@ relations (allied, friendly, neutral, hostile, or at-war), and resolving a
 crew encounter as a victory, defeat, or stalemate. An encounter updates both
 crews' relation scores and reputation; a configured victory reward can also
 increase the winning crew's bounty. The default capacity is 10; pass a different capacity when
-joining if the game mode uses another limit. The main One Piece game now exposes a floating **ลูกเรือ** panel for living pirate-captain characters. Players can create a crew, recruit living NPCs, edit each recruit's role, buy the in-game small sailboat, name that ship, and dismiss non-captain members. The panel shows crew history, bounty and reputation. Recruiting or dismissing an NPC also records a memory and relationship change in that NPC's AI profile. The player's bounty and fame/dark balance synchronize to crew bounty and reputation. The crew roster and `playerCrewId` are stored directly on the game state (`S.crews` and `S.playerCrewId`), so the existing save/load flow persists them. Crew diplomacy and encounter resolution remain helper APIs; they are not yet connected to the game's story events or combat outcomes.
+joining if the game mode uses another limit. The main One Piece game now exposes a floating **ลูกเรือ** panel for living pirate-captain characters. Players can create a crew, recruit living NPCs, edit each recruit's role, buy the in-game small sailboat, name that ship, and dismiss non-captain members. The panel shows crew history, bounty and reputation. Recruiting or dismissing an NPC also records a memory and relationship change in that NPC's AI profile. The player's bounty and fame/dark balance synchronize to crew bounty and reputation. The crew roster and `playerCrewId` are stored directly on the game state (`S.crews` and `S.playerCrewId`), so the existing save/load flow persists them. Crew-to-crew diplomacy and encounter resolution remain helper APIs; they are not yet connected to story events or a crew-versus-crew battle flow. Active player-crew members do now provide bounded support in the player's normal combat damage calculations.
 
 ## Automated tests
 
@@ -264,8 +264,7 @@ future-version or tampered files are rejected without replacing local progress.
 For browser UI, `OnePieceSaveSystem.downloadExport(manager)` downloads the JSON
 file through a Blob URL, and `OnePieceSaveSystem.importFile(file, manager)`
 reads a user-selected File and passes its contents through the same validator.
-These are APIs only; the existing game's visible menu/buttons have not yet been
-modified to expose export/import controls.
+The in-game **จัดการเซฟ** panel calls these APIs for visible JSON export and file import controls.
 
 ### In-game save controls
 
@@ -308,8 +307,7 @@ contain `S.powers`. If the game state also contains a Haki record from
 `OnePieceHakiSystem` at `state.haki`, unlocked mastery adds gradual outgoing
 or incoming damage modifiers. If it contains a Devil Fruit progression record
 at `state.devilFruit`, fruit type supplies the baseline family modifier and
-mastery/awakening add bounded scaling. These optional fields are not currently
-created or persisted by the main game UI; callers must initialize and save them.
+mastery/awakening add bounded scaling. The progression panel creates and persists these fields, including the legacy Devil Fruit migration; the combat adapter consumes them through the existing battle damage hook.
 
 
 ### Sync Haki unlocks with the legacy game flags
