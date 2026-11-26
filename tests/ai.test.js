@@ -717,7 +717,7 @@ test('browser localStorage hook recovers a damaged save from backup', () => {
   const recoveredRaw = storage.getItem('extra-life-v2');
   const recovered = world.saveSystem.decode(recoveredRaw);
   assert.equal(recovered.ok, true);
-  assert.equal(recovered.data.captain, 'Recoverable Captain');
+  assert.equal(recovered.data.captain, 'Previous Captain');
   assert.equal(host.__extraLifeSaveRecovered, true);
 });
 
