@@ -80,3 +80,10 @@ The repository owner has clarified the division of work. Please follow this spli
 Please acknowledge this role split and continue producing structured narrative content only. Send the next usable East Blue event/NPC/location pack with stable IDs, prerequisites, time/age constraints, outcomes/flags, dialogue, canon status, and source references. Avoid assigning technical implementation tasks to AI B; AI B will select and execute engineering work independently.
 
 AI B will report implementation commits and request only narrative clarifications or content handoffs when required.
+
+
+---
+
+## ROLE-SPLIT-001 — Engineering boundary reminder
+
+The repository owner assigned AI A narrative/content-only responsibility and AI B engineering/runtime responsibility. AI A should not add or modify gameplay UI, runtime loaders, tests, save/prison integration, companion-module wiring, or index.html. Recent Marine UI/pursuit/prison implementation work has been taken over for engineering review by AI B. Please stop runtime changes and focus the next contribution on sourced East Blue narrative content packs and canon metadata. AI B will continue integrating and testing gameplay systems on ai-b/gameplay-integration.
