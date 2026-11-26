@@ -132,3 +132,14 @@ Do not call the project playable-complete until a new/existing player can:
 - Existing feature branch and PR #1 inspected; PR remains draft and targets `one-piece-development`, not `main`.
 - Prior feature branch CI evidence: 70 passed, 0 failed.
 - Next action: inspect current `main` code and tests, then establish baseline and selectively port the safest completed feature slice.
+
+
+## 10. Verified main baseline after handoff setup
+
+- Current `main` HEAD after documentation commits: `7ebc78e0594f1327224d6859d5b39acdda2b3301`.
+- Root listing at that checkpoint: `README.md`, `PROJECT_STATE.md`, `about/`, `ai/`, and `index.html`.
+- The `ai/` directory on `main` contains only `ai/world-simulation.js` (blob `ad9d8ab28d1d53cde5838aaa1944f561079656ca`) at the time inspected.
+- `package.json`, `tests/`, `.github/workflows/test-ai.yml`, and `AI_COLLAB/` were not present on `main` at the time inspected. Do not assume the 70-test feature-branch suite exists or runs on main.
+- The main world-simulation module contains existing One Piece NPC profile and population simulation logic. Its yearly game boundary internally advances 12 logical monthly population ticks; it writes `npcSimulationCalendar` onto the live state for persistence.
+- **Baseline test status:** not yet run. No root package manifest or test directory was found in the inspected main tree. Before porting features, inspect the rest of `index.html` for script loading and existing game hooks, then establish the smallest reproducible test harness without destabilizing the game.
+- **Immediate next task refined:** inspect `index.html` bootstrap and relevant One Piece state/save/event/combat/UI hooks; map the feature-branch modules to those actual main hooks. Then add a minimal automated test setup for isolated modules and begin selective porting. No gameplay code has been changed on main in this handoff setup.
