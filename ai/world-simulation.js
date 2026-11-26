@@ -1446,5 +1446,17 @@
   installBrowserSaveProtection(root);
   installMobileTouchStyles(root);
   scheduleSaveControls(root);
-  loadCompanionModules(root).then(loaded => { if (loaded) { scheduleCrewControls(root); scheduleProgressionControls(root); if (root.OnePieceMarineUI) root.OnePieceMarineUI.scheduleMarineControls(root); } });
+  loadCompanionModules(root).then(loaded => {
+    if (!loaded) return;
+    const installControls = () => {
+      scheduleCrewControls(root);
+      scheduleProgressionControls(root);
+      if (root.OnePieceMarineUI) root.OnePieceMarineUI.scheduleMarineControls(root);
+    };
+    if (root.document && root.document.readyState === 'loading') {
+      root.document.addEventListener('DOMContentLoaded', installControls, { once: true });
+    } else {
+      installControls();
+    }
+  });
 })(typeof globalThis !== 'undefined' ? globalThis : this);
