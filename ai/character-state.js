@@ -67,6 +67,44 @@
     };
   }
 
+  function getRelationship(character, targetId) {
+    if (!character || !targetId) return 0;
+    const value = (character.relationships || {})[targetId];
+    return clamp(Number(value) || 0, -100, 100);
+  }
+
+  function adjustRelationship(character, targetId, delta, options = {}) {
+    if (!character || !targetId) return character;
+    const amount = Number(delta);
+    if (!Number.isFinite(amount) || amount === 0) return character;
+    const current = getRelationship(character, targetId);
+    const score = clamp(current + amount, -100, 100);
+    const history = [...(character.relationshipHistory || []), {
+      targetId: String(targetId),
+      delta: score - current,
+      score,
+      event: options.event ? String(options.event) : null,
+      createdAt: options.createdAt || new Date().toISOString()
+    }].slice(-50);
+    return {
+      ...character,
+      relationships: { ...(character.relationships || {}), [targetId]: score },
+      relationshipHistory: history,
+      updatedAt: new Date().toISOString()
+    };
+  }
+
+  function relationshipLabel(score) {
+    const value = clamp(Number(score) || 0, -100, 100);
+    if (value >= 80) return 'devoted';
+    if (value >= 50) return 'trusted';
+    if (value >= 20) return 'friendly';
+    if (value <= -80) return 'nemesis';
+    if (value <= -50) return 'hostile';
+    if (value <= -20) return 'unfriendly';
+    return 'neutral';
+  }
+
   function advanceTime(character, now = Date.now()) {
     if (!character) return character;
     const memories = (character.memories || []).map(memory => {
@@ -82,7 +120,7 @@
     return { ...character, memories, goals, updatedAt: new Date(now).toISOString() };
   }
 
-  const api = Object.freeze({ createCharacterState, remember, addGoal, updateGoal, advanceTime });
+  const api = Object.freeze({ createCharacterState, remember, addGoal, updateGoal, getRelationship, adjustRelationship, relationshipLabel, advanceTime });
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.OnePieceCharacterState = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
