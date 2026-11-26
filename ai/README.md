@@ -177,9 +177,12 @@ reduces incoming damage, and Conqueror's Haki improves outgoing damage. The
 adapter additionally accepts optional `state.haki` and `state.devilFruit`
 progression records: unlocked Haki mastery scales its relevant combat effects,
 while Devil Fruit mastery and awakening add bounded offensive/durability
-scaling. Existing saves without these records retain their original unlock-only
-behavior. The game does not yet expose training controls or persist these
-optional progression records.
+scaling. The player-facing progression panel creates and persists these records,
+including migration from legacy Devil Fruit flags. An active player crew also
+provides bounded combat support: up to four living non-player members add 1%
+outgoing damage and 0.5% incoming-damage reduction each. The adapter verifies
+that the selected active crew contains the player, ignores duplicate roster IDs
+and known dead NPCs, and applies no crew bonus outside One Piece.
 
 The adapter is loaded before the main inline game script and is only applied
 when the active world is One Piece. Other anime worlds and characters without
