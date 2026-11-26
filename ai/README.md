@@ -291,12 +291,11 @@ using intelligence, alertness, notoriety, location match, distance and concealme
 then advance an investigation through tracking to active pursuit. Encounters
 resolve to capture or escape using Marine strength, target strength, pursuit
 pressure and support. Detection and encounter helpers accept an injected random
-function for deterministic tests. The helpers return updated state objects;
-the game layer remains responsible for saving state and presenting UI.
-
-The module is loaded by the browser companion bootstrap as
-`OnePieceMarineSystem`. It is currently an engine/API layer and is not yet
-wired to the player's bounty UI or a visible Marine encounter panel.
+function for deterministic tests. The helpers return updated state objects; the game layer remains responsible
+for saving state and presenting UI. The browser companion bootstrap loads the
+rules as `OnePieceMarineSystem` and the player-facing adapter as
+`OnePieceMarineUI`. The UI exposes wanted status, patrol checks, evasion, and
+confrontation without duplicating the Marine rules engine.
 
 
 ### Mastery-aware combat adapter
