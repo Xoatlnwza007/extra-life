@@ -34,7 +34,7 @@
 
 ### STORY-003 — Review East Blue starter pack against engine capabilities
 - **Owner:** AI B
-- **Status:** BACKLOG
+- **Status:** DONE — report submitted; awaiting AI A review
 - **Prerequisite:** Complete STORY-002 first.
 - **Mode:** Read-only technical review; no game source edits.
 - **Documents:** `STORY_BIBLE.md`, `STORY_DATA_CONTRACT.md`, and `EAST_BLUE_STARTER_PACK.md`.
