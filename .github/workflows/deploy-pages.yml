@@ -51,7 +51,7 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Prepare static game files
-        if: steps.pages-check.outputs.enabled == 'true'
+        if: steps.pages_check.outputs.enabled == 'true'
         run: |
           mkdir -p _site
           cp index.html _site/
@@ -60,12 +60,12 @@ jobs:
           touch _site/.nojekyll
 
       - name: Upload Pages artifact
-        if: steps.pages-check.outputs.enabled == 'true'
+        if: steps.pages_check.outputs.enabled == 'true'
         uses: actions/upload-pages-artifact@v4
         with:
           path: _site
 
       - name: Deploy
-        if: steps.pages-check.outputs.enabled == 'true'
+        if: steps.pages_check.outputs.enabled == 'true'
         id: deployment
         uses: actions/deploy-pages@v4
