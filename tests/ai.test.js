@@ -299,6 +299,7 @@ test('pirate crew panel creates a crew and recruits an NPC through its controls'
     roleSelect.value = 'cook';
     roleSelect.dispatch('change');
     assert.equal(state.crews[0].members.find(member => member.characterId === 'nami').role, 'cook');
+    assert.ok(state.crews[0].history.some(entry => entry.type === 'role-changed' && entry.to === 'cook'));
     state.flags.bounty = 2000000;
     state.fame = 30;
     state.dark = 5;
