@@ -13,7 +13,8 @@ const mime = file => file.endsWith('.html') ? 'text/html; charset=utf-8' :
 
 async function main() {
   const server = http.createServer((req, res) => {
-    const pathname = decodeURIComponent(new URL(req.url, 'http://127.0.0.1').pathname);
+    const requested = decodeURIComponent(new URL(req.url, 'http://127.0.0.1').pathname);
+    const pathname = requested === '/' ? '/index.html' : requested;
     const file = path.resolve(root, '.' + pathname);
     if (!file.startsWith(root)) { res.writeHead(403); return res.end(); }
     fs.readFile(file, (error, data) => {
