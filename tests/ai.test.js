@@ -67,7 +67,8 @@ test('browser bootstrap reports a missing companion module without stopping late
             './ai/devil-fruit-system.js': 'OnePieceDevilFruitSystem',
             './ai/haki-system.js': 'OnePieceHakiSystem',
             './ai/progression-system.js': 'OnePieceProgressionSystem',
-            './ai/marine-system.js': 'OnePieceMarineSystem'
+            './ai/marine-system.js': 'OnePieceMarineSystem',
+            './ai/marine-ui.js': 'OnePieceMarineUI'
           };
           host[globals[script.src]] = {};
           queueMicrotask(() => script.onload());
@@ -78,7 +79,7 @@ test('browser bootstrap reports a missing companion module without stopping late
   };
   assert.equal(await world.loadCompanionModules(host), false);
   assert.deepEqual(host.__onePieceModuleErrors, ['./ai/event-adapter.js']);
-  assert.equal(scripts.length, 6);
+  assert.equal(scripts.length, 7);
 });
 
 test('game touch stylesheet adapts controls for phones and tablets', () => {
