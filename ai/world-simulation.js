@@ -538,23 +538,30 @@
   });
 
 
+  function getSaveControlsStyles() {
+    return `
+      #extra-life-save-tools{position:fixed;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:2147483000;font:14px/1.45 system-ui,sans-serif;color:#18211c;max-width:calc(100vw - 24px)}
+      #extra-life-save-tools button{font:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;border:1px solid #aab5aa;border-radius:10px;min-width:48px;min-height:48px;padding:12px 16px;background:#f5f7f2;color:#18211c;box-shadow:0 2px 12px #0002}
+      #extra-life-save-tools .el-save-trigger{background:#203f32;color:#fff;border-color:#203f32;font-weight:700}
+      #extra-life-save-tools .el-save-panel{display:none;width:min(320px,calc(100vw - 24px));max-height:calc(100dvh - 48px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));overflow:auto;overscroll-behavior:contain;margin-bottom:8px;padding:12px;background:#f5f7f2;border:1px solid #aab5aa;border-radius:14px;box-shadow:0 5px 24px #0003}
+      #extra-life-save-tools[data-open="true"] .el-save-panel{display:grid;gap:8px}
+      #extra-life-save-tools .el-save-panel p{margin:0 0 4px;font-size:13px}
+      #extra-life-save-tools .el-save-status{min-height:1.4em;font-size:12px;color:#405348;overflow-wrap:anywhere}
+      #extra-life-save-tools .el-save-close{justify-self:end;padding:8px 12px}
+      @media(max-width:480px){#extra-life-save-tools{right:max(8px,env(safe-area-inset-right,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px))}#extra-life-save-tools .el-save-panel{width:min(320px,calc(100vw - 16px))}}
+      @media(max-height:520px) and (orientation:landscape){#extra-life-save-tools .el-save-panel{max-height:calc(100dvh - 24px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}}
+      @media(prefers-reduced-motion:no-preference){#extra-life-save-tools .el-save-panel{animation:elSaveIn .12s ease-out}@keyframes elSaveIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}}
+    `;
+  }
+
   function installSaveControls(host = root) {
     const doc = host && host.document;
     if (!doc || !doc.createElement || !doc.body) return false;
     if (doc.getElementById('extra-life-save-tools')) return true;
 
     const style = doc.createElement('style');
-    style.textContent = `
-      #extra-life-save-tools{position:fixed;right:12px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:2147483000;font:14px/1.45 system-ui,sans-serif;color:#18211c}
-      #extra-life-save-tools button{font:inherit;cursor:pointer;border:1px solid #aab5aa;border-radius:10px;padding:10px 13px;background:#f5f7f2;color:#18211c;box-shadow:0 2px 12px #0002}
-      #extra-life-save-tools .el-save-trigger{background:#203f32;color:#fff;border-color:#203f32;font-weight:700}
-      #extra-life-save-tools .el-save-panel{display:none;width:min(290px,calc(100vw - 24px));margin-bottom:8px;padding:12px;background:#f5f7f2;border:1px solid #aab5aa;border-radius:14px;box-shadow:0 5px 24px #0003}
-      #extra-life-save-tools[data-open="true"] .el-save-panel{display:grid;gap:8px}
-      #extra-life-save-tools .el-save-panel p{margin:0 0 4px;font-size:13px}
-      #extra-life-save-tools .el-save-status{min-height:1.4em;font-size:12px;color:#405348;overflow-wrap:anywhere}
-      #extra-life-save-tools .el-save-close{justify-self:end;padding:5px 9px}
-      @media(prefers-reduced-motion:no-preference){#extra-life-save-tools .el-save-panel{animation:elSaveIn .12s ease-out}@keyframes elSaveIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}}
-    `;
+    style.textContent = getSaveControlsStyles();
+    doc.head && doc.head.appendChild(style);
     const wrap = doc.createElement('div');
     wrap.id = 'extra-life-save-tools';
     wrap.innerHTML = '<div class="el-save-panel" role="dialog" aria-label="จัดการไฟล์เซฟ"><p><strong>จัดการไฟล์เซฟ</strong></p><button type="button" data-action="export">ส่งออกไฟล์เซฟ</button><button type="button" data-action="import">นำเข้าไฟล์เซฟ</button><div class="el-save-status" role="status" aria-live="polite"></div><button type="button" class="el-save-close" data-action="close">ปิด</button></div><button type="button" class="el-save-trigger" aria-expanded="false">จัดการเซฟ</button><input type="file" accept=".json,application/json" hidden>';
@@ -624,7 +631,7 @@
     return install();
   }
 
-  const api = Object.freeze({ simulate, simulatePopulation, saveSystem, installSaveControls });
+  const api = Object.freeze({ simulate, simulatePopulation, saveSystem, installSaveControls, getSaveControlsStyles });
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.OnePieceWorldSimulation = api;
   root.OnePieceSaveSystem = saveSystem;
