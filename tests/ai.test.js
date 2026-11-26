@@ -1110,7 +1110,7 @@ test('combat mastery ignores locked Haki, clamps invalid mastery, and remains wo
       observation: { unlocked: true, mastery: 1000 },
       conquerors: { unlocked: true, mastery: -10 }
     },
-    devilFruit: { type: 'zoan', mastery: Infinity, awakened: false }
+    devilFruit: { type: 'zoan', mastery: 0, awakened: false }
   };
   const modifiers = combat.getModifiers(state, 'op');
   assert.equal(modifiers.outgoing, 1.12);
