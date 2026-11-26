@@ -325,3 +325,53 @@ test('One Piece population remains valid across twelve annual simulation ticks',
     assert.ok(new Set(actionHistory[npc.n]).size >= 1);
   }
 });
+
+
+test('NPC population simulation is reproducible across long runs with a seeded random source', () => {
+  const npcs = [
+    { n: 'Gossip', r: 'gossip', alive: true },
+    { n: 'Grump', r: 'grump', alive: true },
+    { n: 'Kid', r: 'kid', alive: true },
+    { n: 'Shopkeeper', r: 'shop', alive: true },
+    { n: 'Doctor', r: 'kind', alive: true },
+    { n: 'Swordsman', r: 'rival', alive: true },
+    { n: 'Craftsperson', r: 'craft', alive: true }
+  ];
+
+  function run(seed, ticks) {
+    let randomState = seed >>> 0;
+    const random = () => {
+      randomState = (randomState * 1664525 + 1013904223) >>> 0;
+      return randomState / 0x100000000;
+    };
+    let state = { world: 'op', npcBrains: {} };
+    const history = [];
+
+    for (let tick = 0; tick < ticks; tick++) {
+      const result = world.simulate(state, npcs, { random });
+      assert.equal(result.simulatedCount, npcs.length);
+      history.push(result.actions.map(action => [action.npc, action.action]));
+      for (const npc of npcs) {
+        const profile = result.profiles[npc.n];
+        assert.ok(profile, npc.n + ' profile should persist at tick ' + tick);
+        assert.ok(profile.memories.length <= 100, npc.n + ' memory cap should hold');
+        for (const value of Object.values(profile.needs)) {
+          assert.ok(value >= 0 && value <= 100, npc.n + ' needs should remain bounded');
+        }
+        for (const value of Object.values(profile.relationships || {})) {
+          assert.ok(value >= -100 && value <= 100, npc.n + ' relationships should remain bounded');
+        }
+      }
+      state = { ...state, npcBrains: result.profiles };
+    }
+    return history;
+  }
+
+  for (const ticks of [1, 12, 60, 240]) {
+    assert.deepEqual(
+      run(20261126, ticks),
+      run(20261126, ticks),
+      'same seed and tick count should produce the same NPC action history for ' + ticks + ' ticks'
+    );
+  }
+});
