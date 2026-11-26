@@ -151,3 +151,20 @@ node --test tests/ai.test.js
 ```
 
 The tests cover goal-aware action selection, negative memory weighting, memory expiry and limits, event-choice compatibility, NPC world simulation and social interactions, pirate crew membership rules, and crew diplomacy/encounter outcomes.
+
+
+## Devil Fruits
+
+`devil-fruit-system.js` provides pure helpers for creating valid Paramecia,
+Zoan and Logia fruit records, consuming a fruit (one per character and one
+consumer per fruit record), training mastery from 0–100, and awakening at a
+configurable mastery threshold (80 by default). `getSeaEffect` reports the
+baseline swimming/weakness effect in seawater and a stronger penalty for Sea
+Prism Stone exposure. These are data-layer rules only; fruit inventory,
+combat effects, persistence and player-facing UI still need integration.
+
+Load this module after the other AI helpers:
+
+```html
+<script src="./ai/devil-fruit-system.js"></script>
+```
