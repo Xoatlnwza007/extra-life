@@ -470,7 +470,15 @@
     }
   }
 
-  const saveSystem = Object.freeze({\n    version: SAVE_SCHEMA_VERSION,\n    encode: encodeSavePayload,\n    decode: decodeSavePayload,\n    createManager: createSaveManager,\n    installBrowserProtection: installBrowserSaveProtection\n  });\n\n  const api = Object.freeze({ simulate, simulatePopulation, saveSystem });
+  const saveSystem = Object.freeze({
+    version: SAVE_SCHEMA_VERSION,
+    encode: encodeSavePayload,
+    decode: decodeSavePayload,
+    createManager: createSaveManager,
+    installBrowserProtection: installBrowserSaveProtection
+  });
+
+  const api = Object.freeze({ simulate, simulatePopulation, saveSystem });
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.OnePieceWorldSimulation = api;\n  root.OnePieceSaveSystem = saveSystem;\n  installBrowserSaveProtection(root);
 })(typeof globalThis !== 'undefined' ? globalThis : this);
