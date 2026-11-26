@@ -248,7 +248,229 @@
     };
   }
 
-  const api = Object.freeze({ simulate, simulatePopulation });
+
+  // Versioned, checksummed save protection for the existing extra-life-v2 key.
+  // The main game's save()/loadSaved() API remains unchanged.
+  const SAVE_SCHEMA_VERSION = 1;
+  const GAME_SAVE_KEY = 'extra-life-v2';
+  const GAME_BACKUP_KEY = 'extra-life-v2-backup';
+
+  function savePayloadChecksum(payload) {
+    const source = JSON.stringify(payload);
+    let hash = 2166136261;
+    for (let i = 0; i < source.length; i++) {
+      hash ^= source.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return (hash >>> 0).toString(16).padStart(8, '0');
+  }
+
+  function withoutSaveMetadata(value) {
+    const payload = JSON.parse(JSON.stringify(value));
+    delete payload._saveMeta;
+    return payload;
+  }
+
+  function encodeSavePayload(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      throw new TypeError('Save payload must be a plain object');
+    }
+    const payload = withoutSaveMetadata(value);
+    const meta = value._saveMeta;
+    if (meta && Number(meta.schemaVersion) > SAVE_SCHEMA_VERSION) {
+      throw new Error('Save was created by a newer game version');
+    }
+    payload._saveMeta = {
+      schemaVersion: SAVE_SCHEMA_VERSION,
+      checksum: savePayloadChecksum(payload)
+    };
+    return JSON.stringify(payload);
+  }
+
+  function decodeSavePayload(raw) {
+    if (raw == null) return { ok: false, reason: 'missing' };
+    let value;
+    try {
+      value = JSON.parse(raw);
+    } catch (error) {
+      return { ok: false, reason: 'invalid-json', error };
+    }
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      return { ok: false, reason: 'invalid-shape' };
+    }
+
+    const version = value._saveMeta && Number.isInteger(Number(value._saveMeta.schemaVersion))
+      ? Number(value._saveMeta.schemaVersion) : 0;
+    if (version > SAVE_SCHEMA_VERSION) {
+      return { ok: false, reason: 'future-version', version };
+    }
+    if (version < 0) return { ok: false, reason: 'invalid-version', version };
+
+    const payload = withoutSaveMetadata(value);
+    if (version === 0) {
+      // v0 is the original unversioned game state. Preserve all fields;
+      // the game's existing migrate(s) function still owns gameplay defaults.
+      return { ok: true, data: payload, migrated: true, fromVersion: 0 };
+    }
+    const expected = value._saveMeta && value._saveMeta.checksum;
+    if (typeof expected !== 'string' || expected !== savePayloadChecksum(payload)) {
+      return { ok: false, reason: 'checksum-mismatch', version };
+    }
+    return { ok: true, data: payload, migrated: false, fromVersion: version };
+  }
+
+  function createSaveManager(storage, options = {}) {
+    if (!storage || typeof storage.getItem !== 'function' ||
+        typeof storage.setItem !== 'function') {
+      throw new TypeError('A Storage-compatible adapter is required');
+    }
+    const primaryKey = options.key || GAME_SAVE_KEY;
+    const backupKey = options.backupKey || GAME_BACKUP_KEY;
+
+    function readValid(raw) {
+      const decoded = decodeSavePayload(raw);
+      if (!decoded.ok) return decoded;
+      return {
+        ...decoded,
+        encoded: encodeSavePayload(decoded.data)
+      };
+    }
+
+    function load() {
+      let primaryRaw;
+      let backupRaw;
+      try {
+        primaryRaw = storage.getItem(primaryKey);
+        const primary = readValid(primaryRaw);
+        if (primary.ok) {
+          return {
+            state: primary.data, source: 'primary', recovered: false,
+            migrated: primary.migrated, readOnly: false
+          };
+        }
+        if (primary.reason === 'future-version') {
+          return { state: null, source: 'primary', recovered: false, readOnly: true, reason: primary.reason };
+        }
+
+        backupRaw = storage.getItem(backupKey);
+        const backup = readValid(backupRaw);
+        if (backup.ok) {
+          return {
+            state: backup.data, source: 'backup', recovered: true,
+            migrated: backup.migrated, readOnly: false, reason: primary.reason
+          };
+        }
+        if (backup.reason === 'future-version') {
+          return { state: null, source: 'backup', recovered: false, readOnly: true, reason: backup.reason };
+        }
+        return {
+          state: null, source: 'none', recovered: false, readOnly: false,
+          reason: primary.reason === 'missing' ? backup.reason : primary.reason
+        };
+      } catch (error) {
+        return { state: null, source: 'none', recovered: false, readOnly: false, reason: 'storage-error', error };
+      }
+    }
+
+    function save(state) {
+      let previous;
+      try {
+        const encoded = encodeSavePayload(state);
+        const currentRaw = storage.getItem(primaryKey);
+        const current = readValid(currentRaw);
+        if (current.ok) previous = current.encoded;
+        else {
+          const backupRaw = storage.getItem(backupKey);
+          const backup = readValid(backupRaw);
+          if (backup.ok) previous = backup.encoded;
+          if (current.reason === 'future-version') {
+            return { ok: false, reason: 'future-version' };
+          }
+        }
+        // Write the last known-good snapshot first. If the primary write fails,
+        // the previous save remains recoverable.
+        if (previous) storage.setItem(backupKey, previous);
+        storage.setItem(primaryKey, encoded);
+        return { ok: true, version: SAVE_SCHEMA_VERSION };
+      } catch (error) {
+        return { ok: false, reason: 'storage-error', error };
+      }
+    }
+
+    function restore(raw) {
+      const decoded = readValid(raw);
+      if (!decoded.ok) return { ok: false, reason: decoded.reason };
+      return save(decoded.data);
+    }
+
+    return Object.freeze({ load, save, restore, version: SAVE_SCHEMA_VERSION });
+  }
+
+  function installBrowserSaveProtection(host) {
+    try {
+      if (!host || !host.Storage || !host.Storage.prototype) return false;
+      const prototype = host.Storage.prototype;
+      if (prototype.__extraLifeSaveProtection) return true;
+      const nativeGet = prototype.getItem;
+      const nativeSet = prototype.setItem;
+
+      prototype.getItem = function (key) {
+        const raw = nativeGet.call(this, key);
+        if (key !== GAME_SAVE_KEY || raw == null) return raw;
+        const primary = decodeSavePayload(raw);
+        if (primary.ok) {
+          if (primary.migrated) {
+            try { return encodeSavePayload(primary.data); } catch (error) { return raw; }
+          }
+          return raw;
+        }
+        if (primary.reason === 'future-version') {
+          host.__extraLifeSaveReadOnly = true;
+          return null;
+        }
+        const backupRaw = nativeGet.call(this, GAME_BACKUP_KEY);
+        const backup = decodeSavePayload(backupRaw);
+        if (backup.ok) {
+          host.__extraLifeSaveRecovered = true;
+          try { return encodeSavePayload(backup.data); } catch (error) { return backupRaw; }
+        }
+        return null;
+      };
+
+      prototype.setItem = function (key, value) {
+        if (key !== GAME_SAVE_KEY) return nativeSet.call(this, key, value);
+        if (host.__extraLifeSaveReadOnly) return;
+        let encoded;
+        try {
+          const incoming = decodeSavePayload(value);
+          if (!incoming.ok && incoming.reason !== 'missing') {
+            throw new Error('Refusing to write an invalid game save: ' + incoming.reason);
+          }
+          encoded = encodeSavePayload(incoming.data);
+          const oldRaw = nativeGet.call(this, GAME_SAVE_KEY);
+          const old = decodeSavePayload(oldRaw);
+          if (old.ok) nativeSet.call(this, GAME_BACKUP_KEY, encodeSavePayload(old.data));
+          else {
+            const oldBackup = nativeGet.call(this, GAME_BACKUP_KEY);
+            if (decodeSavePayload(oldBackup).ok) {
+              // Keep the existing known-good backup when the primary is damaged.
+            }
+          }
+          nativeSet.call(this, GAME_SAVE_KEY, encoded);
+        } catch (error) {
+          throw error;
+        }
+      };
+      Object.defineProperty(prototype, '__extraLifeSaveProtection', {
+        value: true, configurable: false, enumerable: false
+      });
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  const saveSystem = Object.freeze({\n    version: SAVE_SCHEMA_VERSION,\n    encode: encodeSavePayload,\n    decode: decodeSavePayload,\n    createManager: createSaveManager,\n    installBrowserProtection: installBrowserSaveProtection\n  });\n\n  const api = Object.freeze({ simulate, simulatePopulation, saveSystem });
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
-  root.OnePieceWorldSimulation = api;
+  root.OnePieceWorldSimulation = api;\n  root.OnePieceSaveSystem = saveSystem;\n  installBrowserSaveProtection(root);
 })(typeof globalThis !== 'undefined' ? globalThis : this);
