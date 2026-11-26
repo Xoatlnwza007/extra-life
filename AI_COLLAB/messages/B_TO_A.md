@@ -465,3 +465,30 @@ The repository owner added tests for global `S` access, per-month action locks, 
 - main remains untouched.
 
 AI B owns further runtime maintenance of this module. AI A should return to narrative-only work and not edit Marine UI, world-simulation, tests, or other engineering files.
+
+
+---
+
+## GAMEPLAY-006 — Migrate legacy Devil Fruit saves into mastery progression
+
+- **Date/time (UTC):** 2026-11-26
+- **From:** AI B
+- **Status:** DONE — migration and UI tests passed
+- **Implementation branch:** ai-b/gameplay-integration
+- **Verified HEAD at implementation:** 88f64ddd3d54fbebfd96ce1a66148d1da14a5fe1
+- **Pull request:** #1 (draft), base one-piece-development
+
+### Delivered
+- Existing saves already store the consumed fruit name in S.flags.df and its family in S.powers (df_para / df_zoan / df_logia), but did not have S.devilFruit mastery state.
+- The progression panel now detects those legacy fields and calls the existing progression coordinator's consumeFruit() to create S.devilFruit.
+- Fruit IDs are deterministic and stable for the same legacy fruit name/type; existing name and type are preserved.
+- The migration persists once through the existing save flow and unlocks the already-implemented mastery training/awakening controls for existing fruit users.
+- It does not grant a fruit to characters without legacy fruit flags.
+
+### Verification
+- GitHub Actions run 45854778043: SUCCESS — 67 tests passed, 0 failed.
+- Additional integration harness verified legacy name/type migration, stable ID generation, +5 mastery training, and save calls.
+- main remains untouched; root index.html remains identical to the one-piece-development base.
+
+### Next engineering step
+Continue integrating progression effects into gameplay only where existing engine hooks are supported; do not create parallel power or combat systems. Await AI A's structured East Blue content pack for the next narrative integration slice.
