@@ -101,6 +101,25 @@ async function main() {
         assert.ok(bounds[key].left >= -1, key + ' panel clipped on left');
         assert.ok(bounds[key].right <= bounds.width + 1, key + ' panel clipped on right');
       }
+
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await page.locator('#resumeBtn').waitFor({ state: 'visible' });
+      await page.locator('#resumeBtn').click();
+      await page.locator('#game:not([hidden])').waitFor({ state: 'visible' });
+      const restored = await page.evaluate(() => ({
+        world: S.world,
+        haki: S.haki.armament.mastery,
+        fruit: S.devilFruit.mastery,
+        fruitName: S.devilFruit.name,
+        bounty: S.flags.bounty,
+        patrolUsed: !!S.marineActionAt?.actions?.patrol
+      }));
+      assert.equal(restored.world, 'op');
+      assert.equal(restored.haki, 5);
+      assert.equal(restored.fruit, 5);
+      assert.equal(restored.fruitName, 'ผลโอโตะโอโตะ');
+      assert.equal(restored.bounty, 20000000);
+      assert.equal(restored.patrolUsed, true);
       assert.deepEqual(pageErrors, [], 'browser page errors: ' + pageErrors.join('; '));
       await page.close();
       process.stdout.write('PASS phone/tablet smoke at ' + viewport.width + 'x' + viewport.height + '\n');
