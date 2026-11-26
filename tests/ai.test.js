@@ -1305,3 +1305,130 @@ test('player progression controls train unlocked Haki and fruit once per game ye
     delete globalThis.OnePieceDevilFruitSystem;
   }
 });
+
+
+test('Roger-era content registers once and exposes the historical cast', () => {
+  const content = require('../ai/roger-era-content.js');
+  const world = { meets: [] };
+  const cast = {};
+  const helpers = { pirate: () => false, marine: () => false };
+  const first = content.register(world, cast, helpers);
+  const second = content.register(world, cast, helpers);
+
+  assert.equal(first.registered, content.EVENT_IDS.length);
+  assert.equal(second.registered, 0);
+  assert.deepEqual(world.meets.map(event => event.id), content.EVENT_IDS);
+  assert.equal(cast.roger, 'โกล ดี. โรเจอร์');
+  assert.equal(cast.rayleigh, 'ซิลเวอร์ส เรย์ลี');
+  assert.equal(cast.gaban, 'สกอปเปอร์ แกบบัน');
+});
+
+test('Roger-era timeline is bounded by the existing Roger execution year', () => {
+  const content = require('../ai/roger-era-content.js');
+  assert.equal(content.inRogerEra({ year: 1470 }), true);
+  assert.equal(content.inRogerEra({ year: 1499 }), true);
+  assert.equal(content.inRogerEra({ year: 1500 }), false);
+  assert.equal(content.inRogerEra({ year: 1469 }), false);
+  assert.equal(content.applyEraPreset({ year: 1500 }).year, 1475);
+  assert.equal(content.applyEraPreset({ year: 1500 }, 1460).year, 1470);
+  assert.equal(content.applyEraPreset({ year: 1500 }, 1510).year, 1499);
+});
+
+test('Roger encounter progression supports sighting, meeting, rescue, training, alliance and recruitment', () => {
+  const content = require('../ai/roger-era-content.js');
+  const world = { meets: [] };
+  const cast = {};
+  const state = {
+    year: 1480, age: 15, place: 'sea', job: { id: 'pirate' },
+    flags: {}, sk: { fight: 0, ride: 25 }, fame: 0
+  };
+  const bonds = {};
+  const memories = [];
+  const helpers = {
+    pirate: s => s.job?.id === 'pirate',
+    marine: s => s.job?.id === 'marine',
+    bond: (id, delta) => { bonds[id] = (bonds[id] || 0) + delta; },
+    say: () => {},
+    skill: (id, delta) => { state.sk[id] = (state.sk[id] || 0) + delta; },
+    fm: () => {},
+    remember: (...args) => memories.push(args)
+  };
+  content.register(world, cast, helpers);
+  const byId = id => world.meets.find(event => event.id === id);
+  const choose = (id, choiceIndex = 0) => {
+    const event = byId(id);
+    assert.ok(event, 'missing event ' + id);
+    assert.equal(event.when(state), true, 'event should be available: ' + id);
+    const result = event.play(state);
+    assert.ok(result.choices && result.choices[choiceIndex]);
+    result.choices[choiceIndex].f(state);
+  };
+
+  choose('op_roger_sighting', 0);
+  assert.equal(state.flags.rogerLead, 1);
+  state.year = 1481;
+  state.age = 16;
+  choose('op_roger_meeting', 0);
+  assert.equal(state.flags.rogerMet, 1);
+  assert.equal(state.flags.rogerTrust, 8);
+  choose('op_roger_rescue', 0);
+  assert.equal(state.flags.rogerRescue, 1);
+  choose('op_roger_training', 0);
+  assert.equal(state.flags.rogerTraining, 1);
+  assert.ok(state.sk.fight >= 6);
+  choose('op_roger_alliance', 0);
+  assert.equal(state.flags.rogerAlliance, 1);
+  state.year = 1483;
+  state.age = 18;
+  choose('op_roger_recruitment', 0);
+  assert.equal(state.flags.rogerCrew, 1);
+  assert.equal(state.flags.crew, 'กลุ่มโจรสลัดโรเจอร์');
+  assert.ok(bonds.roger > 0);
+  assert.ok(bonds.rayleigh > 0);
+  assert.ok(memories.length >= 4);
+});
+
+test('Roger recruitment can be refused without changing the player crew', () => {
+  const content = require('../ai/roger-era-content.js');
+  const world = { meets: [] };
+  const state = {
+    year: 1490, age: 20, place: 'sea', job: { id: 'pirate' },
+    flags: { rogerAlliance: 1, rogerTrust: 40, crew: 'กลุ่มโจรสลัดเดิม' },
+    sk: { fight: 30 }, fame: 10
+  };
+  content.register(world, {}, {
+    pirate: s => s.job?.id === 'pirate',
+    marine: () => false,
+    say: () => {}
+  });
+  const event = world.meets.find(item => item.id === 'op_roger_recruitment');
+  assert.equal(event.when(state), true);
+  event.play(state).choices[1].f(state);
+  assert.equal(state.flags.rogerCrew, undefined);
+  assert.equal(state.flags.crew, 'กลุ่มโจรสลัดเดิม');
+  assert.equal(state.flags.rogerRecruitmentDeclined, 1);
+});
+
+test('Roger-era preset button is installed once and selects the Roger-era birth year', () => {
+  const content = require('../ai/roger-era-content.js');
+  const listeners = {};
+  const field = { append(...nodes) { this.nodes = [...(this.nodes || []), ...nodes]; } };
+  const input = { closest: () => field };
+  const ids = { yearIn: input };
+  const doc = {
+    getElementById: id => ids[id] || null,
+    createElement: () => ({
+      setAttribute() {},
+      addEventListener(type, fn) { listeners[type] = fn; }
+    })
+  };
+  const cfg = { year: 1500 };
+  let renders = 0;
+  assert.equal(content.installEraPreset(doc, cfg, () => { renders++; }), true);
+  assert.equal(content.installEraPreset(doc, cfg, () => { renders++; }), false);
+  const button = field.nodes[0].nodes[0];
+  listeners.click();
+  assert.equal(cfg.year, 1475);
+  assert.equal(renders, 1);
+  assert.equal(button.id, 'rogerEraPreset');
+});
