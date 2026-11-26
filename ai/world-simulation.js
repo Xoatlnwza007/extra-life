@@ -65,7 +65,8 @@
       if (!profiles[npc.n]) profiles[npc.n] = createProfile(npc, stateApi);
     }
 
-    const actor = (context.actorId && living.find(npc => npc.n === context.actorId)) || living[Math.floor(Math.random() * living.length)];
+    const random = typeof context.random === 'function' ? context.random : Math.random;
+    const actor = (context.actorId && living.find(npc => npc.n === context.actorId)) || living[Math.floor(random() * living.length)];
     let profile = stateApi.advanceTime(profiles[actor.n]);
     const candidates = [
       { id: 'rest', label: 'พักผ่อนและดูแลตัวเอง', tags: ['rest', 'safety'], relief: { energy: 18, safety: 5 }, risk: 2, expectedReward: 1 },
@@ -91,7 +92,7 @@
     profile = { ...profile, needs };
     const activeGoal = (profile.goals || []).find(goal => goal.status === 'active' &&
       (goal.action === chosen.id || (goal.tags || []).some(tag => (chosen.tags || []).includes(tag))));
-    if (activeGoal && Math.random() < 0.22) {
+    if (activeGoal && random() < 0.22) {
       profile = stateApi.updateGoal(profile, activeGoal.id, 'completed');
     }
     profile = brain.recordOutcome(profile, decision, {
