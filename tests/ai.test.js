@@ -801,14 +801,3 @@ test('browser localStorage hook preserves the previous save when storage quota i
   assert.equal(stillSaved.data.captain, 'Safe Captain');
   assert.equal(backup.data.captain, 'Safe Captain');
 });
-
-  const styles = world.getSaveControlsStyles();
-  assert.match(styles, /min-width:48px/);
-  assert.match(styles, /min-height:48px/);
-  assert.match(styles, /touch-action:manipulation/);
-  assert.match(styles, /safe-area-inset-bottom/);
-  assert.match(styles, /max-width:480px/);
-  assert.match(styles, /orientation:landscape/);
-  assert.match(styles, /100dvh/);
-});
-
