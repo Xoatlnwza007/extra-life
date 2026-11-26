@@ -185,4 +185,7 @@ test('main game loads the modular simulation runtime after the game script', () 
   const html = fs.readFileSync(require('node:path').join(__dirname, '..', 'index.html'), 'utf8');
   assert.match(html, /<script src="\.\/ai\/world-simulation\.js"><\/script>/);
   assert.ok(html.lastIndexOf('<script src="./ai/world-simulation.js">') > html.lastIndexOf('</script>') - 100);
+  assert.match(html, /OnePieceWorldSimulation\.simulate\(S,population/);
+  assert.match(html, /OnePieceCombatAdapter\.modifyOutgoingDamage\(v,S,'op'\)/);
+  assert.match(html, /OnePieceCombatAdapter\.modifyIncomingDamage\(d,S,'op'\)/);
 });
