@@ -58,7 +58,7 @@
       if (!profiles[npc.n]) profiles[npc.n] = createProfile(npc, stateApi);
     }
 
-    const actor = living[Math.floor(Math.random() * living.length)];
+    const actor = (context.actorId && living.find(npc => npc.n === context.actorId)) || living[Math.floor(Math.random() * living.length)];
     let profile = stateApi.advanceTime(profiles[actor.n]);
     const candidates = [
       { id: 'rest', label: 'พักผ่อนและดูแลตัวเอง', tags: ['rest', 'safety'], relief: { energy: 18, safety: 5 }, risk: 2, expectedReward: 1 },
@@ -105,5 +105,33 @@
     return { profiles, story, actor: actor.n, action: chosen.id, ranking: decision.ranking };
   }
 
-  root.OnePieceWorldSimulation = Object.freeze({ simulate });
+  // Optional full-population pass. The existing simulate() API remains unchanged.
+  function simulatePopulation(worldState, npcList, context = {}) {
+    const living = (npcList || []).filter(npc => npc && npc.alive);
+    let currentState = {
+      ...(worldState || {}),
+      npcBrains: { ...((worldState && worldState.npcBrains) || {}) }
+    };
+    const actions = [];
+    const stories = [];
+
+    for (const npc of living) {
+      const result = simulate(currentState, living, { ...context, actorId: npc.n });
+      currentState = { ...currentState, npcBrains: result.profiles };
+      if (result.action) {
+        actions.push({ npc: npc.n, action: result.action, ranking: result.ranking });
+      }
+      if (result.story) stories.push(result.story);
+    }
+
+    return {
+      profiles: currentState.npcBrains,
+      actions,
+      stories,
+      simulatedCount: actions.length,
+      story: stories.length ? stories.join('。') : null
+    };
+  }
+
+  root.OnePieceWorldSimulation = Object.freeze({ simulate, simulatePopulation });
 })(typeof globalThis !== 'undefined' ? globalThis : this);
