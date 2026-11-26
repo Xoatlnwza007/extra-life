@@ -599,6 +599,27 @@
     return { ok: true, crew };
   }
 
+  function syncPlayerCrew(worldState, crewApi = root.OnePieceCrewSystem) {
+    if (!worldState || worldState.world !== 'op' || !crewApi) {
+      return { ok: false, reason: 'unsupported-world', crew: null, changed: false };
+    }
+    const crew = getPlayerCrew(worldState, crewApi);
+    if (!crew) return { ok: false, reason: 'no-player-crew', crew: null, changed: false };
+    const playerBounty = Math.max(0, Math.floor(Number(worldState.flags && worldState.flags.bounty) || 0));
+    const reputation = Math.max(-100, Math.min(100,
+      Math.round((Number(worldState.fame) || 0) - (Number(worldState.dark) || 0))));
+    const updated = {
+      ...crew,
+      bounty: Math.max(Number(crew.bounty) || 0, playerBounty),
+      reputation
+    };
+    const changed = updated.bounty !== crew.bounty || updated.reputation !== crew.reputation;
+    if (changed) {
+      worldState.crews = (worldState.crews || []).map(item => item && item.id === crew.id ? updated : item);
+    }
+    return { ok: true, crew: changed ? updated : crew, changed };
+  }
+
   function recruitNpcToPlayerCrew(worldState, npc, role = 'fighter', crewApi = root.OnePieceCrewSystem) {
     if (!worldState || worldState.world !== 'op' || !crewApi || !npc || !npc.alive) {
       return { crew: null, joined: false, reason: 'invalid-recruitment' };
@@ -739,7 +760,8 @@
       if (!state || !state.alive || !canManagePirateCrew(state)) return;
       body.replaceChildren();
       const api = host.OnePieceCrewSystem;
-      const crew = getPlayerCrew(state, api);
+      const synced = syncPlayerCrew(state, api);
+      const crew = synced.crew || getPlayerCrew(state, api);
       if (!crew) {
         body.appendChild(make('p', 'สร้างกลุ่มโจรสลัดของคุณ แล้วชวน NPC ที่ยังมีชีวิตเข้าร่วม'));
         const form = make('div', undefined, 'el-crew-form');
@@ -998,7 +1020,7 @@
     return install();
   }
 
-  const api = Object.freeze({ simulate, simulatePopulation, saveSystem, installSaveControls, getSaveControlsStyles, getMobileTouchStyles, installMobileTouchStyles, loadCompanionModules, companionModules: COMPANION_MODULES, crewNpcId, getPlayerCrew, createPlayerCrew, recruitNpcToPlayerCrew, removeNpcFromPlayerCrew, canManagePirateCrew, getCrewControlsStyles, installCrewControls, scheduleCrewControls });
+  const api = Object.freeze({ simulate, simulatePopulation, saveSystem, installSaveControls, getSaveControlsStyles, getMobileTouchStyles, installMobileTouchStyles, loadCompanionModules, companionModules: COMPANION_MODULES, crewNpcId, getPlayerCrew, createPlayerCrew, recruitNpcToPlayerCrew, removeNpcFromPlayerCrew, syncPlayerCrew, canManagePirateCrew, getCrewControlsStyles, installCrewControls, scheduleCrewControls });
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.OnePieceWorldSimulation = api;
   root.OnePieceSaveSystem = saveSystem;
