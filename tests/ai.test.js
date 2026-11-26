@@ -102,6 +102,20 @@ test('NPC interactions update both sides without sharing relationship state', ()
   assert.equal(stateApi.getRelationship(bob, 'alice'), 0);
 });
 
+test('population simulation processes every living NPC and skips dead NPCs', () => {
+  const npcs = [
+    { n: 'Villager A', r: 'kind', alive: true },
+    { n: 'Villager B', r: 'rival', alive: true },
+    { n: 'Villager C', r: 'shop', alive: false }
+  ];
+  const result = world.simulatePopulation({ npcBrains: {} }, npcs, {});
+  assert.equal(result.simulatedCount, 2);
+  assert.deepEqual(result.actions.map(item => item.npc), ['Villager A', 'Villager B']);
+  assert.ok(result.profiles['Villager A'].memories.length > 0);
+  assert.ok(result.profiles['Villager B'].memories.length > 0);
+  assert.equal(result.profiles['Villager C'], undefined);
+});
+
 test('world simulation initializes and returns persistent NPC profiles', () => {
   const npc = { n: 'Test villager', r: 'kind', alive: true };
   const result = world.simulate({ npcBrains: {} }, [npc], {});
