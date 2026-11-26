@@ -277,3 +277,19 @@ the full reload flow still need manual verification in Chrome Android/Desktop.
 ## Mobile and tablet touch support
 
 The main game already has responsive layouts for narrow screens. The browser bootstrap adds touch-specific rules when the device reports a coarse pointer: primary actions and segmented controls receive larger hit areas, the bottom action bar can scroll on short phone screens, and dialogs respect display safe areas. The floating save and crew panels also use touch-sized controls and safe-area spacing. Automated tests verify these layout rules; real-device testing on Android and iPad/iPhone browsers is still required.
+
+
+## Marine intelligence and pirate pursuit
+
+`marine-system.js` provides framework-independent Marine force and wanted-record
+helpers. A force can register pirates with an active bounty, evaluate sightings
+using intelligence, alertness, notoriety, location match, distance and concealment,
+then advance an investigation through tracking to active pursuit. Encounters
+resolve to capture or escape using Marine strength, target strength, pursuit
+pressure and support. Detection and encounter helpers accept an injected random
+function for deterministic tests. The helpers return updated state objects;
+the game layer remains responsible for saving state and presenting UI.
+
+The module is loaded by the browser companion bootstrap as
+`OnePieceMarineSystem`. It is currently an engine/API layer and is not yet
+wired to the player's bounty UI or a visible Marine encounter panel.
