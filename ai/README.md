@@ -88,7 +88,7 @@ The returned `ranking` includes each candidate's score and scoring reasons, whic
 
 ## Current game integration
 
-The annual world simulator maintains role-based NPC profiles, seeds long-term goals, chooses autonomous activities, records memories, and updates needs. Profiles are stored in `S.npcBrains` and should be serialized by the game's existing save/load flow. This is an initial annual simulation layer, not yet a full real-time NPC economy or a complete crew/relationship system.
+The annual world simulator maintains role-based NPC profiles, seeds long-term goals, chooses autonomous activities, records memories, and updates needs. Profiles are stored in `S.npcBrains` and should be serialized by the game's existing save/load flow. This is an initial monthly population simulation layer, not yet a full real-time NPC economy or a complete crew/relationship system.
 
 ### Simulate every living NPC
 
@@ -105,14 +105,11 @@ S.npcBrains = result.profiles;
 // Use result.stories for a world-news or annual-summary panel.
 ```
 
-It processes each living NPC once, carries updated profiles forward between
-steps, skips dead NPCs, and returns per-NPC actions plus story summaries. When
+It processes each living NPC once per month, carries updated profiles forward between
+steps, skips dead NPCs, and returns month-stamped per-NPC actions plus story summaries. When
 an NPC helps or socializes, the pass also records a bilateral interaction,
 updates both relationship scores, and stores the event in both NPC memories.
-The One Piece yearly loop is already wired to this population pass. The game
-currently advances this system once per in-game year; the master plan's
-one-turn-per-month cadence is not implemented yet. NPC profiles are held in
-`S.npcBrains`, so persistence still depends on the existing save/load flow.
+The existing game still presents a yearly `nextYear()` action. To avoid rewriting its very large bundled `index.html` before browser-level regression coverage exists, that yearly boundary now runs twelve ordered logical monthly population passes internally. Each NPC therefore makes one autonomous decision per simulated month; monthly action/interactions carry year and month fields, and `simulationCalendar` records `{ year, month, totalMonths }` in the returned state. This advances NPC behavior monthly, but does not yet convert the player's UI, age, money, or story-event cadence to monthly turns. NPC profiles and the calendar are returned as data; persistence still depends on the existing save/load flow.
 
 ## Pirate crews
 
@@ -152,7 +149,7 @@ Run the AI unit tests with Node.js 18 or later:
 node --test tests/ai.test.js
 ```
 
-The tests cover goal-aware action selection, negative memory weighting, memory expiry and limits, event-choice compatibility, NPC world simulation and social interactions, pirate crew membership rules, crew diplomacy/encounter outcomes, and seeded replay consistency over 1, 12, 60 and 240 population passes. These are simulation passes, not months: the current game integration still advances NPCs annually.
+The tests cover goal-aware action selection, negative memory weighting, memory expiry and limits, event-choice compatibility, NPC world simulation and social interactions, pirate crew membership rules, crew diplomacy/encounter outcomes, and seeded replay consistency over 1, 12, 60 and 240 annual game advances. Each One Piece advance now contains twelve monthly NPC population passes (up to 2,880 months in the longest replay test). The player's UI and story events remain annual.
 
 
 ## Devil Fruits
@@ -194,7 +191,7 @@ Load `haki-system.js` after the other AI helper scripts.
 
 The existing game's annual loop calls `OnePieceWorldSimulation.simulate(S, S.npcs, context)`
 once per year. When the state identifies the One Piece world (`world: 'op'`),
-that call now advances every living NPC through the population simulator,
+that call now advances every living NPC through twelve ordered monthly population passes,
 retaining each NPC's profile and recording social interactions. Other callers
 and tests without the One Piece world identifier retain the original
 single-actor `simulate()` behavior. This connects the population system to
