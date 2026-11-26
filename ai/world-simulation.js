@@ -538,6 +538,44 @@
   });
 
 
+  function getMobileTouchStyles() {
+    return `
+      @media(any-pointer:coarse){
+        .world,.origin,.ghost,.primary,.act,.seg button,#playBtn,#ageBtn,.hud .hudb{min-height:48px}
+        .act{padding:10px 9px}
+        .seg button{padding:10px 14px}
+        .pp{min-height:44px;align-items:center;padding-top:8px;padding-bottom:8px}
+        .tog{min-height:44px;padding-block:6px}
+        input[type=range]{min-height:44px}
+        .hud .hudb{padding:8px 10px}
+      }
+      @media(max-width:560px) and (any-pointer:coarse){
+        .actbar{max-height:min(52dvh,420px);overflow-y:auto;overscroll-behavior:contain;padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px))}
+        .actbar .inner{gap:10px}
+        .actrow{gap:8px}
+        .acts{gap:8px}
+        .act{overflow-wrap:anywhere;line-height:1.3}
+        .scrim{padding-top:max(16px,env(safe-area-inset-top,0px));padding-bottom:max(16px,env(safe-area-inset-bottom,0px))}
+        .dlg{max-height:calc(100dvh - 32px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}
+      }
+      @media(min-width:561px) and (max-width:900px) and (any-pointer:coarse){
+        .actrow{gap:10px}
+        .acts{gap:8px}
+      }
+    `;
+  }
+
+  function installMobileTouchStyles(host = root) {
+    const doc = host && host.document;
+    if (!doc || !doc.head || !doc.createElement) return false;
+    if (doc.getElementById('extra-life-mobile-touch-styles')) return true;
+    const style = doc.createElement('style');
+    style.id = 'extra-life-mobile-touch-styles';
+    style.textContent = getMobileTouchStyles();
+    doc.head.appendChild(style);
+    return true;
+  }
+
   function getSaveControlsStyles() {
     return `
       #extra-life-save-tools{position:fixed;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:2147483000;font:14px/1.45 system-ui,sans-serif;color:#18211c;max-width:calc(100vw - 24px)}
@@ -631,10 +669,11 @@
     return install();
   }
 
-  const api = Object.freeze({ simulate, simulatePopulation, saveSystem, installSaveControls, getSaveControlsStyles });
+  const api = Object.freeze({ simulate, simulatePopulation, saveSystem, installSaveControls, getSaveControlsStyles, getMobileTouchStyles, installMobileTouchStyles });
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.OnePieceWorldSimulation = api;
   root.OnePieceSaveSystem = saveSystem;
   installBrowserSaveProtection(root);
+  installMobileTouchStyles(root);
   scheduleSaveControls(root);
 })(typeof globalThis !== 'undefined' ? globalThis : this);
