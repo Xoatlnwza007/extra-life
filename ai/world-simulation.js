@@ -403,7 +403,30 @@
       return save(decoded.data);
     }
 
-    return Object.freeze({ load, save, restore, version: SAVE_SCHEMA_VERSION });
+    function exportSave() {
+      const loaded = load();
+      if (!loaded.state) return { ok: false, reason: loaded.reason || 'missing' };
+      try {
+        return { ok: true, filename: 'extra-life-save-v' + SAVE_SCHEMA_VERSION + '.json',
+          data: encodeSavePayload(loaded.state) };
+      } catch (error) {
+        return { ok: false, reason: 'export-error', error };
+      }
+    }
+
+    function importSave(raw) {
+      const decoded = readValid(raw);
+      if (!decoded.ok) return { ok: false, reason: decoded.reason };
+      const result = save(decoded.data);
+      return result.ok
+        ? { ok: true, version: SAVE_SCHEMA_VERSION, migrated: decoded.migrated }
+        : result;
+    }
+
+    return Object.freeze({
+      load, save, restore, exportSave, importSave,
+      version: SAVE_SCHEMA_VERSION
+    });
   }
 
   function installBrowserSaveProtection(host) {
@@ -475,7 +498,43 @@
     encode: encodeSavePayload,
     decode: decodeSavePayload,
     createManager: createSaveManager,
-    installBrowserProtection: installBrowserSaveProtection
+    installBrowserProtection: installBrowserSaveProtection,
+    downloadExport: function (manager, host = root) {
+      if (!manager || typeof manager.exportSave !== 'function' ||
+          !host || !host.Blob || !host.URL || !host.URL.createObjectURL ||
+          !host.document) return { ok: false, reason: 'unsupported' };
+      const exported = manager.exportSave();
+      if (!exported.ok) return exported;
+      let url;
+      try {
+        const blob = new host.Blob([exported.data], { type: 'application/json;charset=utf-8' });
+        url = host.URL.createObjectURL(blob);
+        const anchor = host.document.createElement('a');
+        anchor.href = url;
+        anchor.download = exported.filename;
+        anchor.style.display = 'none';
+        host.document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        return { ok: true, filename: exported.filename };
+      } catch (error) {
+        return { ok: false, reason: 'download-error', error };
+      } finally {
+        if (url) host.URL.revokeObjectURL(url);
+      }
+    },
+    importFile: async function (file, manager) {
+      if (!file || typeof file.text !== 'function' || !manager ||
+          typeof manager.importSave !== 'function') {
+        return { ok: false, reason: 'unsupported' };
+      }
+      try {
+        const raw = await file.text();
+        return manager.importSave(raw);
+      } catch (error) {
+        return { ok: false, reason: 'import-error', error };
+      }
+    }
   });
 
   const api = Object.freeze({ simulate, simulatePopulation, saveSystem });
