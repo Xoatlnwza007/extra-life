@@ -24,20 +24,20 @@
       return { memberCount: 0, supportedMembers: 0, outgoing: 1, incoming: 1 };
     }
 
-    const npcById = new Map();
+    const npcAliveById = new Map();
     (Array.isArray(state.npcs) ? state.npcs : []).forEach((npc, index) => {
-      if (!npc || npc.alive === false) return;
+      if (!npc) return;
       const id = npc.id !== undefined && npc.id !== null && String(npc.id)
         ? String(npc.id)
         : (npc.n ? 'npc:' + index + ':' + String(npc.n) : null);
-      if (id) npcById.set(id, npc);
+      if (id) npcAliveById.set(id, npc.alive !== false);
     });
     const seen = new Set();
     for (const member of crew.members) {
       if (!member || member.characterId == null) continue;
       const id = String(member.characterId);
       if (!id || id === 'player' || seen.has(id)) continue;
-      if (npcById.size && !npcById.has(id) && id.startsWith('npc:')) continue;
+      if (npcAliveById.has(id) && !npcAliveById.get(id)) continue;
       seen.add(id);
     }
     const memberCount = seen.size;
