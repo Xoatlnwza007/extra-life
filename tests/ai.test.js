@@ -1520,3 +1520,61 @@ test('Marine UI shows wanted status, detects a patrol, and allows monthly evasio
     Math.random = originalRandom;
   }
 });
+
+
+test('Marine capture sends the player into the existing prison sentence flow', () => {
+  const marine = require('../ai/marine-system.js');
+  const marineUI = require('../ai/marine-ui.js');
+  const state = {
+    world: 'op', alive: true, name: 'Test Pirate', year: 1522, mo: 3,
+    place: 'foosha_village', st: { fit: 50 }, job: { id: 'pirate' }, rent: { home: 'room' }, heat: 60,
+    flags: { bounty: 20000000 }, marineForce: null
+  };
+  function element(tag) {
+    return {
+      tagName: tag.toUpperCase(), children: [], attributes: {}, listeners: {}, hidden: false,
+      appendChild(child) { this.children.push(child); return child; },
+      replaceChildren(...children) { this.children = children; },
+      setAttribute(key, value) { this.attributes[key] = String(value); },
+      getAttribute(key) { return this.attributes[key] || null; },
+      addEventListener(name, handler) { this.listeners[name] = handler; },
+      click() { if (!this.disabled && this.listeners.click) this.listeners.click({ target: this }); }
+    };
+  }
+  const body = element('body'), head = element('head');
+  const doc = { body, head, createElement: element, getElementById() { return null; } };
+  const messages = [];
+  let saves = 0;
+  const host = {
+    S: state, document: doc, OnePieceMarineSystem: marine,
+    save() { saves++; },
+    say(message) { messages.push(message); },
+    remember(title, detail) { messages.push(title + ':' + detail); }
+  };
+  const originalRandom = Math.random;
+  try {
+    Math.random = () => 0;
+    assert.equal(marineUI.installMarineControls(host), true);
+    const wrap = body.children.find(node => node.id === 'extra-life-marine-tools');
+    wrap.children[1].click();
+    const content = wrap.children[0].children[1];
+    content.children.find(node => node.tagName === 'BUTTON' && node.textContent.includes('ตรวจสอบ')).click();
+    const confront = content.children.find(node => node.tagName === 'BUTTON' && node.textContent.includes('เผชิญหน้า'));
+    assert.ok(confront);
+    confront.click();
+    assert.equal(state.marineForce.wantedRecords.player.status, 'captured');
+    assert.equal(state.flags.jailUntil, 1522 * 12 + 3 + 24);
+    assert.equal(state.job, null);
+    assert.equal(state.rent, null);
+    assert.equal(state.heat, 0);
+    assert.equal(saves, 2);
+    assert.ok(messages.some(message => message.includes('จับกุม')));
+    state.year = 1524;
+    state.mo = 4;
+    wrap.children[1].click();
+    wrap.children[1].click();
+    assert.equal(state.marineForce.wantedRecords.player.status, 'wanted');
+  } finally {
+    Math.random = originalRandom;
+  }
+});
