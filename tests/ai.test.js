@@ -1072,6 +1072,33 @@ test('browser localStorage hook preserves the previous save when storage quota i
 
 
 
+
+test('progression coordinator trains Haki, consumes fruit once, and gates awakening', () => {
+  const progression = require('../ai/progression-system.js');
+  const haki = require('../ai/haki-system.js');
+  const fruitSystem = require('../ai/devil-fruit-system.js');
+  const options = { hakiSystem: haki, devilFruitSystem: fruitSystem };
+  let character = { id: 'captain', powers: ['haki_arm'] };
+  const trainedHaki = progression.trainHaki(character, 'armament', 35, options);
+  assert.equal(trainedHaki.trained, true);
+  assert.equal(trainedHaki.character.haki.armament.mastery, 35);
+  const fruit = fruitSystem.createFruit({ id: 'mera', name: 'Mera Mera no Mi', type: 'logia' }).fruit;
+  const consumed = progression.consumeFruit(trainedHaki.character, fruit, { at: '2026-01-01T00:00:00.000Z', ...options });
+  assert.equal(consumed.consumed, true);
+  assert.equal(consumed.character.devilFruit.mastery, 0);
+  assert.equal(progression.consumeFruit(consumed.character, { ...fruit, consumedBy: null }, options).reason, 'already-has-devil-fruit');
+  assert.equal(progression.awakenFruit(consumed.character, options).reason, 'insufficient-mastery');
+  const trainedFruit = progression.trainFruit(consumed.character, 80, options);
+  const awakened = progression.awakenFruit(trainedFruit.character, { ...options, at: '2026-01-02T00:00:00.000Z' });
+  assert.equal(awakened.awakened, true);
+  assert.equal(awakened.character.devilFruit.awakened, true);
+  assert.equal(progression.getSeaEffect(awakened.character, { inSea: true }, options).canSwim, false);
+  const summary = progression.getSummary(awakened.character, options);
+  assert.equal(summary.ready, true);
+  assert.equal(summary.devilFruit.awakened, true);
+});
+
+
 test('Haki progression sync follows unlocked power flags and preserves mastery', () => {
   const haki = require('../ai/haki-system.js');
   const original = { id: 'captain', haki: { armament: { unlocked: false, mastery: 42 } } };
