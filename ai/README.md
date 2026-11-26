@@ -84,7 +84,7 @@ if (decision.action) {
 }
 ```
 
-The returned `ranking` includes each candidate's score and scoring reasons, which can be used for debugging or NPC activity logs. The event adapter maps game event choices to AI candidates and returns the original selected choice object, so existing event handlers can continue to consume it.
+The returned `ranking` includes each candidate's score and scoring reasons, which can be used for debugging or NPC activity logs. For reproducible world-simulation tests, pass a seeded `random` function in the simulation context; the simulator uses it for stochastic goal completion and actor selection. Without an injected function, it retains the browser's default `Math.random` behavior. The event adapter maps game event choices to AI candidates and returns the original selected choice object, so existing event handlers can continue to consume it.
 
 ## Current game integration
 
@@ -152,7 +152,7 @@ Run the AI unit tests with Node.js 18 or later:
 node --test tests/ai.test.js
 ```
 
-The tests cover goal-aware action selection, negative memory weighting, memory expiry and limits, event-choice compatibility, NPC world simulation and social interactions, pirate crew membership rules, and crew diplomacy/encounter outcomes.
+The tests cover goal-aware action selection, negative memory weighting, memory expiry and limits, event-choice compatibility, NPC world simulation and social interactions, pirate crew membership rules, crew diplomacy/encounter outcomes, and seeded replay consistency over 1, 12, 60 and 240 population passes. These are simulation passes, not months: the current game integration still advances NPCs annually.
 
 
 ## Devil Fruits
