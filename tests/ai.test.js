@@ -379,10 +379,14 @@ test('player crew is stored in game state and recruits NPCs persistently', () =>
   assert.equal(synced.changed, true);
   assert.equal(synced.crew.bounty, 30000000);
   assert.equal(synced.crew.reputation, 45);
+  assert.deepEqual(synced.crew.history.map(entry => entry.type), ['bounty-increased', 'reputation-changed']);
   state.flags.bounty = 50000000;
   state.fame = 20;
   state.dark = 60;
-  assert.equal(world.syncPlayerCrew(state, crews).crew.reputation, -40);
+  const updatedCrew = world.syncPlayerCrew(state, crews).crew;
+  assert.equal(updatedCrew.reputation, -40);
+  assert.equal(updatedCrew.history.length, 4);
+  assert.equal(updatedCrew.history[2].amount, 20000000);
 
   const joined = world.recruitNpcToPlayerCrew(state, state.npcs[0], 'navigator', crews);
   assert.equal(joined.joined, true);
