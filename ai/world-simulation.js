@@ -625,7 +625,8 @@
       return { ok: false, reason: 'unavailable' };
     }
     const cost = Number(boatDefinition.cost);
-    if (!Number.isFinite(cost) || cost < 0 || Number(worldState.money) < cost) {
+    const balance = Number(worldState.money);
+    if (!Number.isFinite(cost) || cost < 0 || !Number.isFinite(balance) || balance < cost) {
       return { ok: false, reason: 'insufficient-funds' };
     }
     buyFunction(boatDefinition);
@@ -844,7 +845,7 @@
             renderCrewPanel();
           }
         );
-        purchase.disabled = !boatDefinition || Number(state.money) < Number(boatDefinition.cost);
+        purchase.disabled = !boatDefinition || !Number.isFinite(Number(state.money)) || Number(state.money) < Number(boatDefinition.cost);
         body.appendChild(purchase);
       } else {
         const shipForm = make('div', undefined, 'el-crew-form');
