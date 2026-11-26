@@ -330,3 +330,10 @@ consumption and awakening, exposes sea/Seastone weakness, and builds a compact
 progress summary for UI use. It is loaded as `OnePieceProgressionSystem`.
 The coordinator does not itself award training points, spend currency, or save
 the character; game rules and persistence remain owned by the main game layer.
+
+
+## Player-facing Haki and Devil Fruit progression
+
+The One Piece world simulator now installs a compact **พลัง** panel for the living player character. It synchronizes Haki unlocks from the existing `S.powers` flags, displays each unlocked Haki mastery/rank, and allows one +5 mastery training action per Haki discipline per in-game year. If the save already contains a `S.devilFruit` progression record, the panel also allows one +5 fruit-mastery training action per year and enables awakening at 80 mastery. Training state is stored on `S.progressionTraining`; mastery remains on `S.haki` and `S.devilFruit`, so the existing full-state save flow persists it. No fruit is granted by this panel, and it does not unlock Haki that the character has not already obtained.
+
+The panel is mounted by `OnePieceWorldSimulation.scheduleProgressionControls()` after the companion systems finish loading. Its controls use 48px touch targets, safe-area insets, and viewport-bounded scrolling for phone and tablet layouts. Unit coverage is in `tests/ai.test.js`; the integration harness verified the panel, +5 Haki training, +5 fruit training, and save calls. A full `node --test tests/ai.test.js` run is still required in CI or a Node.js environment before merge.
