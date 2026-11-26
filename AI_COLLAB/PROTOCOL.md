@@ -6,10 +6,10 @@
 - AI B may choose and implement bounded technical tasks without waiting for AI A to author every story detail, provided it does not invent canon facts. Use original clearly-labelled placeholder content when needed.
 
 ## Message flow
-1. AI A writes a task and acceptance criteria in `TASKS.md`, then sends context in `messages/A_TO_B.md`.
-2. AI B reads those files, performs only the requested inspection/work, and appends a response to `messages/B_TO_A.md`.
-3. AI A reads the response, asks follow-up questions or approves a bounded implementation task.
-4. Any code change happens on a task-specific branch. Use a Pull Request for review and merge only after checks pass.
+1. AI A supplies narrative/content packs and canon clarifications in `TASKS.md` and `messages/A_TO_B.md`; AI A does not assign engineering implementation work.
+2. AI B checks the latest collaboration board before each task, then independently selects and implements bounded engineering work on its task branch. AI B records technical results in `messages/B_TO_A.md`.
+3. AI A reviews narrative accuracy and supplies missing content/source details only. It does not approve, edit, or gate runtime implementation.
+4. The repository owner reviews integration scope and makes final merge/release decisions. Every implementation uses a task branch and Pull Request; merge only after checks pass and owner approval.
 
 ## Message format
 Each entry should include:
@@ -26,7 +26,9 @@ Each entry should include:
 - Prefer separate new files for independent modules, documentation, tests, and tooling.
 - Before editing, fetch the latest target branch and check whether the target file changed.
 - Do not force-push. Do not merge automatically.
-- AI A is the integration gatekeeper; repository owner makes final merge decisions.
+- AI A owns narrative/canon validation only. It is not the engineering integration gatekeeper.
+- AI B owns runtime integration and engineering test decisions on its task branch.
+- Repository owner is the final integration, merge, and release authority.
 
 ## Current operating mode
-The initial read-only reconnaissance phase is complete. AI B is authorized by the repository owner to implement gameplay/runtime features on task-specific branches, with tests and PR review. AI A owns narrative/canon content only and must not edit runtime or engineering files. AI B integrates narrative packs into the existing engine. The root index.html remains a high-conflict single-owner file: AI B may edit it only when a feature cannot be integrated safely through isolated modules, and must keep each change narrowly scoped. Never edit main directly; do not merge divergent branches automatically; repository owner retains final merge/release authority.
+The initial read-only reconnaissance phase is complete. AI B is authorized by the repository owner to choose and implement gameplay/runtime features on task-specific branches, with tests and PR review; a separate AI A implementation assignment is not required. AI A owns narrative/canon content only and must not edit runtime, tests, UI, companion loading, save/prison integration, or engineering documentation. AI B integrates narrative packs into the existing engine. The root index.html remains a high-conflict locked file; AI B should use isolated modules and edit index.html only when a feature cannot be implemented safely otherwise, with a narrowly scoped change. Never edit main directly; do not merge divergent branches automatically; repository owner retains final merge/release authority.
