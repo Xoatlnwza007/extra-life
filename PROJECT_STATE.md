@@ -198,3 +198,15 @@ Do not call the project playable-complete until a new/existing player can:
 - Latest workflow run: `45863928103` — Node tests passed and Chromium smoke tests passed at **390×844** and **820×1180**.
 - This verifies browser localStorage save/reload for these state fields. Backup recovery from a corrupted primary save and prison sentence expiry remain separate follow-up tests.
 - Main HEAD before this handoff update: `74a59bbf0148edb79b1b12658186f62cd1e7637c`.
+
+
+## 14. Save recovery and Marine prison-expiry regression — 2026-11-26
+
+- Added a Node regression test that writes two saves, corrupts the primary key, and verifies the save manager restores the previous known-good backup.
+- Extended the real Chromium browser smoke test to force a captured Marine record, advance the existing prison clock to sentence expiry through the game's `jailMonth()`, and verify the Marine UI returns the player to wanted status after release.
+- Latest workflow run: `45864365769`.
+  - Node tests: **16 passed, 0 failed**.
+  - Browser smoke: success at **390×844** and **820×1180**.
+  - Browser test covers start game, all companion module loads, Haki/fruit migration and yearly training, Marine patrol, save/reload/resume, and prison sentence expiry returning wanted status.
+- Current `main` HEAD before this update: `55ee57fb4a3697024c240f16e611521371f92f8a`.
+- Remaining test gap: browser smoke verifies valid save/reload and manager-level backup recovery, but does not yet simulate a corrupted localStorage primary through a full browser reload. This is a known timing limitation because the legacy inline game's initial resume check runs before the external runtime script installs its Storage hook.
