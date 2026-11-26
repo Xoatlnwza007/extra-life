@@ -235,7 +235,8 @@ test('pirate crew panel creates a crew and recruits an NPC through its controls'
       setAttribute(key, value) { this.attributes[key] = String(value); },
       getAttribute(key) { return this.attributes[key] || null; },
       addEventListener(name, handler) { this.listeners[name] = handler; },
-      click() { if (this.listeners.click) this.listeners.click({ target: this }); }
+      click() { if (this.listeners.click) this.listeners.click({ target: this }); },
+      dispatch(name) { if (this.listeners[name]) this.listeners[name]({ target: this }); }
     };
   }
   const head = element('head');
@@ -273,6 +274,15 @@ test('pirate crew panel creates a crew and recruits an NPC through its controls'
     recruitRow.children[1].click();
     assert.equal(state.crews[0].members.length, 2);
     assert.ok(state.crews[0].members.some(member => member.characterId === 'nami'));
+
+    const memberRow = panelBody.children.find(node =>
+      node.className === 'el-crew-row' &&
+      node.children.some(child => child.tagName === 'SELECT')
+    );
+    const roleSelect = memberRow.children.find(child => child.tagName === 'SELECT');
+    roleSelect.value = 'cook';
+    roleSelect.dispatch('change');
+    assert.equal(state.crews[0].members.find(member => member.characterId === 'nami').role, 'cook');
   } finally {
     if (previousState === undefined) delete globalThis.S;
     else globalThis.S = previousState;
