@@ -174,3 +174,18 @@ Do not call the project playable-complete until a new/existing player can:
 - Verify end-to-end save/reload in a real browser, including backup recovery and the timing of the runtime script relative to the game's initial resume check.
 - Verify that nearby cast selection and background NPC simulation produce sensible volume and do not create excessive log noise over long saves.
 - Next concrete engineering task: build a browser-level smoke test for the actual bootstrap and progression/Marine panels; then tighten the event adapter integration and verify save/reload behavior.
+
+
+## 12. Browser verification — 2026-11-26
+
+- Added `tests/browser-smoke.js` and a second GitHub Actions job that installs Playwright/Chromium on Ubuntu 24.04 (pinned because the then-current `ubuntu-latest` image was Ubuntu 26.04, unsupported by the pinned Playwright version).
+- The smoke test serves the real repository files over HTTP, launches Chromium, starts a One Piece life, waits for all companion modules, exercises Haki and legacy Devil Fruit migration/training, opens the Marine panel and checks patrol action persistence, and verifies panel bounds at two touch-oriented viewports.
+- First browser attempt found a test-server root mapping bug (fixed by mapping `/` to `index.html`). Second attempt found the progression panel intercepts the Marine trigger while left open; the smoke flow now closes the first panel before opening the second, reflecting one-panel-at-a-time use.
+- Latest browser workflow run: `45863621411`.
+  - Node module tests: success.
+  - Chromium browser smoke: success.
+  - Verified viewports: **390×844 phone** and **820×1180 tablet**.
+  - No browser page errors were reported by the smoke test.
+- This is automated headless Chromium verification at phone/tablet viewport sizes, not a physical Android/iPad device test.
+- Current `main` HEAD at this checkpoint: `6255909a6f5ddc034ace0a2378cf28284c77357e`.
+- Next: strengthen save/reload and jail-expiry integration tests, then build the first coherent East Blue story loop with original content clearly labelled and canon-sensitive facts sourced.
