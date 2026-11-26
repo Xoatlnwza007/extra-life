@@ -416,7 +416,7 @@
 
       prototype.getItem = function (key) {
         const raw = nativeGet.call(this, key);
-        if (key !== GAME_SAVE_KEY || raw == null) return raw;
+        if (key !== GAME_SAVE_KEY) return raw;
         const primary = decodeSavePayload(raw);
         if (primary.ok) {
           if (primary.migrated) {
