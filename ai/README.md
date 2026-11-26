@@ -168,3 +168,21 @@ Load this module after the other AI helpers:
 ```html
 <script src="./ai/devil-fruit-system.js"></script>
 ```
+
+
+## Haki progression
+
+`haki-system.js` tracks Armament, Observation and Conqueror's Haki mastery
+from 0–100. Armament and Observation are available by default; Conqueror's
+Haki must be marked as innate when creating the character's Haki state.
+Training is bounded, and `getCombatProfile` converts mastery into simple
+defense, awareness and pressure bonuses plus rank labels. These values are
+calculation primitives only; the main game's combat loop and character
+creation still need to call and persist them.
+
+```js
+const haki = OnePieceHakiSystem.createHakiState({ hasConquerorsHaki: true });
+const result = OnePieceHakiSystem.train({ id: 'captain', haki }, 'armament', 10);
+```
+
+Load `haki-system.js` after the other AI helper scripts.
