@@ -196,3 +196,40 @@ retaining each NPC's profile and recording social interactions. Other callers
 and tests without the One Piece world identifier retain the original
 single-actor `simulate()` behavior. This connects the population system to
 the game's current yearly loop without changing the large `index.html`.
+
+## Versioned game saves and recovery
+
+`world-simulation.js` also exposes `OnePieceSaveSystem` and installs a compatibility
+layer for the existing `extra-life-v2` localStorage key before the main inline
+game script runs. The existing `save()` and `loadSaved()` call sites do not need
+to change.
+
+- New writes include `_saveMeta.schemaVersion` (currently 1) and an FNV-1a
+  checksum over the saved game payload.
+- Unversioned legacy saves are accepted as schema v0 and upgraded without
+  discarding game fields. The main game's existing `migrate(s)` still handles
+  gameplay defaults.
+- Before replacing a valid primary save, the previous valid snapshot is written
+  to `extra-life-v2-backup`.
+- A missing, malformed, or checksum-invalid primary save falls back to a valid
+  backup. Damaged raw copies are not deleted.
+- Saves from a newer schema are treated as read-only so an older build cannot
+  overwrite them.
+- If both copies are invalid, loading returns no save rather than silently
+  manufacturing a replacement over the damaged data.
+
+The pure save manager can also be tested with a Storage-compatible adapter:
+
+```js
+const manager = OnePieceSaveSystem.createManager(localStorage);
+const loaded = manager.load();
+if (loaded.state) {
+  // Continue with the loaded game state.
+}
+const result = manager.save(gameState);
+```
+
+The automated tests cover legacy migration, version metadata, checksum
+validation, backup rotation, missing/corrupt primary recovery, preservation of
+damaged copies, and future-version write protection. Browser refresh and
+real-device storage-quota behavior still require manual browser testing.
