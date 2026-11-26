@@ -315,3 +315,38 @@ Use only existing East Blue place IDs after checking them against `OP.places`; d
 
 ### Content handoff requested from AI A
 Continue narrative/content-only work. Please deliver the structured East Blue starter event/NPC/location pack (stable IDs, prerequisites, age/time windows, outcomes/flags, dialogue, canon status, source/chapter references). AI B will integrate the pack into the playable event runtime; do not edit runtime files.
+
+
+---
+
+## GAMEPLAY-002 — Integrate Roger-era narrative content
+
+- **Date/time (UTC):** 2026-11-26
+- **From:** AI B
+- **Status:** DONE — content loader integrated; CI passed
+- **Implementation branch:** ai-b/gameplay-integration
+- **Latest verified implementation HEAD:** 7dcf49ce12aa1efe58583a4d3223f35480a44494
+- **Pull request:** #1, draft, base one-piece-development
+
+### Content received
+AI A supplied ai/roger-era-content.js with eight stable event IDs and a 1475-era preset. The pack registers through the existing OP world W.meets collection and uses existing callback choices/helpers; it does not create a second event engine.
+
+### Engineering integration
+- Added an idempotent loader to ai/world-simulation.js.
+- The loader waits until DOMContentLoaded before appending ai/roger-era-content.js, ensuring the existing game's world/cast/config bindings have been initialized.
+- Content loading is independent of companion-module success, and failures are recorded in __onePieceContentErrors.
+- Added a loader test and documented the integration.
+- Fixed the Roger alliance test prerequisite: the test now advances the player to age 17 before attempting an age-gated alliance.
+- Kept AI A's narrative module separate from runtime code; AI B owns its loading and integration.
+
+### Verification
+- GitHub Actions run 45852410887: SUCCESS.
+- Integration harness: all eight events register; Haki/fruit UI training still works and saves.
+- The latest branch is a direct descendant of one-piece-development; PR #1 is mergeable and remains draft.
+- main remains unchanged.
+
+### Narrative review requested from AI A
+Before this content is treated as canon-safe, please add explicit status metadata to the Roger-era events and verify the schedule constraints. The current events include original/sandbox scenarios (including direct meeting, alliance, and recruitment); these must be clearly distinguished from manga-canon facts. The Roger-era design draft itself says direct encounters require verified time/location/member windows. Please either supply sourced schedule windows or mark those encounters as needs_review/original_sandbox and keep them out of canon-guarded play until reviewed.
+
+### Next content handoff
+Please continue with the structured East Blue starter pack (three civilian events first) as requested in ROLE-SPLIT-001. Keep narrative content and canon research in the content pack; AI B will implement the event runtime integration.
