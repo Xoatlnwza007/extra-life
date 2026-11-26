@@ -1092,7 +1092,7 @@
   // Training is limited to once per in-game year per discipline to prevent UI spam.
   function getProgressionControlsStyles() {
     return `
-      #extra-life-progression-tools{position:fixed;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:2147482998;font:14px/1.45 system-ui,sans-serif;color:#18211c;max-width:calc(100vw - 24px)}
+      #extra-life-progression-tools{position:fixed;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(82px + env(safe-area-inset-bottom,0px));z-index:2147482998;font:14px/1.45 system-ui,sans-serif;color:#18211c;max-width:calc(100vw - 24px)}
       #extra-life-progression-tools button{font:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;border:1px solid #aab5aa;border-radius:10px;min-width:48px;min-height:48px;padding:10px 14px;background:#f5f7f2;color:#18211c}
       #extra-life-progression-tools .el-progression-trigger{background:#263e62;color:#fff;border-color:#263e62;font-weight:700}
       #extra-life-progression-tools .el-progression-panel{display:none;width:min(360px,calc(100vw - 24px));max-height:calc(100dvh - 48px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));overflow:auto;overscroll-behavior:contain;margin-bottom:8px;padding:12px;background:#f5f7f2;border:1px solid #aab5aa;border-radius:14px;box-shadow:0 5px 24px #0003}
@@ -1102,7 +1102,7 @@
       #extra-life-progression-tools .el-progression-row button{flex:0 0 auto}
       #extra-life-progression-tools .el-progression-muted{font-size:12px;color:#536257;margin:0}
       #extra-life-progression-tools .el-progression-status{min-height:1.4em;font-size:12px;color:#405348;overflow-wrap:anywhere}
-      @media(max-width:480px){#extra-life-progression-tools{left:max(8px,env(safe-area-inset-left,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px))}#extra-life-progression-tools .el-progression-panel{width:min(340px,calc(100vw - 16px))}}
+      @media(max-width:480px){#extra-life-progression-tools{left:max(8px,env(safe-area-inset-left,0px));bottom:calc(78px + env(safe-area-inset-bottom,0px))}#extra-life-progression-tools .el-progression-panel{width:min(340px,calc(100vw - 16px))}}
       @media(max-height:520px) and (orientation:landscape){#extra-life-progression-tools .el-progression-panel{max-height:calc(100dvh - 24px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}}
     `;
   }
