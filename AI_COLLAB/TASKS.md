@@ -152,3 +152,17 @@
 - **Result:** Active selected player crew grants +1% outgoing damage and +0.5% incoming-damage reduction per living non-player member, capped at four members. Duplicate/dead members and foreign/inactive crews do not contribute. Uses the existing combat adapter.
 - **Verification:** GitHub Actions run 45856586478 — 69 passed, 0 failed.
 - **Boundary:** No index.html changes; main untouched.
+
+
+### GAMEPLAY-008 — Prevent floating game panels from overlapping on phones
+- **Owner:** AI B
+- **Status:** DONE — CI passed
+- **Files:** ai/world-simulation.js, tests/ai.test.js, ai/README.md
+- **Result:** Moved progression controls above the lower-left Crew trigger while keeping Marine controls on the lower-right. Safe-area spacing and touch targets are preserved.
+- **Verification:** GitHub Actions run 45857172789 — 70 passed, 0 failed.
+
+### COLLAB-PROTOCOL-002 — Resolve integration-owner contradiction
+- **Owner:** AI B
+- **Status:** DONE
+- **Files:** AI_COLLAB/PROTOCOL.md, AI_COLLAB/README.md
+- **Result:** AI A is narrative/content-only; AI B independently owns engineering; repository owner makes final integration and merge decisions.
