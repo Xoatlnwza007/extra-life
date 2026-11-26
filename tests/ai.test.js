@@ -45,6 +45,34 @@ test('browser bootstrap loads the One Piece companion systems in dependency orde
   assert.equal(scripts.length, 4);
 });
 
+test('browser bootstrap reports a missing companion module without stopping later loads', async () => {
+  const scripts = [];
+  const host = {
+    document: {
+      head: {
+        appendChild(script) {
+          scripts.push(script.src);
+          if (script.src === './ai/event-adapter.js') {
+            queueMicrotask(() => script.onerror(new Error('network')));
+            return;
+          }
+          const globals = {
+            './ai/crew-system.js': 'OnePieceCrewSystem',
+            './ai/devil-fruit-system.js': 'OnePieceDevilFruitSystem',
+            './ai/haki-system.js': 'OnePieceHakiSystem'
+          };
+          host[globals[script.src]] = {};
+          queueMicrotask(() => script.onload());
+        }
+      },
+      createElement: () => ({})
+    }
+  };
+  assert.equal(await world.loadCompanionModules(host), false);
+  assert.deepEqual(host.__onePieceModuleErrors, ['./ai/event-adapter.js']);
+  assert.equal(scripts.length, 4);
+});
+
 test('game touch stylesheet adapts controls for phones and tablets', () => {
   const styles = world.getMobileTouchStyles();
   assert.match(styles, /any-pointer:coarse/);
