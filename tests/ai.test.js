@@ -1376,6 +1376,7 @@ test('Roger encounter progression supports sighting, meeting, rescue, training, 
   choose('op_roger_training', 0);
   assert.equal(state.flags.rogerTraining, 1);
   assert.ok(state.sk.fight >= 6);
+  state.age = 17; // Alliance is age-gated in the content pack.
   choose('op_roger_alliance', 0);
   assert.equal(state.flags.rogerAlliance, 1);
   state.year = 1483;
