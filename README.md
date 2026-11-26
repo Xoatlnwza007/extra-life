@@ -8,7 +8,7 @@
 
 มี workflow สำหรับเผยแพร่เกมผ่าน GitHub Pages จาก branch `one-piece-development` โดยอัปโหลดเฉพาะ `index.html`, `ai/` และ `about/`
 
-ก่อนใช้งานครั้งแรก เจ้าของ repository ต้องเปิด **Settings → Pages → Build and deployment → Source → GitHub Actions** จากนั้น push การแก้ไขครั้งถัดไปหรือสั่ง workflow `Deploy mobile game to GitHub Pages` ในแท็บ Actions
+ก่อนใช้งานครั้งแรก เจ้าของ repository ต้องเปิด **Settings → Pages → Build and deployment → Source → GitHub Actions** จากนั้น push การแก้ไขเกมครั้งถัดไปบน branch `one-piece-development` ระบบจะ deploy ให้อัตโนมัติ
 
 เมื่อ deploy สำเร็จ URL ของเกมจะเป็น:
 
