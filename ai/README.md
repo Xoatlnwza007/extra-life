@@ -308,3 +308,14 @@ or incoming damage modifiers. If it contains a Devil Fruit progression record
 at `state.devilFruit`, fruit type supplies the baseline family modifier and
 mastery/awakening add bounded scaling. These optional fields are not currently
 created or persisted by the main game UI; callers must initialize and save them.
+
+
+### Sync Haki unlocks with the legacy game flags
+
+`OnePieceHakiSystem.syncUnlockedStyles(character, powers)` maps the existing
+`haki_arm`, `haki_obs`, and `haki_king` power IDs into the progression
+record's unlocked flags while preserving each style's mastery. This allows the
+game layer to migrate an existing character without granting Haki that has not
+been unlocked. The function returns a new character object and does not mutate
+the input. Call it when loading or updating a character's power unlocks, then
+persist the returned `character.haki` with the normal game save.
