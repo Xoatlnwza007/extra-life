@@ -141,8 +141,10 @@ test('crew system manages membership, roles, captaincy and bounty', () => {
   assert.equal(result.joined, true);
   crew = result.crew;
   assert.equal(crews.joinCrew(crew, 'zoro').reason, 'already-member');
-  assert.equal(crews.joinCrew(crew, 'nami', 'navigator', { capacity: 3 }).joined, true);
-  result = crews.joinCrew(result.crew, 'sanji', 'cook', { capacity: 3 });
+  result = crews.joinCrew(crew, 'nami', 'navigator', { capacity: 3 });
+  assert.equal(result.joined, true);
+  crew = result.crew;
+  result = crews.joinCrew(crew, 'sanji', 'cook', { capacity: 3 });
   assert.equal(result.reason, 'crew-full');
   crew = crews.setMemberRole(crew, 'zoro', 'first-mate').crew;
   assert.equal(crew.members.find(member => member.characterId === 'zoro').role, 'first-mate');
