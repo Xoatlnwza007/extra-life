@@ -273,3 +273,20 @@ test('Haki training rejects invalid amounts and unknown styles', () => {
   assert.equal(haki.train(character, 'armament', 0).reason, 'invalid-training');
   assert.equal(haki.train(character, 'unknown', 10).reason, 'invalid-character-or-type');
 });
+
+
+test('One Piece yearly simulation automatically advances the full living NPC population', () => {
+  const npcs = [
+    { n: 'Nami', r: 'shop', alive: true },
+    { n: 'Usopp', r: 'kid', alive: true },
+    { n: 'Sanji', r: 'kind', alive: true },
+    { n: 'Deceased', r: 'grump', alive: false }
+  ];
+  const result = world.simulate({ world: 'op', npcBrains: {} }, npcs, {});
+  assert.equal(result.simulatedCount, 3);
+  assert.equal(result.actions.length, 3);
+  assert.ok(result.profiles.Nami);
+  assert.ok(result.profiles.Usopp);
+  assert.ok(result.profiles.Sanji);
+  assert.equal(result.profiles.Deceased, undefined);
+});
