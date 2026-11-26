@@ -217,6 +217,14 @@ test('social NPC actions create memories and bilateral relationships', () => {
   assert.ok(result.profiles['Kind B'].memories.some(memory => memory.source === 'npc-interaction'));
 });
 
+test('pirate crew management is limited to active One Piece pirate careers', () => {
+  assert.equal(world.canManagePirateCrew({ world: 'op', alive: true, job: { id: 'pirate' } }), true);
+  assert.equal(world.canManagePirateCrew({ world: 'op', alive: true, job: { id: 'pcapt' } }), true);
+  assert.equal(world.canManagePirateCrew({ world: 'op', alive: true, job: { id: 'marine' } }), false);
+  assert.equal(world.canManagePirateCrew({ world: 'naruto', alive: true, job: { id: 'pirate' } }), false);
+  assert.equal(world.canManagePirateCrew({ world: 'op', alive: false, job: { id: 'pirate' } }), true);
+});
+
 test('crew management panel is sized for mobile touch and safe scrolling', () => {
   const styles = world.getCrewControlsStyles();
   assert.match(styles, /min-height:44px/);
