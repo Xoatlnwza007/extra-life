@@ -676,3 +676,73 @@ test('browser save helpers reject unsupported download and import inputs', async
   assert.equal(world.saveSystem.downloadExport(manager, {}).reason, 'unsupported');
   assert.equal((await world.saveSystem.importFile({}, manager)).reason, 'unsupported');
 });
+
+
+test('browser localStorage hook versions normal game saves and rotates a valid backup', () => {
+  class MemoryStorage {
+    constructor() { this.values = new Map(); }
+    getItem(key) { return this.values.has(key) ? this.values.get(key) : null; }
+    setItem(key, value) { this.values.set(key, String(value)); }
+  }
+  const host = { Storage: MemoryStorage };
+  const storage = new MemoryStorage();
+  host.localStorage = storage;
+
+  assert.equal(world.saveSystem.installBrowserProtection(host), true);
+  storage.setItem('extra-life-v2', JSON.stringify({ captain: 'Old Captain', age: 22 }));
+  storage.setItem('extra-life-v2', JSON.stringify({ captain: 'New Captain', age: 23 }));
+
+  const current = world.saveSystem.decode(storage.getItem('extra-life-v2'));
+  const backup = world.saveSystem.decode(storage.getItem('extra-life-v2-backup'));
+  assert.equal(current.ok, true);
+  assert.equal(current.data.captain, 'New Captain');
+  assert.equal(backup.ok, true);
+  assert.equal(backup.data.captain, 'Old Captain');
+});
+
+test('browser localStorage hook recovers a damaged save from backup', () => {
+  class MemoryStorage {
+    constructor() { this.values = new Map(); }
+    getItem(key) { return this.values.has(key) ? this.values.get(key) : null; }
+    setItem(key, value) { this.values.set(key, String(value)); }
+  }
+  const host = { Storage: MemoryStorage };
+  const storage = new MemoryStorage();
+  host.localStorage = storage;
+  world.saveSystem.installBrowserProtection(host);
+  storage.setItem('extra-life-v2', JSON.stringify({ captain: 'Recoverable Captain' }));
+  storage.values.set('extra-life-v2', '{damaged');
+
+  const recoveredRaw = storage.getItem('extra-life-v2');
+  const recovered = world.saveSystem.decode(recoveredRaw);
+  assert.equal(recovered.ok, true);
+  assert.equal(recovered.data.captain, 'Recoverable Captain');
+  assert.equal(host.__extraLifeSaveRecovered, true);
+});
+
+test('browser localStorage hook preserves the previous save when storage quota is exceeded', () => {
+  class QuotaStorage {
+    constructor() { this.values = new Map(); this.failPrimary = false; }
+    getItem(key) { return this.values.has(key) ? this.values.get(key) : null; }
+    setItem(key, value) {
+      if (key === 'extra-life-v2' && this.failPrimary) {
+        const error = new Error('QuotaExceededError');
+        error.name = 'QuotaExceededError';
+        throw error;
+      }
+      this.values.set(key, String(value));
+    }
+  }
+  const host = { Storage: QuotaStorage };
+  const storage = new QuotaStorage();
+  host.localStorage = storage;
+  world.saveSystem.installBrowserProtection(host);
+  storage.setItem('extra-life-v2', JSON.stringify({ captain: 'Safe Captain' }));
+  storage.failPrimary = true;
+
+  assert.throws(() => storage.setItem('extra-life-v2', JSON.stringify({ captain: 'Too Large Captain' })), /QuotaExceededError/);
+  const stillSaved = world.saveSystem.decode(storage.getItem('extra-life-v2'));
+  const backup = world.saveSystem.decode(storage.getItem('extra-life-v2-backup'));
+  assert.equal(stillSaved.data.captain, 'Safe Captain');
+  assert.equal(backup.data.captain, 'Safe Captain');
+});
