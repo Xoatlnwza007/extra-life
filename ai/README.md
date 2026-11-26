@@ -342,3 +342,8 @@ The panel is mounted by `OnePieceWorldSimulation.scheduleProgressionControls()` 
 ## Roger-era content integration
 
 The narrative-owned `ai/roger-era-content.js` pack registers eight replay-safe encounter events into the existing One Piece `W.meets` collection and adds an optional 1475 birth-year preset. `OnePieceWorldSimulation.scheduleRogerEraContent()` loads it only after `DOMContentLoaded`, so the main game's lexical world/cast/configuration helpers are initialized before registration. The loader is idempotent and records load failures in `__onePieceContentErrors`. The event module remains content-owned; runtime loading and integration remain engineering-owned.
+
+
+## Marine wanted and pursuit panel
+
+`marine-ui.js` mounts a player-facing **กองทัพเรือ** panel when an alive One Piece character has a positive bounty. It registers/updates the player's wanted record in `S.marineForce`, lets the player check local patrol activity, and, when a sighting starts a pursuit, attempt to hide and cut the trail. Patrol checks and evasion are each limited to one action of that type per in-game month using `S.marineActionAt`; wanted/pursuit state is persisted in the normal `S` save. Losing a pursuit does not erase the bounty. The panel is loaded after `marine-system.js` and uses touch-sized controls and safe-area-aware mobile/tablet layout. This is a first gameplay integration: full capture/prison/release consequences and location-specific Marine force rosters are not implemented yet.
