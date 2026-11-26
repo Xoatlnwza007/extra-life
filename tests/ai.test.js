@@ -305,6 +305,7 @@ test('player crew is stored in game state and recruits NPCs persistently', () =>
     flags: { bounty: 30000000 },
     fame: 60,
     dark: 15,
+    npcBrains: { 'op-npc-Nami': stateApi.createCharacterState({ id: 'op-npc-Nami' }) },
     npcs: [
       { id: 'npc-nami', n: 'Nami', alive: true },
       { n: 'Zoro', alive: true },
@@ -330,6 +331,8 @@ test('player crew is stored in game state and recruits NPCs persistently', () =>
   const joined = world.recruitNpcToPlayerCrew(state, state.npcs[0], 'navigator', crews);
   assert.equal(joined.joined, true);
   assert.equal(joined.member.characterId, 'npc-nami');
+  assert.equal(stateApi.getRelationship(state.npcBrains['op-npc-Nami'], 'player'), 15);
+  assert.equal(state.npcBrains['op-npc-Nami'].memories.at(-1).source, 'crew');
   assert.equal(world.recruitNpcToPlayerCrew(state, state.npcs[0], 'navigator', crews).reason, 'already-member');
   assert.equal(world.recruitNpcToPlayerCrew(state, state.npcs[1], 'fighter', crews).joined, true);
   assert.equal(world.recruitNpcToPlayerCrew(state, state.npcs[2], 'fighter', crews).joined, true);
@@ -341,6 +344,8 @@ test('player crew is stored in game state and recruits NPCs persistently', () =>
   const left = world.removeNpcFromPlayerCrew(saved, 'npc-nami', crews);
   assert.equal(left.left, true);
   assert.equal(world.getPlayerCrew(saved, crews).members.length, 3);
+  assert.equal(stateApi.getRelationship(saved.npcBrains['op-npc-Nami'], 'player'), 3);
+  assert.equal(saved.npcBrains['op-npc-Nami'].memories.at(-1).source, 'crew');
 });
 
 test('crew system manages membership, roles, captaincy and bounty', () => {
