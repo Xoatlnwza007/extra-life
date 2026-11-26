@@ -1597,3 +1597,52 @@ test('Marine capture sends the player into the existing prison sentence flow', (
     Math.random = originalRandom;
   }
 });
+
+
+test('progression panel migrates legacy Devil Fruit flags into mastery state', () => {
+  const haki = require('../ai/haki-system.js');
+  const fruits = require('../ai/devil-fruit-system.js');
+  const progression = require('../ai/progression-system.js');
+  globalThis.OnePieceHakiSystem = haki;
+  globalThis.OnePieceDevilFruitSystem = fruits;
+  const state = {
+    world: 'op', alive: true, year: 1522, powers: ['df_para'],
+    flags: { df: 'ผลโอโตะโอโตะ' }, haki: {}
+  };
+  globalThis.S = state;
+  let saves = 0;
+  function element(tag) {
+    return {
+      tagName: tag.toUpperCase(), children: [], attributes: {}, listeners: {}, hidden: false,
+      appendChild(child) { this.children.push(child); return child; },
+      replaceChildren(...children) { this.children = children; },
+      setAttribute(key, value) { this.attributes[key] = String(value); },
+      getAttribute(key) { return this.attributes[key] || null; },
+      addEventListener(name, handler) { this.listeners[name] = handler; },
+      click() { if (!this.disabled && this.listeners.click) this.listeners.click({ target: this }); }
+    };
+  }
+  const body = element('body'), head = element('head');
+  const doc = { body, head, readyState: 'complete', createElement: element, getElementById() { return null; } };
+  const host = { document: doc, OnePieceProgressionSystem: progression, save() { saves++; } };
+  try {
+    assert.equal(world.installProgressionControls(host), true);
+    const wrap = body.children.find(node => node.id === 'extra-life-progression-tools');
+    wrap.children[1].click();
+    assert.equal(state.devilFruit.name, 'ผลโอโตะโอโตะ');
+    assert.equal(state.devilFruit.type, 'paramecia');
+    assert.match(state.devilFruit.id, /^op_df_paramecia_/);
+    assert.equal(state.devilFruit.mastery, 0);
+    assert.equal(saves, 1);
+    const fruitTrain = wrap.children[0].children[1].children.find(node =>
+      node.tagName === 'BUTTON' && node.textContent.includes('ฝึกผลปีศาจ'));
+    assert.ok(fruitTrain);
+    fruitTrain.click();
+    assert.equal(state.devilFruit.mastery, 5);
+    assert.equal(saves, 2);
+  } finally {
+    delete globalThis.S;
+    delete globalThis.OnePieceHakiSystem;
+    delete globalThis.OnePieceDevilFruitSystem;
+  }
+});
