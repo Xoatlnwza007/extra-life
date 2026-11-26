@@ -628,6 +628,235 @@
     return result;
   }
 
+  function getCrewControlsStyles() {
+    return `
+      #extra-life-crew-tools{position:fixed;left:max(10px,env(safe-area-inset-left,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:2147482000;font:14px/1.45 system-ui,sans-serif;color:#18211c;max-width:calc(100vw - 20px)}
+      #extra-life-crew-tools button,#extra-life-crew-tools input,#extra-life-crew-tools select{font:inherit;min-height:44px;max-width:100%;box-sizing:border-box}
+      #extra-life-crew-tools button{cursor:pointer;touch-action:manipulation;border:1px solid #aab5aa;border-radius:9px;padding:9px 12px;background:#f5f7f2;color:#18211c}
+      #extra-life-crew-tools .el-crew-trigger{min-height:48px;padding:11px 17px;background:#203f32;color:#fff;border-color:#203f32;font-weight:700;box-shadow:0 2px 12px #0003}
+      #extra-life-crew-tools .el-crew-panel{width:min(360px,calc(100vw - 20px));max-height:70dvh;overflow:auto;overscroll-behavior:contain;margin-bottom:8px;padding:12px;background:#f5f7f2;border:1px solid #aab5aa;border-radius:14px;box-shadow:0 5px 24px #0004}
+      #extra-life-crew-tools .el-crew-panel[hidden]{display:none}
+      #extra-life-crew-tools .el-crew-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+      #extra-life-crew-tools .el-crew-head strong{font-size:15px}
+      #extra-life-crew-tools .el-crew-body{display:grid;gap:9px}
+      #extra-life-crew-tools .el-crew-body h4{margin:6px 0 0;font-size:13px}
+      #extra-life-crew-tools .el-crew-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;align-items:center;padding:7px 0;border-top:1px solid #d7ddd5}
+      #extra-life-crew-tools .el-crew-row label{min-width:0;overflow-wrap:anywhere}
+      #extra-life-crew-tools .el-crew-row select{width:100%;margin-top:4px}
+      #extra-life-crew-tools .el-crew-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px}
+      #extra-life-crew-tools input,#extra-life-crew-tools select{width:100%;padding:8px 10px;border:1px solid #aab5aa;border-radius:8px;background:#fff;color:#18211c}
+      #extra-life-crew-tools .el-crew-status{font-size:12px;min-height:1.4em;color:#405348;margin:8px 0 0;overflow-wrap:anywhere}
+      #extra-life-crew-tools .el-crew-muted{font-size:12px;color:#526257}
+      @media(max-width:380px){#extra-life-crew-tools .el-crew-form{grid-template-columns:1fr}#extra-life-crew-tools .el-crew-row{grid-template-columns:1fr}}
+    `;
+  }
+
+  function currentOnePieceState(host = root) {
+    let state = null;
+    try { if (typeof S !== 'undefined') state = S; } catch (error) {}
+    if (!state && host && host.S) state = host.S;
+    return state && state.world === 'op' ? state : null;
+  }
+
+  function installCrewControls(host = root) {
+    const doc = host && host.document;
+    const crewApi = host && host.OnePieceCrewSystem;
+    if (!doc || !doc.body || !doc.createElement || !crewApi) return false;
+    if (doc.getElementById('extra-life-crew-tools')) return true;
+
+    const style = doc.createElement('style');
+    style.textContent = getCrewControlsStyles();
+    if (doc.head) doc.head.appendChild(style);
+
+    const wrap = doc.createElement('div');
+    wrap.id = 'extra-life-crew-tools';
+    wrap.hidden = true;
+    const panel = doc.createElement('section');
+    panel.className = 'el-crew-panel';
+    panel.hidden = true;
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-label', 'จัดการลูกเรือ');
+    const head = doc.createElement('div');
+    head.className = 'el-crew-head';
+    const heading = doc.createElement('strong');
+    heading.textContent = 'จัดการลูกเรือ';
+    const close = doc.createElement('button');
+    close.type = 'button';
+    close.textContent = 'ปิด';
+    head.appendChild(heading);
+    head.appendChild(close);
+    const body = doc.createElement('div');
+    body.className = 'el-crew-body';
+    const status = doc.createElement('p');
+    status.className = 'el-crew-status';
+    status.setAttribute('role', 'status');
+    status.setAttribute('aria-live', 'polite');
+    panel.appendChild(head);
+    panel.appendChild(body);
+    panel.appendChild(status);
+
+    const trigger = doc.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'el-crew-trigger';
+    trigger.textContent = 'ลูกเรือ';
+    trigger.setAttribute('aria-expanded', 'false');
+    wrap.appendChild(panel);
+    wrap.appendChild(trigger);
+    doc.body.appendChild(wrap);
+
+    const setStatus = message => { status.textContent = message; };
+    const persist = () => {
+      try {
+        if (typeof save === 'function') save();
+        else if (host && typeof host.save === 'function') host.save();
+      } catch (error) { setStatus('บันทึกไม่สำเร็จ: ' + error.message); }
+    };
+    const make = (tag, text, className) => {
+      const node = doc.createElement(tag);
+      if (text !== undefined) node.textContent = text;
+      if (className) node.className = className;
+      return node;
+    };
+    const makeButton = (label, handler) => {
+      const button = make('button', label);
+      button.type = 'button';
+      button.addEventListener('click', handler);
+      return button;
+    };
+
+    function renderCrewPanel() {
+      const state = currentOnePieceState(host);
+      if (!state || !state.alive) return;
+      body.replaceChildren();
+      const api = host.OnePieceCrewSystem;
+      const crew = getPlayerCrew(state, api);
+      if (!crew) {
+        body.appendChild(make('p', 'สร้างกลุ่มโจรสลัดของคุณ แล้วชวน NPC ที่ยังมีชีวิตเข้าร่วม'));
+        const form = make('div', undefined, 'el-crew-form');
+        const name = doc.createElement('input');
+        name.type = 'text';
+        name.maxLength = 40;
+        name.placeholder = 'ชื่อกลุ่มโจรสลัด';
+        name.setAttribute('aria-label', 'ชื่อกลุ่มโจรสลัด');
+        const create = makeButton('สร้าง', () => {
+          const result = createPlayerCrew(state, name.value.trim() || 'โจรสลัดไร้นาม', api);
+          if (!result.ok) setStatus(result.reason === 'already-has-crew' ? 'คุณมีกลุ่มอยู่แล้ว' : 'สร้างกลุ่มไม่สำเร็จ');
+          else { setStatus('สร้างกลุ่มโจรสลัดแล้ว'); persist(); renderCrewPanel(); }
+        });
+        form.appendChild(name);
+        form.appendChild(create);
+        body.appendChild(form);
+        return;
+      }
+
+      body.appendChild(make('strong', crew.name));
+      body.appendChild(make('div', 'สมาชิก ' + (crew.members || []).length + '/10 · ค่าหัวกลุ่ม ' + (crew.bounty || 0).toLocaleString('th-TH') + ' เบรี', 'el-crew-muted'));
+
+      const shipForm = make('div', undefined, 'el-crew-form');
+      const ship = doc.createElement('input');
+      ship.type = 'text';
+      ship.maxLength = 40;
+      ship.placeholder = 'ชื่อเรือ';
+      ship.value = crew.shipName || '';
+      ship.setAttribute('aria-label', 'ชื่อเรือ');
+      const saveShip = makeButton('บันทึกเรือ', () => {
+        const updated = { ...crew, shipName: ship.value.trim() || null };
+        state.crews = (state.crews || []).map(item => item && item.id === crew.id ? updated : item);
+        persist();
+        setStatus('บันทึกชื่อเรือแล้ว');
+      });
+      shipForm.appendChild(ship);
+      shipForm.appendChild(saveShip);
+      body.appendChild(shipForm);
+
+      body.appendChild(make('h4', 'สมาชิกในลูกเรือ'));
+      for (const member of crew.members || []) {
+        const row = make('div', undefined, 'el-crew-row');
+        const npc = (state.npcs || []).find(item => crewNpcId(item) === member.characterId);
+        const label = member.characterId === 'player'
+          ? (state.name || 'ผู้เล่น') + ' · กัปตัน'
+          : (npc ? npc.n + ' · ' + member.role : member.characterId + ' · ' + member.role);
+        row.appendChild(make('label', label));
+        if (member.characterId !== 'player') {
+          row.appendChild(makeButton('ออกจากกลุ่ม', () => {
+            const result = removeNpcFromPlayerCrew(state, member.characterId, api);
+            setStatus(result.left ? 'นำสมาชิกออกจากกลุ่มแล้ว' : 'ทำรายการไม่สำเร็จ');
+            if (result.left) { persist(); renderCrewPanel(); }
+          }));
+        } else {
+          row.appendChild(make('span', ''));
+        }
+        body.appendChild(row);
+      }
+
+      body.appendChild(make('h4', 'ชวน NPC เข้าร่วม'));
+      const candidates = (state.npcs || []).filter(npc => {
+        if (!npc || !npc.alive) return false;
+        const id = crewNpcId(npc);
+        return id && !api.findCrewForMember(state.crews || [], id);
+      });
+      if (!candidates.length) {
+        body.appendChild(make('p', 'ยังไม่มี NPC ว่างให้ชวนเข้ากลุ่ม', 'el-crew-muted'));
+      }
+      for (const npc of candidates.slice(0, 20)) {
+        const row = make('div', undefined, 'el-crew-row');
+        const details = make('label', npc.n + (npc.d ? ' · ' + npc.d : ''));
+        const role = doc.createElement('select');
+        role.setAttribute('aria-label', 'ตำแหน่งของ ' + npc.n);
+        for (const roleName of api.DEFAULT_ROLES.filter(value => value !== 'captain')) {
+          const option = doc.createElement('option');
+          option.value = roleName;
+          option.textContent = roleName;
+          role.appendChild(option);
+        }
+        details.appendChild(role);
+        row.appendChild(details);
+        row.appendChild(makeButton('ชวนเข้ากลุ่ม', () => {
+          const result = recruitNpcToPlayerCrew(state, npc, role.value, api);
+          setStatus(result.joined ? npc.n + ' เข้าร่วมลูกเรือแล้ว' : 'ชวนไม่สำเร็จ: ' + result.reason);
+          if (result.joined) { persist(); renderCrewPanel(); }
+        }));
+        body.appendChild(row);
+      }
+    }
+
+    trigger.addEventListener('click', () => {
+      const open = panel.hidden;
+      panel.hidden = !open;
+      trigger.setAttribute('aria-expanded', String(open));
+      if (open) renderCrewPanel();
+    });
+    close.addEventListener('click', () => {
+      panel.hidden = true;
+      trigger.setAttribute('aria-expanded', 'false');
+    });
+
+    const syncVisibility = () => {
+      const state = currentOnePieceState(host);
+      const visible = !!(state && state.alive);
+      wrap.hidden = !visible;
+      if (!visible) {
+        panel.hidden = true;
+        trigger.setAttribute('aria-expanded', 'false');
+      }
+    };
+    syncVisibility();
+    if (typeof host.setInterval === 'function') {
+      host.__onePieceCrewUiTimer = host.setInterval(syncVisibility, 800);
+    }
+    return true;
+  }
+
+  function scheduleCrewControls(host = root) {
+    if (!host || !host.document) return false;
+    const install = () => installCrewControls(host);
+    if (host.document.readyState === 'loading') {
+      host.document.addEventListener('DOMContentLoaded', install, { once: true });
+      return true;
+    }
+    return install();
+  }
+
   function getMobileTouchStyles() {
     return `
       @media(any-pointer:coarse){
@@ -759,12 +988,12 @@
     return install();
   }
 
-  const api = Object.freeze({ simulate, simulatePopulation, saveSystem, installSaveControls, getSaveControlsStyles, getMobileTouchStyles, installMobileTouchStyles, loadCompanionModules, companionModules: COMPANION_MODULES, crewNpcId, getPlayerCrew, createPlayerCrew, recruitNpcToPlayerCrew, removeNpcFromPlayerCrew });
+  const api = Object.freeze({ simulate, simulatePopulation, saveSystem, installSaveControls, getSaveControlsStyles, getMobileTouchStyles, installMobileTouchStyles, loadCompanionModules, companionModules: COMPANION_MODULES, crewNpcId, getPlayerCrew, createPlayerCrew, recruitNpcToPlayerCrew, removeNpcFromPlayerCrew, getCrewControlsStyles, installCrewControls, scheduleCrewControls });
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.OnePieceWorldSimulation = api;
   root.OnePieceSaveSystem = saveSystem;
   installBrowserSaveProtection(root);
   installMobileTouchStyles(root);
   scheduleSaveControls(root);
-  loadCompanionModules(root);
+  loadCompanionModules(root).then(loaded => { if (loaded) scheduleCrewControls(root); });
 })(typeof globalThis !== 'undefined' ? globalThis : this);
