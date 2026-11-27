@@ -204,7 +204,7 @@
                   flag(S, 'eb_starter_complete');
                   flag(S, 'eb_starter_outcome', 'escorted-children');
                   call('bond', 'eb_toma', 14);
-                  call('skill', 'fit', 2);
+                  call('st', 'fit', 2);
                   call('say', 'คุณพาเด็กๆ ไปยังที่ปลอดภัย โทมะขอบคุณที่ไม่ทิ้งใครไว้ข้างหลัง', 'good');
                 }
               }
