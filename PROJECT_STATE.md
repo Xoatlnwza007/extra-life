@@ -210,3 +210,17 @@ Do not call the project playable-complete until a new/existing player can:
   - Browser test covers start game, all companion module loads, Haki/fruit migration and yearly training, Marine patrol, save/reload/resume, and prison sentence expiry returning wanted status.
 - Current `main` HEAD before this update: `55ee57fb4a3697024c240f16e611521371f92f8a`.
 - Remaining test gap: browser smoke verifies valid save/reload and manager-level backup recovery, but does not yet simulate a corrupted localStorage primary through a full browser reload. This is a known timing limitation because the legacy inline game's initial resume check runs before the external runtime script installs its Storage hook.
+
+
+## 15. CI stabilization and bootstrap-order verification — 2026-11-27
+
+- Latest verified implementation HEAD before this log update: `42d0d3f2a0566614102bc6ef25eb5dd809f14cca`.
+- Investigated failing run `45864815576`: all module behavior checks except one passed; the failure was a brittle assertion that required the external runtime script to appear at the end of `index.html`. The runtime was intentionally moved into the document head so save protection is installed before the legacy game's first resume check.
+- Updated `tests/ai.test.js` to assert the actual contract: the modular runtime script exists and appears before `window.claude?.hot?.ready` (the game's bootstrap/resume entry point). Fixed a quote syntax issue caught by the next CI run.
+- Updated `.github/workflows/test-ai.yml` to use `npx playwright install chromium` without `--with-deps`. The previous command failed before browser tests because the runner's Microsoft apt repository returned HTTP 403; this was an environment provisioning issue, not a game/browser assertion.
+- Latest GitHub Actions run: `45920315317` on `42d0d3f2a0566614102bc6ef25eb5dd809f14cca` — **SUCCESS**.
+  - Node unit tests: success (16 tests in the current suite).
+  - Playwright Chromium smoke test: success at **390×844** and **820×1180**.
+  - Chromium installation and browser execution both completed without the external apt repository dependency.
+- This is still headless Chromium viewport testing, not a physical Android phone/tablet test.
+- Next concrete task: begin P1 event-loop integration. Inspect the legacy game's event scheduling/choice resolution and connect `OnePieceEventAdapter` to a real, bounded One Piece event decision path without changing the legacy engine's choice/result contract. Add tests proving unavailable choices are never selected and original effects are applied exactly once; then continue the East Blue starter loop.
