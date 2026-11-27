@@ -261,3 +261,20 @@ Do not call the project playable-complete until a new/existing player can:
   - Chromium browser smoke: **success** at 390×844 and 820×1180, including registration of all four original East Blue events.
 - No physical Android/tablet device test has been performed.
 - Next concrete task: audit the existing One Piece travel destinations and action handler to verify that island travel updates S.place, advances the intended amount of time, checks affordability/age/path prerequisites, and persists after reload. Fix any mismatch using the existing travel flow before expanding the starter chain beyond Foosha.
+
+## 18. Travel persistence audit and stale-checksum fix — 2026-11-27
+
+- Latest verified main HEAD before this log update: 4ce492e87cf0df7eb748c0199b97423bbfccc337.
+- Audited the existing TRAVEL / travelMenu / travelGo / tripMenu / monthPass flow.
+- Confirmed the game intentionally represents a temporary trip in S.trip (destination, world, ticket cost, start month, previous stop, companion flag). S.place remains the home/residence. The trip changes the rendered destination view through TRIPV/tripView and does not permanently relocate the player's home.
+- Confirmed travel availability checks destination era/when condition, minimum age, ticket affordability, and monthly free-time availability. Starting a trip consumes one free-time action and the ticket; remaining away incurs a monthly lodging cost through the monthPass wrapper.
+- Added a real browser smoke flow: start a trip to Fish-Man Island, verify ticket and free-time costs, reload/resume, advance one in-game month, verify the trip remains active and lodging cost is charged, then return home.
+- The new test exposed a genuine save bug: loaded states retained stale _saveMeta checksum metadata. When the game changed and saved the state again, the Storage protection layer rejected the stale checksum, so changes made after loading could fail to persist.
+- Fixed the root cause in index.html migrate(s) by removing _saveMeta from mutable gameplay state. The save layer now computes fresh metadata each time it writes the state.
+- Added a browser assertion that _saveMeta is absent after resume and confirmed the active trip is persisted before reload.
+- Latest GitHub Actions run: 45921972197 on 4ce492e87cf0df7eb748c0199b97423bbfccc337 — success.
+  - Node tests: **19 passed, 0 failed, 0 skipped**.
+  - Chromium smoke: **success** at 390×844 and 820×1180, including trip start, save/reload, one-month time progression, lodging cost, and trip termination.
+- No physical Android device test has been performed.
+- Known travel-location semantics: S.trip is the temporary destination context; S.place intentionally remains the home residence. Continue auditing which local story events should be suppressed or explicitly allowed while away.
+- Next concrete task: prevent home-only random encounters from firing while S.trip is active, while preserving world-wide canon/lore news and explicitly travel-safe events. Add a regression test for a Foosha-only meet while the player is visiting another destination.
