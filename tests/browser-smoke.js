@@ -211,6 +211,12 @@ async function main() {
       assert.equal(tripStarted.homePlace, 'foosha', 'trip is stored separately from the home residence');
       assert.equal(tripStarted.money, 940);
       assert.equal(tripStarted.freeTime, 1);
+      const travelPolicy = await page.evaluate(() => ({
+        homeOnly: pickFrom([{ id: 'smoke-home-only', homeOnly: true, when: () => true }])?.id || null,
+        travelSafe: pickFrom([{ id: 'smoke-travel-safe', homeOnly: true, travelOK: true, when: () => true }])?.id || null
+      }));
+      assert.equal(travelPolicy.homeOnly, null, 'home-only encounters must not fire while away');
+      assert.equal(travelPolicy.travelSafe, 'smoke-travel-safe', 'explicit travel-safe encounters remain eligible');
       const persistenceDebug = await page.evaluate(() => {
         const serialized = JSON.stringify(S);
         const encoded = window.OnePieceSaveSystem.encode(S);
