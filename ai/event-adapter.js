@@ -1,7 +1,6 @@
 /* One Piece Life Simulator — event decision adapter
- * Bridges existing event-choice objects to OnePieceDecisionEngine.
- * This module is deliberately side-effect free and preserves the original
- * choice object so callers can keep using the game's existing event flow.
+ * Bridges legacy game choices to OnePieceDecisionEngine without executing
+ * choice effects. The original choice object is returned for the game to apply.
  */
 (function (root) {
   'use strict';
@@ -11,14 +10,20 @@
     return Number.isFinite(parsed) ? parsed : fallback;
   }
 
+  function isAvailable(choice) {
+    const source = choice || {};
+    return source.available !== false && source.disabled !== true &&
+      source.ok !== false && source.skip !== true;
+  }
+
   function toCandidate(choice, index) {
     const source = choice || {};
     const effects = source.effects || source.effect || {};
-    const tags = source.tags || source.aiTags || source.category || [];
+    const tags = source.tags || source.aiTags || source.category || source.g || [];
     const relief = source.relief || source.needRelief || {};
     return {
       id: String(source.id ?? source.key ?? 'choice-' + index),
-      available: source.available !== false && source.disabled !== true,
+      available: isAvailable(source),
       tags,
       relief,
       risk: number(source.risk ?? source.danger),
@@ -33,27 +38,28 @@
 
   function choose(state, choices, context = {}) {
     const options = Array.isArray(choices) ? choices : [];
-    if (!options.length) return { choice: null, ranking: [], usedAI: false };
+    const available = options.filter(isAvailable);
+    if (!available.length) return { choice: null, ranking: [], usedAI: false };
 
     const engine = root.OnePieceDecisionEngine;
     if (!engine || typeof engine.decide !== 'function') {
-      return { choice: options[0], ranking: [], usedAI: false };
+      return { choice: available[0], ranking: [], usedAI: false };
     }
 
-    const candidates = options.map(toCandidate);
+    const candidates = available.map(toCandidate);
     const result = engine.decide(state || {}, candidates, context);
     if (!result || !result.action) {
-      return { choice: options[0], ranking: [], usedAI: false };
+      return { choice: available[0], ranking: [], usedAI: false };
     }
 
     return {
-      choice: result.action.original || options[0],
+      choice: result.action.original || available[0],
       ranking: result.ranking || [],
       usedAI: true
     };
   }
 
-  const api = Object.freeze({ choose, toCandidate });
+  const api = Object.freeze({ choose, toCandidate, isAvailable });
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.OnePieceEventAdapter = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
