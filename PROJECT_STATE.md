@@ -241,3 +241,23 @@ Do not call the project playable-complete until a new/existing player can:
   - Browser smoke retains phone 390×844 and tablet 820×1180 checks.
 - No real Android device test has been performed.
 - Next concrete task: build the first small East Blue starter event chain using clearly labelled original/sandbox events and stable IDs. First inspect the existing OP world configuration, event date/place/age gates, and runEv choice consequences; then add the chain without presenting invented scenes as manga canon.
+
+## 17. East Blue original starter chain — 2026-11-27
+
+- Latest verified main HEAD before this log update: 1f9d2ba140a3b1447126f17da3000ea5aa096a78.
+- Added ai/east-blue-starter.js with four stable-ID events for an original Foosha village side-story:
+  1. op_eb_toma_net — meet fisherman Toma and recover missing nets/supplies.
+  2. op_eb_dock_repair — repair the village dock/boat after the first event.
+  3. op_eb_delivery_chart — receive and study a hand-drawn coastal route.
+  4. op_eb_harbor_storm — choose how to protect the harbor before a storm.
+- Every event is explicitly marked origin=original and canonStatus=sandbox, with titles prefixed as supplementary/original story. No invented event is represented as manga canon.
+- Added the story module to the companion loader and registered its events into WORLDS.op.meets after the loader resolves. runYearEvents now waits for the companion load so the starter content is registered before the first game event pass.
+- Added the fictional NPC name Toma to the One Piece cast-name lookup so existing relationship/bond messages resolve correctly.
+- The event chain uses existing choice callbacks, stats, skills, relationship, money, flags, and save state. Each stage is gated by the prior outcome and is once-only.
+- Added Node tests for stable IDs, sandbox metadata, four-step prerequisites, and choice effects; browser smoke now verifies all four events are registered in the actual runtime.
+- Corrected the rescue outcome to modify the fitness stat rather than create an invalid fitness skill.
+- Latest GitHub Actions run: 45921049133 on 1f9d2ba140a3b1447126f17da3000ea5aa096a78 — success.
+  - Node tests: **19 passed, 0 failed, 0 skipped**.
+  - Chromium browser smoke: **success** at 390×844 and 820×1180, including registration of all four original East Blue events.
+- No physical Android/tablet device test has been performed.
+- Next concrete task: audit the existing One Piece travel destinations and action handler to verify that island travel updates S.place, advances the intended amount of time, checks affordability/age/path prerequisites, and persists after reload. Fix any mismatch using the existing travel flow before expanding the starter chain beyond Foosha.
