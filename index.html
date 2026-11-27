@@ -553,6 +553,7 @@ const ACT_RE=/คุณ(ซื้อ|ไป|ขาย|จ่าย|ดื่ม|
 const ADULT_RE=/เหล้า|ดื่ม|ทำงาน|ที่ทำงาน|ค่าจ้าง|นายจ้าง|หัวหน้า|ลูกค้า|ภาษี|ภรรยา|สามี|คู่ชีวิต|คนรัก|แต่งงาน|ลูกของคุณ|หลานของคุณ|เงินเดือน|บ่อน|พนัน|ร้านของคุณ|กิจการ|งานเลี้ยงหรู|เพื่อนร่วมงาน/;
 function ageOK(e){if(!S||S.age>=16)return true;const w=String(e.when||'');if(/\.age/.test(w))return true;if(S.age<6)return false;if(e._ad===undefined)e._ad=ADULT_RE.test(String(e.play||'')+(e.text||''));return !e._ad;}
 const localOK=e=>!(W.id==='naruto'&&vilOf(S)!=='konoha'&&konohaOnly(e))&&outOK(e)&&ageOK(e);
+const travelEventOK=e=>!(S?.trip&&S.trip.w===W.id&&e.homeOnly&&!e.travelOK);
 
 /* ===== main characters you can befriend, fall for, and raise children with ===== */
 function castNear(S,minAge=10){
@@ -2737,16 +2738,17 @@ async function nextYear(){
   else if(S.alive){
     for(const m of W.miles){if(!S.alive)break;if((m.once&&S.done[m.id])||!m.when(S))continue;if(m.once)S.done[m.id]=1;await runEv(m,'mile');}
     if(S.alive){
-      const evs=[...GEN.filter(genOK),...W.pool].filter(e=>localOK(e)&&!(e.once&&S.done[e.id])&&e.when(S));
+      const evs=[...GEN.filter(genOK),...W.pool].filter(e=>localOK(e)&&travelEventOK(e)&&!(e.once&&S.done[e.id])&&e.when(S));
       if(evs.length&&chance(.78)){const e=wpick(evs);if(e.once)S.done[e.id]=1;await runEv(e,'life');}
     }
   }
   if(S.alive&&!S.flags.titan){
-    const ms=[...(W.meets||[]),...CASTMEETS].filter(e=>localOK(e)&&!(e.once&&S.done[e.id])&&e.when(S));
+    const castMeets=S.trip&&S.trip.w===W.id?CASTMEETS.filter(e=>e.travelOK):CASTMEETS;
+    const ms=[...(W.meets||[]),...castMeets].filter(e=>localOK(e)&&travelEventOK(e)&&!(e.once&&S.done[e.id])&&e.when(S));
     if(ms.length&&chance(.5)){const e=wpick(ms);if(e.once)S.done[e.id]=1;await runEv(e,'meet');}
   }
   if(S.alive&&!S.flags.titan&&W.powerEv){
-    const ps=W.powerEv.filter(e=>localOK(e)&&!(e.once&&S.done[e.id])&&e.when(S));
+    const ps=W.powerEv.filter(e=>localOK(e)&&travelEventOK(e)&&!(e.once&&S.done[e.id])&&e.when(S));
     if(ps.length&&chance(.4)){const e=wpick(ps);if(e.once)S.done[e.id]=1;await runEv(e,'power');}
   }
   if(S.alive&&chance(.35))say(outlawNow()?'ข่าวจากหมู่บ้านเก่า: '+pick(W.newsFor(S)):pick(W.newsFor(S)),'news');
@@ -2850,7 +2852,7 @@ const AUTO={on:false,speed:1,wait:false,heir:true,t:0};
 const DAY_MS=14000,CLOCK={h:8,last:0};
 function pickFrom(list,fallback){
   S.mcd=S.mcd||{};
-  list=list.filter(localOK);
+  list=list.filter(e=>localOK(e)&&travelEventOK(e));
   let pool=list.filter(e=>!(S.mcd[e.id]>=S.year-3)&&e.when(S));
   if(!pool.length&&fallback)pool=list.filter(e=>!(S.mcd[e.id]>=S.year-1)&&e.when(S));
   if(!pool.length)return null;
@@ -5676,7 +5678,7 @@ const OP={
     {id:'vPromo',once:1,when:S=>S.job?.id==='mcapt'&&(S.sk?.fight||0)>=70&&S.age>=30,play(S){setJob('vadm');say('คุณได้รับเสื้อคลุมพลเรือโท ทหารใหม่เดินเลี่ยงคุณตามทาง','good');fm(10);}},
   ],
   pool:[
-    {id:'op_luffykid',once:1,w:4,when:S=>S.place==='foosha'&&S.year>=1512&&S.year<=1521&&S.age>=5&&S.age<=20,play(S){return{text:'เด็กชายหมวกฟางวิ่งผ่านหน้าบ้านคุณ เขาบอกว่ากำลังจะไปต่อยหมีบนภูเขาเพื่อฝึกเป็นราชาโจรสลัด',choices:[
+    {id:'op_luffykid',once:1,w:4,homeOnly:true,when:S=>S.place==='foosha'&&S.year>=1512&&S.year<=1521&&S.age>=5&&S.age<=20,play(S){return{text:'เด็กชายหมวกฟางวิ่งผ่านหน้าบ้านคุณ เขาบอกว่ากำลังจะไปต่อยหมีบนภูเขาเพื่อฝึกเป็นราชาโจรสลัด',choices:[
       {l:'ตามไปดู',g:'curious brave',f(S){bond('luffy',12);st('fit',2);say('คุณสองคนโดนหมีไล่กลับลงมา เด็กคนนั้นหัวเราะทั้งทางว่า "พรุ่งนี้มาใหม่!"','good');}},
       {l:'บอกให้ระวังตัว',g:'kind safe',f(){say('เขาโบกมือแล้ววิ่งต่อไป หมวกฟางลอยอยู่บนหลัง');}},
     ]};}},
@@ -5763,11 +5765,11 @@ const OP={
     {id:'snail',n:'หอยทากสื่อสาร',cost:12,d:'โทรหาคนไกลได้',yr(S){st('joy',1);}},
   ],
   meets:[
-    {id:'op_makino',once:1,w:4,when:S=>S.place==='foosha'&&S.age>=8,play(S){return{text:'มาคิโนะเจ้าของบาร์ยิ้มให้คุณ แล้วยื่นนมเย็นๆ ให้แก้วหนึ่ง "วันนี้ไม่มีโจรสลัดมา เงียบดีนะ"',choices:[
+    {id:'op_makino',once:1,w:4,homeOnly:true,when:S=>S.place==='foosha'&&S.age>=8,play(S){return{text:'มาคิโนะเจ้าของบาร์ยิ้มให้คุณ แล้วยื่นนมเย็นๆ ให้แก้วหนึ่ง "วันนี้ไม่มีโจรสลัดมา เงียบดีนะ"',choices:[
       {l:'ช่วยเช็ดแก้ว',g:'kind',f(S){bond('makino',12);st('joy',3);}},
       {l:'ถามเรื่องกลุ่มผมแดง',g:'curious',f(S){bond('makino',6);say('เธอเล่าเรื่องแชงคูสทั้งบ่าย พร้อมยิ้มเหงาๆ','plain');}},
     ]};}},
-    {id:'op_koby',once:1,w:3,when:S=>marine(S)&&S.year>=1522,play(S){return{text:'ทหารเรือหนุ่มผมชมพูวิ่งรอบลานฝึกมากกว่าคนอื่นสามรอบ แล้วล้มลงหอบ',choices:[
+    {id:'op_koby',once:1,w:3,homeOnly:true,when:S=>marine(S)&&S.year>=1522,play(S){return{text:'ทหารเรือหนุ่มผมชมพูวิ่งรอบลานฝึกมากกว่าคนอื่นสามรอบ แล้วล้มลงหอบ',choices:[
       {l:'ยื่นน้ำให้',g:'kind',f(S){bond('koby',14);say('เขาบอกว่าความฝันคือเป็นพลเรือเอก แล้วหน้าแดงที่พูดออกมา','good');}},
       {l:'ชวนซ้อมด้วยกัน',g:'brave',f(S){bond('koby',10);skill('fight',3);}},
     ]};}},
