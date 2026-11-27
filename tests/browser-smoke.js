@@ -170,16 +170,21 @@ async function main() {
         S.partner = null;
         S.kids = [];
         S.trip = null;
+        S.alive = true;
         busy = false;
+        let sawTravelMenu = false;
+        let sawArrival = false;
         const originalAsk = ask;
         ask = async (title, text, choices) => {
           if (title === '✈ ท่องเที่ยว') {
+            sawTravelMenu = true;
             const destination = choices.find(choice => choice.l === 'เกาะมนุษย์เงือก');
             if (!destination || !destination.ok) throw new Error('Fish-Man Island travel option unavailable');
             destination.f();
             return;
           }
           if (title.startsWith('✈ เกาะมนุษย์เงือก')) {
+            sawArrival = true;
             const photo = choices.find(choice => choice.l === 'ถ่ายรูปเก็บไว้เป็นที่ระลึก');
             if (!photo) throw new Error('Travel arrival choices missing');
             photo.f(S);
@@ -188,6 +193,10 @@ async function main() {
           return originalAsk(title, text, choices);
         };
         try { await travelMenu(); } finally { ask = originalAsk; }
+        if (!sawTravelMenu || !sawArrival || !S.trip) {
+          throw new Error('Travel flow did not complete: menu=' + sawTravelMenu +
+            ', arrival=' + sawArrival + ', alive=' + S.alive + ', busy=' + busy + ', world=' + W.id);
+        }
         save();
       });
       const tripStarted = await page.evaluate(() => ({
