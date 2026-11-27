@@ -180,11 +180,13 @@ test('mobile UI styles keep progression and Marine panels separated from crew co
   assert.match(world.getSaveControlsStyles(), /min-height:48px/);
 });
 
-test('main game loads the modular simulation runtime after the game script', () => {
+test('main game loads save protection before the game bootstrap', () => {
   const fs = require('node:fs');
   const html = fs.readFileSync(require('node:path').join(__dirname, '..', 'index.html'), 'utf8');
-  assert.match(html, /<script src="\.\/ai\/world-simulation\.js"><\/script>/);
-  assert.ok(html.lastIndexOf('<script src="./ai/world-simulation.js">') > html.lastIndexOf('</script>') - 100);
+  const runtimeScript = html.indexOf('<script src="./ai/world-simulation.js"></script>');
+  const gameBootstrap = html.indexOf('window.claude?.hot?.ready');
+  assert.ok(runtimeScript >= 0, 'modular simulation runtime script is present');
+  assert.ok(gameBootstrap > runtimeScript, 'runtime installs before the game's initial resume/bootstrap check');
   assert.match(html, /OnePieceWorldSimulation\.simulate\(S,population/);
   assert.match(html, /OnePieceCombatAdapter\.modifyOutgoingDamage\(v,S,'op'\)/);
   assert.match(html, /OnePieceCombatAdapter\.modifyIncomingDamage\(d,S,'op'\)/);
