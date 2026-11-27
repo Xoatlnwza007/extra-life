@@ -17,6 +17,26 @@ const progression = require('../ai/progression-system.js');
 const marines = require('../ai/marine-system.js');
 const combat = require('../ai/combat-adapter.js');
 const events = require('../ai/event-adapter.js');
+
+test('event adapter maps legacy choice tags, skips unavailable choices, and preserves effects', () => {
+  let effectCalls = 0;
+  const unavailable = { l: 'ทางเลือกที่ใช้ไม่ได้', g: 'brave', ok: false, f() { effectCalls += 10; } };
+  const available = { l: 'ช่วยคนที่เดือดร้อน', g: 'kind help', f() { effectCalls += 1; } };
+  const result = events.choose({
+    traits: ['kind'],
+    personalityPreferences: { kind: { kind: 3, help: 3 } }
+  }, [unavailable, available]);
+  assert.equal(result.choice, available);
+  assert.equal(result.usedAI, true);
+  assert.equal(events.toCandidate(available, 1).tags, 'kind help');
+  assert.equal(effectCalls, 0, 'choosing must not execute the legacy effect callback');
+  result.choice.f({});
+  assert.equal(effectCalls, 1, 'the game applies the returned callback exactly once');
+  const none = events.choose({}, [{ ok: false }, { skip: true }]);
+  assert.equal(none.choice, null);
+  assert.equal(none.usedAI, false);
+});
+
 const marineUI = require('../ai/marine-ui.js');
 
 test('browser bootstrap loads every companion module in dependency order', async () => {
