@@ -24,6 +24,7 @@
         w: 10,
         origin: 'original',
         canonStatus: 'sandbox',
+        homeOnly: true,
         when: S => S.place === 'foosha' && S.age >= 8 && S.age <= 18 && !S.flags?.eb_toma_met,
         play() {
           return {
@@ -74,6 +75,7 @@
         w: 10,
         origin: 'original',
         canonStatus: 'sandbox',
+        homeOnly: true,
         when: S => S.place === 'foosha' && S.age >= 9 && !!S.flags?.eb_net_found && !S.flags?.eb_boat_repaired,
         play() {
           return {
@@ -121,6 +123,7 @@
         w: 10,
         origin: 'original',
         canonStatus: 'sandbox',
+        homeOnly: true,
         when: S => S.place === 'foosha' && S.age >= 10 && !!S.flags?.eb_boat_repaired && !S.flags?.eb_chart_received,
         play() {
           return {
@@ -168,6 +171,7 @@
         w: 12,
         origin: 'original',
         canonStatus: 'sandbox',
+        homeOnly: true,
         when: S => S.place === 'foosha' && S.age >= 12 && !!S.flags?.eb_chart_received && !S.flags?.eb_starter_complete,
         play() {
           return {
