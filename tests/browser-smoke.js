@@ -211,6 +211,12 @@ async function main() {
       assert.equal(tripStarted.homePlace, 'foosha', 'trip is stored separately from the home residence');
       assert.equal(tripStarted.money, 940);
       assert.equal(tripStarted.freeTime, 1);
+      const persistedTrip = await page.evaluate(() => {
+        const raw = localStorage.getItem('extra-life-v2');
+        const stored = raw ? JSON.parse(raw) : null;
+        return stored?.trip?.k || null;
+      });
+      assert.equal(persistedTrip, 'เกาะมนุษย์เงือก', 'save must persist the active trip before reload');
 
       await page.reload({ waitUntil: 'domcontentloaded' });
       await page.locator('#resumeBtn').waitFor({ state: 'visible' });
