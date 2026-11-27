@@ -224,3 +224,20 @@ Do not call the project playable-complete until a new/existing player can:
   - Chromium installation and browser execution both completed without the external apt repository dependency.
 - This is still headless Chromium viewport testing, not a physical Android phone/tablet test.
 - Next concrete task: begin P1 event-loop integration. Inspect the legacy game's event scheduling/choice resolution and connect `OnePieceEventAdapter` to a real, bounded One Piece event decision path without changing the legacy engine's choice/result contract. Add tests proving unavailable choices are never selected and original effects are applied exactly once; then continue the East Blue starter loop.
+
+## 16. One Piece event decision integration — 2026-11-27
+
+- Latest verified main HEAD before this log update: 78953f05db8bfb4a45024bd5aa25d320ba757eb4.
+- Updated ai/event-adapter.js to understand the legacy event-choice schema:
+  - Reads legacy g personality tags.
+  - Treats ok:false, skip:true, available:false, and disabled:true as unavailable.
+  - Never executes a choice's legacy f(S) callback; returns the original choice object for the existing game flow to apply.
+  - Returns choice:null when no valid choice exists instead of accidentally choosing a disabled first option.
+- Connected the adapter to the actual One Piece runEv() automatic-choice path in index.html. Manual player choice popups remain unchanged. For automatic choices after the existing one-popup-per-year limit, the game waits for companion modules, supplies existing trait preferences to the decision engine, selects a valid choice, and lets the existing techAuto(c) apply the original effect callback once.
+- Added tests for legacy tag mapping, unavailable-choice exclusion, callback preservation/exactly-once invocation, and runtime wiring.
+- Latest GitHub Actions run: 45920584795 on 78953f05db8bfb4a45024bd5aa25d320ba757eb4 — success.
+  - Node tests: 18 passed, 0 failed, 0 skipped.
+  - Chromium smoke job: success.
+  - Browser smoke retains phone 390×844 and tablet 820×1180 checks.
+- No real Android device test has been performed.
+- Next concrete task: build the first small East Blue starter event chain using clearly labelled original/sandbox events and stable IDs. First inspect the existing OP world configuration, event date/place/age gates, and runEv choice consequences; then add the chain without presenting invented scenes as manga canon.
