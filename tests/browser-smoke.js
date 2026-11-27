@@ -172,6 +172,38 @@ async function main() {
       ].sort());
       assert.ok(eastBlueCatalog.every(destination => destination.minAge === 12 &&
         destination.canonStatus === 'sandbox' && destination.view));
+      const eastBlueNPCs = await page.evaluate(() => TRAVEL.op
+        .filter(destination => destination.origin === 'original')
+        .map(destination => {
+          const npc = TNPC[destination.n]?.[0];
+          const actions = tnpcActs(destination).acts;
+          return {
+            destination: destination.n,
+            id: npc?.id,
+            name: npc?.id ? CAST.op[npc.id] : null,
+            origin: npc?.origin,
+            canonStatus: npc?.canonStatus,
+            talk: actions.some(action => action.l.startsWith('คุยกับ')),
+            teach: actions.some(action => action.l.startsWith('ขอให้'))
+          };
+        }));
+      assert.equal(eastBlueNPCs.length, 5);
+      assert.ok(eastBlueNPCs.every(npc => npc.id && npc.name && npc.origin === 'original' &&
+        npc.canonStatus === 'sandbox' && npc.talk && npc.teach));
+      const npcEffect = await page.evaluate(() => {
+        const destination = TRAVEL.op.find(item => item.n === 'ออเรนจ์ทาวน์');
+        const npc = TNPC[destination.n][0];
+        const actions = tnpcActs(destination).acts;
+        const talk = actions.find(action => action.l.startsWith('คุยกับ'));
+        const teach = actions.find(action => action.l.startsWith('ขอให้'));
+        const beforeBond = S.bonds[npc.id] || 0;
+        const beforeRide = S.sk.ride || 0;
+        talk.f(S);
+        teach.f(S);
+        return { bond: S.bonds[npc.id] - beforeBond, ride: S.sk.ride - beforeRide };
+      });
+      assert.equal(npcEffect.bond, 9);
+      assert.equal(npcEffect.ride, 3);
 
       const eastBlueGates = await page.evaluate(async () => {
         const destination = TRAVEL.op.find(item => item.n === 'ออเรนจ์ทาวน์');
