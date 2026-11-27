@@ -158,6 +158,59 @@ async function main() {
       assert.doesNotMatch(await releasedPanel.innerText(), /สถานะ: ถูกจับกุม/);
       assert.equal(await page.evaluate(() => S.flags.jailUntil), 0);
 
+      const eastBlueCatalog = await page.evaluate(() => {
+        return TRAVEL.op.filter(destination => destination.origin === 'original').map(destination => ({
+          name: destination.n,
+          cost: destination.c,
+          minAge: destination.min,
+          canonStatus: destination.canonStatus,
+          view: TRIPV.op[destination.n]
+        }));
+      });
+      assert.deepEqual(eastBlueCatalog.map(destination => destination.name).sort(), [
+        'ออเรนจ์ทาวน์', 'หมู่บ้านไซรัป', 'ภัตตาคารลอยทะเลบาราติเอ', 'หมู่บ้านโคโคยาชิ', 'โรเกทาวน์'
+      ].sort());
+      assert.ok(eastBlueCatalog.every(destination => destination.minAge === 12 &&
+        destination.canonStatus === 'sandbox' && destination.view));
+
+      const eastBlueGates = await page.evaluate(async () => {
+        const destination = TRAVEL.op.find(item => item.n === 'ออเรนจ์ทาวน์');
+        const originalAsk = ask;
+        const old = { age: S.age, year: S.year, money: S.money, ft: S.ft, trip: S.trip, busy };
+        const readAvailability = async () => {
+          let selected;
+          ask = async (title, text, choices) => {
+            if (title === '✈ ท่องเที่ยว') selected = choices.find(choice => choice.l === destination.n);
+          };
+          await travelMenu();
+          return selected?.ok;
+        };
+        try {
+          S.trip = null;
+          S.year = 1490;
+          S.age = 11;
+          S.money = 1000;
+          S.ft = 2;
+          busy = false;
+          const tooYoung = await readAvailability();
+          S.age = 12;
+          S.money = destination.c - 1;
+          const tooPoor = await readAvailability();
+          S.money = destination.c;
+          S.ft = 0;
+          const noFreeTime = await readAvailability();
+          S.ft = 1;
+          const available = await readAvailability();
+          return { tooYoung, tooPoor, noFreeTime, available };
+        } finally {
+          ask = originalAsk;
+          Object.assign(S, old);
+          busy = old.busy;
+          save();
+        }
+      });
+      assert.deepEqual(eastBlueGates, { tooYoung: false, tooPoor: false, noFreeTime: false, available: true });
+
       await page.evaluate(async () => {
         S.age = 18;
         S.year = 1550;
