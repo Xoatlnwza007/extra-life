@@ -244,6 +244,10 @@ test('East Blue original starter events form a gated four-step sandbox chain', (
   pack[3].play(state).choices[1].f(state);
   assert.equal(state.flags.eb_starter_complete, 1);
   assert.equal(state.flags.eb_starter_outcome, 'warned-village');
+  const rescueState = { place: 'foosha', age: 12, flags: { eb_chart_received: 1 } };
+  pack[3].play(rescueState).choices[2].f(rescueState);
+  assert.equal(rescueState.flags.eb_starter_outcome, 'escorted-children');
+  assert.ok(calls.some(call => call[0] === 'st' && call[1] === 'fit' && call[2] === 2));
   assert.ok(calls.some(call => call[0] === 'bond'));
   assert.ok(calls.some(call => call[0] === 'skill'));
 });
