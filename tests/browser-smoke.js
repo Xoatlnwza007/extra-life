@@ -183,7 +183,7 @@ async function main() {
             if (title === '✈ ท่องเที่ยว') selected = choices.find(choice => choice.l === destination.n);
           };
           await travelMenu();
-          return selected?.ok;
+          return !!selected?.ok;
         };
         try {
           S.trip = null;
