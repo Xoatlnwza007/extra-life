@@ -164,7 +164,7 @@ async function main() {
           cost: destination.c,
           minAge: destination.min,
           canonStatus: destination.canonStatus,
-          view: TRIPV.op[destination.n]
+          view: tripView({ k: destination.n, w: 'op' })
         }));
       });
       assert.deepEqual(eastBlueCatalog.map(destination => destination.name).sort(), [
@@ -231,12 +231,12 @@ async function main() {
         ask = async (title, text, choices) => {
           if (title === '✈ ท่องเที่ยว') {
             sawTravelMenu = true;
-            const destination = choices.find(choice => choice.l === 'เกาะมนุษย์เงือก');
+            const destination = choices.find(choice => choice.l === 'ออเรนจ์ทาวน์');
             if (!destination || !destination.ok) throw new Error('Fish-Man Island travel option unavailable');
             destination.f();
             return;
           }
-          if (title.startsWith('✈ เกาะมนุษย์เงือก')) {
+          if (title.startsWith('✈ ออเรนจ์ทาวน์')) {
             sawArrival = true;
             const photo = choices.find(choice => choice.l === 'ถ่ายรูปเก็บไว้เป็นที่ระลึก');
             if (!photo) throw new Error('Travel arrival choices missing');
@@ -259,10 +259,10 @@ async function main() {
         money: S.money,
         freeTime: S.ft
       }));
-      assert.equal(tripStarted.destination, 'เกาะมนุษย์เงือก');
+      assert.equal(tripStarted.destination, 'ออเรนจ์ทาวน์');
       assert.equal(tripStarted.world, 'op');
       assert.equal(tripStarted.homePlace, 'foosha', 'trip is stored separately from the home residence');
-      assert.equal(tripStarted.money, 940);
+      assert.equal(tripStarted.money, 975);
       assert.equal(tripStarted.freeTime, 1);
       const travelPolicy = await page.evaluate(() => ({
         homeOnly: pickFrom([{ id: 'smoke-home-only', homeOnly: true, when: () => true }])?.id || null,
@@ -288,9 +288,9 @@ async function main() {
         };
       });
       console.log('travel persistence diagnostics', persistenceDebug);
-      assert.equal(persistenceDebug.stateTrip, 'เกาะมนุษย์เงือก');
-      assert.equal(persistenceDebug.encodedTrip, 'เกาะมนุษย์เงือก');
-      assert.equal(persistenceDebug.primaryTrip, 'เกาะมนุษย์เงือก', 'save must persist the active trip before reload');
+      assert.equal(persistenceDebug.stateTrip, 'ออเรนจ์ทาวน์');
+      assert.equal(persistenceDebug.encodedTrip, 'ออเรนจ์ทาวน์');
+      assert.equal(persistenceDebug.primaryTrip, 'ออเรนจ์ทาวน์', 'save must persist the active trip before reload');
 
       await page.reload({ waitUntil: 'domcontentloaded' });
       await page.locator('#resumeBtn').waitFor({ state: 'visible' });
@@ -303,9 +303,9 @@ async function main() {
         saveMetadata: S._saveMeta
       }));
       assert.equal(tripRestored.saveMetadata, undefined, 'checksum metadata must not remain inside mutable game state');
-      assert.equal(tripRestored.destination, 'เกาะมนุษย์เงือก');
+      assert.equal(tripRestored.destination, 'ออเรนจ์ทาวน์');
       assert.equal(tripRestored.month, 1);
-      assert.equal(tripRestored.money, 940);
+      assert.equal(tripRestored.money, 975);
 
       await page.evaluate(async () => {
         const originalAsk = ask;
@@ -318,9 +318,9 @@ async function main() {
         month: S.mo,
         money: S.money
       }));
-      assert.equal(monthAdvanced.destination, 'เกาะมนุษย์เงือก');
+      assert.equal(monthAdvanced.destination, 'ออเรนจ์ทาวน์');
       assert.equal(monthAdvanced.month, 2);
-      assert.equal(monthAdvanced.money, 935, 'monthly lodging cost is charged while away');
+      assert.equal(monthAdvanced.money, 972, 'monthly lodging cost is charged while away');
 
       await page.evaluate(() => { tripEnd(); save(); });
       assert.equal(await page.evaluate(() => S.trip), null);
