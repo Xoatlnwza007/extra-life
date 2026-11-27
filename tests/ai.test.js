@@ -186,7 +186,7 @@ test('main game loads save protection before the game bootstrap', () => {
   const runtimeScript = html.indexOf('<script src="./ai/world-simulation.js"></script>');
   const gameBootstrap = html.indexOf('window.claude?.hot?.ready');
   assert.ok(runtimeScript >= 0, 'modular simulation runtime script is present');
-  assert.ok(gameBootstrap > runtimeScript, 'runtime installs before the game's initial resume/bootstrap check');
+  assert.ok(gameBootstrap > runtimeScript, "runtime installs before the game's initial resume/bootstrap check");
   assert.match(html, /OnePieceWorldSimulation\.simulate\(S,population/);
   assert.match(html, /OnePieceCombatAdapter\.modifyOutgoingDamage\(v,S,'op'\)/);
   assert.match(html, /OnePieceCombatAdapter\.modifyIncomingDamage\(d,S,'op'\)/);
