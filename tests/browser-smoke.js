@@ -170,6 +170,7 @@ async function main() {
         S.partner = null;
         S.kids = [];
         S.trip = null;
+        busy = false;
         const originalAsk = ask;
         ask = async (title, text, choices) => {
           if (title === '✈ ท่องเที่ยว') {
