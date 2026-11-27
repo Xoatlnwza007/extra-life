@@ -356,6 +356,81 @@ async function main() {
 
       await page.evaluate(() => { tripEnd(); save(); });
       assert.equal(await page.evaluate(() => S.trip), null);
+
+      await page.evaluate(() => {
+        S.alive = true;
+        S.age = 18;
+        S.job = null;
+        setJob('pcapt');
+        S.flags = S.flags || {};
+        S.flags.bounty = 50000000;
+        S.flags.crew = null;
+        S.flags.shipName = null;
+        S.money = 1000;
+        S.own = S.own || { house: null, items: [] };
+        S.own.items = [];
+        S.crews = [];
+        S.playerCrewId = null;
+        S.npcs = [
+          { id: 'crew-npc-1', n: 'ต้นหนทดสอบ', d: 'นักเดินเรือ', alive: true },
+          { id: 'crew-npc-2', n: 'ช่างเรือทดสอบ', d: 'ช่างฝีมือ', alive: true }
+        ];
+        busy = false;
+        save();
+      });
+      await page.waitForFunction(() => {
+        const tools = document.getElementById('extra-life-crew-tools');
+        return !!tools && !tools.hidden;
+      });
+      await page.locator('#extra-life-crew-tools .el-crew-trigger').click();
+      await page.locator('#extra-life-crew-tools input[aria-label="ชื่อกลุ่มโจรสลัด"]').fill('กลุ่มทดสอบอีสต์บลู');
+      await page.locator('#extra-life-crew-tools .el-crew-form button').click();
+      await page.waitForFunction(() => !!S.playerCrewId && S.crews.some(crew => crew.id === S.playerCrewId));
+      await page.locator('#extra-life-crew-tools button').filter({ hasText: 'ซื้อเรือใบลำเล็ก' }).click();
+      await page.locator('#extra-life-crew-tools input[aria-label="ชื่อเรือ"]').fill('เรือทดสอบ');
+      await page.getByRole('button', { name: 'บันทึกเรือ' }).click();
+      const candidateRow = page.locator('#extra-life-crew-tools .el-crew-row').filter({ hasText: 'ต้นหนทดสอบ' });
+      await candidateRow.locator('select[aria-label="ตำแหน่งของ ต้นหนทดสอบ"]').selectOption('navigator');
+      await candidateRow.getByRole('button', { name: 'ชวนเข้ากลุ่ม' }).click();
+      await page.locator('#extra-life-crew-tools select[aria-label="เปลี่ยนตำแหน่งของ ต้นหนทดสอบ"]').selectOption('swordsman');
+      const crewPanelBox = await page.locator('#extra-life-crew-tools .el-crew-panel').boundingBox();
+      assert.ok(crewPanelBox && crewPanelBox.x >= 0 && crewPanelBox.y >= 0 &&
+        crewPanelBox.x + crewPanelBox.width <= viewport.width &&
+        crewPanelBox.y + crewPanelBox.height <= viewport.height,
+        'crew panel must remain inside the phone/tablet viewport');
+      save();
+      const crewBeforeReload = await page.evaluate(() => {
+        const crew = S.crews.find(item => item.id === S.playerCrewId);
+        return {
+          name: crew?.name,
+          shipName: crew?.shipName,
+          ownsBoat: S.own.items.includes('boat'),
+          members: crew?.members.map(member => ({ id: member.characterId, role: member.role }))
+        };
+      });
+      assert.equal(crewBeforeReload.name, 'กลุ่มทดสอบอีสต์บลู');
+      assert.equal(crewBeforeReload.shipName, 'เรือทดสอบ');
+      assert.equal(crewBeforeReload.ownsBoat, true);
+      assert.ok(crewBeforeReload.members.some(member => member.id === 'crew-npc-1' && member.role === 'swordsman'));
+
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await page.locator('#resumeBtn').waitFor({ state: 'visible' });
+      await page.locator('#resumeBtn').click();
+      await page.locator('#game:not([hidden])').waitFor({ state: 'visible' });
+      await page.waitForFunction(() => {
+        const tools = document.getElementById('extra-life-crew-tools');
+        return !!tools && !tools.hidden;
+      });
+      const crewAfterReload = await page.evaluate(() => {
+        const crew = S.crews.find(item => item.id === S.playerCrewId);
+        return {
+          name: crew?.name,
+          shipName: crew?.shipName,
+          ownsBoat: S.own.items.includes('boat'),
+          members: crew?.members.map(member => ({ id: member.characterId, role: member.role }))
+        };
+      });
+      assert.deepEqual(crewAfterReload, crewBeforeReload);
       assert.deepEqual(pageErrors, [], 'browser page errors: ' + pageErrors.join('; '));
       await page.close();
       process.stdout.write('PASS phone/tablet smoke at ' + viewport.width + 'x' + viewport.height + '\n');
