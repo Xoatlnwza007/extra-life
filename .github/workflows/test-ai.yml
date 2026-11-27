@@ -45,6 +45,6 @@ jobs:
       - name: Install Playwright
         run: npm install --no-save playwright@1.55.0
       - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
       - name: Run phone and tablet browser smoke tests
         run: node tests/browser-smoke.js
