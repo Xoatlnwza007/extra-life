@@ -157,6 +157,81 @@ async function main() {
       assert.match(await releasedPanel.innerText(), /สถานะ: มีประกาศจับ/);
       assert.doesNotMatch(await releasedPanel.innerText(), /สถานะ: ถูกจับกุม/);
       assert.equal(await page.evaluate(() => S.flags.jailUntil), 0);
+
+      await page.evaluate(async () => {
+        S.age = 18;
+        S.year = 1550;
+        S.mo = 1;
+        S.place = 'foosha';
+        S.money = 1000;
+        S.ft = 2;
+        S.ap = 0;
+        S.job = null;
+        S.partner = null;
+        S.kids = [];
+        S.trip = null;
+        const originalAsk = ask;
+        ask = async (title, text, choices) => {
+          if (title === '✈ ท่องเที่ยว') {
+            const destination = choices.find(choice => choice.l === 'เกาะมนุษย์เงือก');
+            if (!destination || !destination.ok) throw new Error('Fish-Man Island travel option unavailable');
+            destination.f();
+            return;
+          }
+          if (title.startsWith('✈ เกาะมนุษย์เงือก')) {
+            const photo = choices.find(choice => choice.l === 'ถ่ายรูปเก็บไว้เป็นที่ระลึก');
+            if (!photo) throw new Error('Travel arrival choices missing');
+            photo.f(S);
+            return;
+          }
+          return originalAsk(title, text, choices);
+        };
+        try { await travelMenu(); } finally { ask = originalAsk; }
+        save();
+      });
+      const tripStarted = await page.evaluate(() => ({
+        destination: S.trip?.k,
+        world: S.trip?.w,
+        homePlace: S.place,
+        money: S.money,
+        freeTime: S.ft
+      }));
+      assert.equal(tripStarted.destination, 'เกาะมนุษย์เงือก');
+      assert.equal(tripStarted.world, 'op');
+      assert.equal(tripStarted.homePlace, 'foosha', 'trip is stored separately from the home residence');
+      assert.equal(tripStarted.money, 940);
+      assert.equal(tripStarted.freeTime, 1);
+
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await page.locator('#resumeBtn').waitFor({ state: 'visible' });
+      await page.locator('#resumeBtn').click();
+      await page.locator('#game:not([hidden])').waitFor({ state: 'visible' });
+      const tripRestored = await page.evaluate(() => ({
+        destination: S.trip?.k,
+        month: S.mo,
+        money: S.money
+      }));
+      assert.equal(tripRestored.destination, 'เกาะมนุษย์เงือก');
+      assert.equal(tripRestored.month, 1);
+      assert.equal(tripRestored.money, 940);
+
+      await page.evaluate(async () => {
+        const originalAsk = ask;
+        ask = async () => {};
+        try { await monthPass(); } finally { ask = originalAsk; }
+        save();
+      });
+      const monthAdvanced = await page.evaluate(() => ({
+        destination: S.trip?.k,
+        month: S.mo,
+        money: S.money
+      }));
+      assert.equal(monthAdvanced.destination, 'เกาะมนุษย์เงือก');
+      assert.equal(monthAdvanced.month, 2);
+      assert.equal(monthAdvanced.money, 935, 'monthly lodging cost is charged while away');
+
+      await page.evaluate(() => { tripEnd(); save(); });
+      assert.equal(await page.evaluate(() => S.trip), null);
       assert.deepEqual(pageErrors, [], 'browser page errors: ' + pageErrors.join('; '));
       await page.close();
       process.stdout.write('PASS phone/tablet smoke at ' + viewport.width + 'x' + viewport.height + '\n');
