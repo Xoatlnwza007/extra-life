@@ -211,12 +211,27 @@ async function main() {
       assert.equal(tripStarted.homePlace, 'foosha', 'trip is stored separately from the home residence');
       assert.equal(tripStarted.money, 940);
       assert.equal(tripStarted.freeTime, 1);
-      const persistedTrip = await page.evaluate(() => {
+      const persistenceDebug = await page.evaluate(() => {
+        const serialized = JSON.stringify(S);
+        const encoded = window.OnePieceSaveSystem.encode(S);
         const raw = localStorage.getItem('extra-life-v2');
-        const stored = raw ? JSON.parse(raw) : null;
-        return stored?.trip?.k || null;
+        const backup = localStorage.getItem('extra-life-v2-backup');
+        const parseTrip = value => {
+          try { return value ? JSON.parse(value).trip?.k || null : null; } catch (error) { return 'invalid-json'; }
+        };
+        return {
+          stateTrip: JSON.parse(serialized).trip?.k || null,
+          encodedTrip: JSON.parse(encoded).trip?.k || null,
+          primaryTrip: parseTrip(raw),
+          backupTrip: parseTrip(backup),
+          primaryDecode: window.OnePieceSaveSystem.decode(raw).reason || 'ok',
+          backupDecode: window.OnePieceSaveSystem.decode(backup).reason || 'ok'
+        };
       });
-      assert.equal(persistedTrip, 'เกาะมนุษย์เงือก', 'save must persist the active trip before reload');
+      console.log('travel persistence diagnostics', persistenceDebug);
+      assert.equal(persistenceDebug.stateTrip, 'เกาะมนุษย์เงือก');
+      assert.equal(persistenceDebug.encodedTrip, 'เกาะมนุษย์เงือก');
+      assert.equal(persistenceDebug.primaryTrip, 'เกาะมนุษย์เงือก', 'save must persist the active trip before reload');
 
       await page.reload({ waitUntil: 'domcontentloaded' });
       await page.locator('#resumeBtn').waitFor({ state: 'visible' });
