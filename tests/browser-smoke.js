@@ -240,8 +240,10 @@ async function main() {
       const tripRestored = await page.evaluate(() => ({
         destination: S.trip?.k,
         month: S.mo,
-        money: S.money
+        money: S.money,
+        saveMetadata: S._saveMeta
       }));
+      assert.equal(tripRestored.saveMetadata, undefined, 'checksum metadata must not remain inside mutable game state');
       assert.equal(tripRestored.destination, 'เกาะมนุษย์เงือก');
       assert.equal(tripRestored.month, 1);
       assert.equal(tripRestored.money, 940);
