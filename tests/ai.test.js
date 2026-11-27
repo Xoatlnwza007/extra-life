@@ -200,6 +200,15 @@ test('mobile UI styles keep progression and Marine panels separated from crew co
   assert.match(world.getSaveControlsStyles(), /min-height:48px/);
 });
 
+test('One Piece automatic event choices use the adapter without bypassing legacy effects', () => {
+  const fs = require('node:fs');
+  const html = fs.readFileSync(require('node:path').join(__dirname, '..', 'index.html'), 'utf8');
+  assert.match(html, /await window\.OnePieceSystemsReady/);
+  assert.match(html, /window\.OnePieceEventAdapter/);
+  assert.match(html, /adapter\.choose\(\{\.\.\.S,personalityPreferences\},r\.choices/);
+  assert.match(html, /techAuto\(c\)/);
+});
+
 test('main game loads save protection before the game bootstrap', () => {
   const fs = require('node:fs');
   const html = fs.readFileSync(require('node:path').join(__dirname, '..', 'index.html'), 'utf8');
