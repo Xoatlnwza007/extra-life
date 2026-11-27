@@ -278,3 +278,18 @@ Do not call the project playable-complete until a new/existing player can:
 - No physical Android device test has been performed.
 - Known travel-location semantics: S.trip is the temporary destination context; S.place intentionally remains the home residence. Continue auditing which local story events should be suppressed or explicitly allowed while away.
 - Next concrete task: prevent home-only random encounters from firing while S.trip is active, while preserving world-wide canon/lore news and explicitly travel-safe events. Add a regression test for a Foosha-only meet while the player is visiting another destination.
+
+## 19. Home-only encounter guard while traveling — 2026-11-27
+
+- Latest verified main HEAD before this log update: ea12fa0adb06d7e4dbfcef6efa1bd0075aea35ee.
+- Added travelEventOK(e): while S.trip is active for the current world, events marked homeOnly are excluded unless explicitly marked travelOK.
+- Applied the guard to annual random-life events, annual meetings, power-event selection, and monthly pickFrom() pools.
+- Suppressed home-residence CASTMEETS while away; explicitly travel-safe cast meetings may opt in through travelOK.
+- Marked the Foosha-only Luffy-childhood encounter, Makino encounter, Koby base encounter, and all four original East Blue starter events as homeOnly.
+- Canon/lore timeline events remain active while traveling; this guard targets random local encounters rather than world-wide history/news.
+- Added browser regression coverage while the player is on Fish-Man Island: a homeOnly event is rejected and an otherwise identical travelOK event remains eligible.
+- Latest GitHub Actions run: 45922292377 on ea12fa0adb06d7e4dbfcef6efa1bd0075aea35ee — success.
+  - Node tests: **19 passed, 0 failed, 0 skipped**.
+  - Chromium smoke: **success** at 390×844 and 820×1180, including travel persistence and encounter filtering.
+- No physical Android/tablet device test has been performed.
+- Next concrete task: expand One Piece travel to the East Blue with a small set of age/era-gated destinations (Orange Town, Syrup Village, Baratie, Cocoyashi, and Loguetown). Keep temporary travel in S.trip, add matching destination view mappings, clearly label original side activities, and test affordability/age/era gates plus save/reload.
