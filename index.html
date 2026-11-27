@@ -2513,6 +2513,7 @@ async function runPivot(id,t){
   await runEv({t:'จุดเปลี่ยน: '+t,play:pv.play},'pivot');
 }
 async function runYearEvents(first){
+  if(S&&S.world==='op'&&window.OnePieceSystemsReady)await window.OnePieceSystemsReady;
   for(const ev of W.canon){if(!S.alive)break;if(inYear(ev,S.year)&&!ev.mo){await runEv(ev,'canon');await runPivot(ev.id,ev.t);}}
   for(const ev of W.lore){if(!S.alive)break;if(S.lore.y[ev.id]===S.year&&localOK(ev)){await runEv(ev,'side');await runPivot(ev.id,ev.t);}}
   if(S.alive&&S.flags.shifter&&S.year>=S.flags.shiftY+13)die('คำสาปของยมีร์ ผู้สืบทอดไททันมีชีวิตอยู่ได้เพียง 13 ปี');
@@ -5807,6 +5808,13 @@ RENTS.op=[{id:'r0',n:'ห้องใต้หลังคาบาร์',tier:
 DESC.op=[[/หมวกฟาง/,'luffy'],[/ผมเขียว.{0,12}ดาบ|ดาบสามเล่ม/,'zoro'],[/ผมส้ม/,'nami'],[/ผมแดง/,'shanks'],[/ผมชมพู.{0,10}ทหารเรือ/,'koby']];
 Object.assign(OUTFIT,{marine:'#f0ece0',mcapt:'#f0ece0',vadm:'#f0ece0',pirate:'#a22633',pcapt:'#1c1a1f',revo:'#3a4466',cp:'#1c1a1f',fisher:'#4f86b8',cook:'#f0ece0',shipwright:'#5a6988'});
 WORLDS.op=OP;
+if(window.OnePieceSystemsReady)window.OnePieceSystemsReady.then(()=>{
+  const content=window.OnePieceEastBlueStarter;
+  if(!content||typeof content.create!=='function'||!Array.isArray(OP.meets))return;
+  if(OP.meets.some(event=>event.id==='op_eb_toma_net'))return;
+  CAST.op.eb_toma='โทมะ ชาวประมง';
+  OP.meets.push(...content.create({bond,st,skill,mon,say}));
+});
 
 /* ===== backdrops for the seas ===== */
 function seaBand(c,w,h,top,bot,col='#3f7fa8',r=Math.random){rect(c,col,0,top,w,bot-top);rect(c,shade(col,1.2),0,top,w,2);for(let i=0;i<Math.round(w/18);i++)rect(c,'rgba(230,245,250,.7)',r()*w,top+4+r()*(bot-top-6),6+r()*12,1.5);}
