@@ -17,6 +17,7 @@ const progression = require('../ai/progression-system.js');
 const marines = require('../ai/marine-system.js');
 const combat = require('../ai/combat-adapter.js');
 const events = require('../ai/event-adapter.js');
+const eastBlue = require('../ai/east-blue-starter.js');
 
 test('event adapter maps legacy choice tags, skips unavailable choices, and preserves effects', () => {
   let effectCalls = 0;
@@ -46,6 +47,7 @@ test('browser bootstrap loads every companion module in dependency order', async
     './ai/character-state.js': 'OnePieceCharacterState',
     './ai/npc-brain.js': 'OnePieceNPCBrain',
     './ai/event-adapter.js': 'OnePieceEventAdapter',
+    './ai/east-blue-starter.js': 'OnePieceEastBlueStarter',
     './ai/crew-system.js': 'OnePieceCrewSystem',
     './ai/devil-fruit-system.js': 'OnePieceDevilFruitSystem',
     './ai/haki-system.js': 'OnePieceHakiSystem',
@@ -63,7 +65,7 @@ test('browser bootstrap loads every companion module in dependency order', async
   assert.equal(await world.loadCompanionModules(host), true);
   assert.deepEqual(scripts, Object.keys(names));
   assert.equal(await world.loadCompanionModules(host), true);
-  assert.equal(scripts.length, 11);
+  assert.equal(scripts.length, 12);
 });
 
 test('companion loader continues after one missing script and reports it', async () => {
@@ -75,6 +77,7 @@ test('companion loader continues after one missing script and reports it', async
           './ai/decision-engine.js': 'OnePieceDecisionEngine',
           './ai/npc-brain.js': 'OnePieceNPCBrain',
           './ai/event-adapter.js': 'OnePieceEventAdapter',
+          './ai/east-blue-starter.js': 'OnePieceEastBlueStarter',
           './ai/crew-system.js': 'OnePieceCrewSystem',
           './ai/devil-fruit-system.js': 'OnePieceDevilFruitSystem',
           './ai/haki-system.js': 'OnePieceHakiSystem',
@@ -207,6 +210,42 @@ test('One Piece automatic event choices use the adapter without bypassing legacy
   assert.match(html, /window\.OnePieceEventAdapter/);
   assert.match(html, /adapter\.choose\(\{\.\.\.S,personalityPreferences\},r\.choices/);
   assert.match(html, /techAuto\(c\)/);
+});
+
+test('East Blue original starter events form a gated four-step sandbox chain', () => {
+  const calls = [];
+  const pack = eastBlue.create({
+    bond: (...args) => calls.push(['bond', ...args]),
+    skill: (...args) => calls.push(['skill', ...args]),
+    st: (...args) => calls.push(['st', ...args]),
+    mon: (...args) => calls.push(['mon', ...args]),
+    say: (...args) => calls.push(['say', ...args])
+  });
+  assert.equal(pack.length, 4);
+  assert.equal(new Set(pack.map(event => event.id)).size, 4);
+  assert.ok(pack.every(event => event.origin === 'original' && event.canonStatus === 'sandbox'));
+  let state = { place: 'foosha', age: 8, flags: {} };
+  assert.equal(pack[0].when(state), true);
+  const first = pack[0].play(state);
+  first.choices[0].f(state);
+  assert.equal(state.flags.eb_toma_met, 1);
+  assert.equal(state.flags.eb_net_found, 1);
+  assert.equal(pack[1].when(state), false);
+  state.age = 9;
+  assert.equal(pack[1].when(state), true);
+  pack[1].play(state).choices[0].f(state);
+  assert.equal(state.flags.eb_boat_repaired, 1);
+  state.age = 10;
+  assert.equal(pack[2].when(state), true);
+  pack[2].play(state).choices[0].f(state);
+  assert.equal(state.flags.eb_chart_received, 1);
+  state.age = 12;
+  assert.equal(pack[3].when(state), true);
+  pack[3].play(state).choices[1].f(state);
+  assert.equal(state.flags.eb_starter_complete, 1);
+  assert.equal(state.flags.eb_starter_outcome, 'warned-village');
+  assert.ok(calls.some(call => call[0] === 'bond'));
+  assert.ok(calls.some(call => call[0] === 'skill'));
 });
 
 test('main game loads save protection before the game bootstrap', () => {
