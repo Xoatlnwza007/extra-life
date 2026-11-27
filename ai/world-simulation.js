@@ -542,6 +542,7 @@
     { src: './ai/character-state.js', globalName: 'OnePieceCharacterState' },
     { src: './ai/npc-brain.js', globalName: 'OnePieceNPCBrain' },
     { src: './ai/event-adapter.js', globalName: 'OnePieceEventAdapter' },
+    { src: './ai/east-blue-starter.js', globalName: 'OnePieceEastBlueStarter' },
     { src: './ai/crew-system.js', globalName: 'OnePieceCrewSystem' },
     { src: './ai/devil-fruit-system.js', globalName: 'OnePieceDevilFruitSystem' },
     { src: './ai/haki-system.js', globalName: 'OnePieceHakiSystem' },
