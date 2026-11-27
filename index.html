@@ -2762,7 +2762,7 @@ function skill(k,d){S.sk=S.sk||{};const b=S.sk[k]||0,v=clamp(b+d);S.sk[k]=v;for(
 const rng2=v=>Array.isArray(v)?R(v[0],v[1]):v;
 function effText(o){const p=[];for(const k in o.st||{})p.push(`${k==='fit'?W.fitL:STATL[k]}+`);for(const k in o.sk||{})p.push(`${W.skL[k]}+`);if(o.joy)p.push('ความสุข+');if(o.love)p.push('ความรัก+');if(o.find)p.push('โอกาสได้คนรัก');return p.join(' ');}
 const costText=c=>c>0?fmt(c):c<0?`ได้ ${fmt(-c)}`:'ฟรี';
-function migrate(s){s.powers=s.powers||[];s.blood=s.blood||[s.origin];s.own=s.own||{house:null,items:[]};s.sk=s.sk||{};s.ap=s.ap??3;s.mo=s.mo||0;s.mt=s.mt||0;s.bonds=s.bonds||{};s.fame=s.fame||0;s.dark=s.dark||0;return s;}
+function migrate(s){delete s._saveMeta;s.powers=s.powers||[];s.blood=s.blood||[s.origin];s.own=s.own||{house:null,items:[]};s.sk=s.sk||{};s.ap=s.ap??3;s.mo=s.mo||0;s.mt=s.mt||0;s.bonds=s.bonds||{};s.fame=s.fame||0;s.dark=s.dark||0;return s;}
 const ACTS=[
   {id:'learn',l:()=>'เรียนรู้',min:5,menu:'learn'},
   {id:'train',l:()=>W.trainL,min:6,menu:'train'},
