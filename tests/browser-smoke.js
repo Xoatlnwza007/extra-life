@@ -37,8 +37,15 @@ async function main() {
       await page.goto('http://127.0.0.1:4173/', { waitUntil: 'domcontentloaded' });
       await page.waitForFunction(() => !!window.OnePieceWorldSimulation && !!window.OnePieceSystemsReady);
       await page.waitForFunction(async () => await window.OnePieceSystemsReady === true);
+      await page.waitForFunction(() => typeof WORLDS !== 'undefined' &&
+        WORLDS.op.meets.filter(event => event.id.startsWith('op_eb_')).length === 4);
+      const starterMetadata = await page.evaluate(() => WORLDS.op.meets
+        .filter(event => event.id.startsWith('op_eb_'))
+        .map(event => ({ origin: event.origin, canonStatus: event.canonStatus })));
+      assert.equal(starterMetadata.length, 4);
+      assert.ok(starterMetadata.every(event => event.origin === 'original' && event.canonStatus === 'sandbox'));
       for (const globalName of [
-        'OnePieceCharacterState', 'OnePieceNPCBrain', 'OnePieceCrewSystem',
+        'OnePieceCharacterState', 'OnePieceNPCBrain', 'OnePieceEastBlueStarter', 'OnePieceCrewSystem',
         'OnePieceDevilFruitSystem', 'OnePieceHakiSystem', 'OnePieceProgressionSystem',
         'OnePieceMarineSystem', 'OnePieceMarineUI', 'OnePieceCombatAdapter'
       ]) {
