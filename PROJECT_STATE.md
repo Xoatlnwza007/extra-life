@@ -312,3 +312,21 @@ Do not call the project playable-complete until a new/existing player can:
   - Chromium smoke: **success** at 390×844 and 820×1180, including East Blue travel.
 - No physical Android/tablet device test has been performed.
 - Next concrete task: add original NPC interactions at the East Blue destinations (with stable IDs and clear sandbox labels), then make those interactions affect relationship/skill progression through existing travel NPC hooks. Do not add new canon characters or invent canon scenes.
+
+## 21. East Blue destination NPC interactions — 2026-11-27
+
+- Latest verified main HEAD before this log update: bc252db2ac7446e1d34c091d4924de979614cc72.
+- Added five original sandbox NPCs to the East Blue travel destinations:
+  - Orange Town: ลิออน พ่อค้าแผนที่ (eb_orange_vendor).
+  - Syrup Village: เบลล์ ช่างไม้ (eb_syrup_carpenter).
+  - Baratie: เรน ผู้ช่วยพ่อครัว (eb_baratie_cook).
+  - Cocoyashi Village: อามิ คนดูแลสวนส้ม (eb_cocoyashi_gardener).
+  - Loguetown: คิริ นักจดบันทึก (eb_loguetown_scribe).
+- Registered stable NPC IDs in CAST.op and added destination-specific TNPC dialogue/teaching entries. Every new NPC is marked origin=original and canonStatus=sandbox.
+- Reused existing tnpcActs travel hooks: dialogue increases relationship and happiness; teaching increases the corresponding existing skill/stat and relationship. No duplicate NPC interaction engine was introduced.
+- Added browser tests verifying all five NPC IDs/names/metadata and the actual Orange Town talk/teach effects (relationship +9, Ride +3).
+- Latest GitHub Actions run: 45923124518 on bc252db2ac7446e1d34c091d4924de979614cc72 — success.
+  - Node tests: **19 passed, 0 failed, 0 skipped**.
+  - Chromium smoke: **success** at 390×844 and 820×1180.
+- No physical Android/tablet device test has been performed.
+- Next concrete task: audit the One Piece crew-system module and current UI hooks, then build a coherent player-facing crew loop (recruit, assign roles, maintain crew state, and persist) using the existing crew API. Avoid inventing a second crew data model or letting NPC/player synchronization leak across crews.
