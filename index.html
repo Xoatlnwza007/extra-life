@@ -2547,7 +2547,18 @@ async function runEv(ev,kind){
   /* small choices: one popup a year at most; after that the character decides by temperament and a card reports it */
   if(['mini','fest','surprise','story','life'].includes(kind)&&S.age>=5&&!ev.big){
     if(S.popY!==S.year){S.popY=S.year;S.popN=0;}
-    if(S.popN>=1){const c=leanOf(r.choices)||r.choices.find(c=>c.ok!==false);say(r.text,'plain');say(`ตัดสินใจตามนิสัย: ${c.l}`,'pick');capture=[];techAuto(c);const lines=capture;capture=null;
+    if(S.popN>=1){let c=leanOf(r.choices)||r.choices.find(c=>c.ok!==false&&!c.skip);
+      if(W.id==='op'&&window.OnePieceSystemsReady){
+        await window.OnePieceSystemsReady;
+        const adapter=window.OnePieceEventAdapter;
+        if(adapter&&typeof adapter.choose==='function'){
+          const personalityPreferences=Object.fromEntries((S.traits||[]).map(t=>[t,TRAITS[t]?.pref||{}]));
+          const selected=adapter.choose({...S,personalityPreferences},r.choices,{resourcePressure:S.money<30?20:0});
+          c=selected.choice;
+        }
+      }
+      if(!c){say(r.text,'plain');say('ไม่มีตัวเลือกที่พร้อมใช้งานในเหตุการณ์นี้','pick');return true;}
+      say(r.text,'plain');say(`ตัดสินใจตามนิสัย: ${c.l}`,'pick');capture=[];techAuto(c);const lines=capture;capture=null;
       toast(`${r.text.length>60?r.text.slice(0,60)+'…':r.text} → ${c.l}${lines[0]?' · '+lines[0].x:''}`,`เดือน ${(S.mo||0)+1} · ${title||'เรื่องเล็กๆ น้อยๆ'}`,lines[0]?.k);return true;}
     S.popN++;
   }
