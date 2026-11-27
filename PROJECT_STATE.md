@@ -293,3 +293,22 @@ Do not call the project playable-complete until a new/existing player can:
   - Chromium smoke: **success** at 390×844 and 820×1180, including travel persistence and encounter filtering.
 - No physical Android/tablet device test has been performed.
 - Next concrete task: expand One Piece travel to the East Blue with a small set of age/era-gated destinations (Orange Town, Syrup Village, Baratie, Cocoyashi, and Loguetown). Keep temporary travel in S.trip, add matching destination view mappings, clearly label original side activities, and test affordability/age/era gates plus save/reload.
+
+## 20. East Blue travel destinations — 2026-11-27
+
+- Latest verified main HEAD before this log update: 497f46488982071947ace23650195c14b9a4f611.
+- Extended the TV destination helper with optional metadata so new travel destinations can be explicitly labelled as original/sandbox content without changing existing destination entries.
+- Added five East Blue destinations to One Piece travel:
+  - Orange Town — port / market view, ticket cost 25.
+  - Syrup Village — island view, ticket cost 30.
+  - Baratie — sea view, ticket cost 45.
+  - Cocoyashi Village — island view, ticket cost 30.
+  - Loguetown — uses the existing Loguetown place view, ticket cost 40.
+- All five are available from year 1490 onward and age 12 onward. All arrival and deep activities are labelled as original side activities; each destination carries origin=original, canonStatus=sandbox and a source note.
+- Added TRIPV mappings for each destination. Temporary travel remains in S.trip and does not overwrite the home residence in S.place.
+- Extended browser smoke coverage to verify all five destinations, metadata, view mappings, age/era gate, insufficient-funds gate, no-free-time gate, and a full Orange Town trip with save/reload/monthly lodging/return.
+- Latest GitHub Actions run: 45922836903 on 497f46488982071947ace23650195c14b9a4f611 — success.
+  - Node tests: **19 passed, 0 failed, 0 skipped**.
+  - Chromium smoke: **success** at 390×844 and 820×1180, including East Blue travel.
+- No physical Android/tablet device test has been performed.
+- Next concrete task: add original NPC interactions at the East Blue destinations (with stable IDs and clear sandbox labels), then make those interactions affect relationship/skill progression through existing travel NPC hooks. Do not add new canon characters or invent canon scenes.
