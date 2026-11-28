@@ -52,14 +52,16 @@ test('all 19 major cover-story serials and two short follow-ups are catalogued s
   assert.ok(events.every(event => event.canon_status === 'manga_canon'));
 });
 
-test('community-derived ideas are sandbox-only and cannot alter canon', () => {
+test('all community-inspired story ideas remain optional sandbox-only content', () => {
   const { fanIdeas } = loadDatasets();
-  assert.ok(fanIdeas.length >= 5);
+  assert.equal(fanIdeas.length, 16);
+  assert.equal(new Set(fanIdeas.map(idea => idea.id)).size, 16);
   for (const idea of fanIdeas) {
     assert.equal(idea.canon_status, 'fanon_sandbox');
     assert.equal(idea.play_scope, 'sandbox_only');
     assert.ok(idea.source_url.startsWith('https://'));
     assert.ok(idea.design_notes.length > 0);
+    assert.ok(idea.source_url.startsWith('https://www.reddit.com/') || idea.source_url.startsWith('https://www.fanfiction.net/'));
   }
 });
 
