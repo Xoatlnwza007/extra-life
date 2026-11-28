@@ -365,11 +365,13 @@ async function main() {
 
       await page.evaluate(async () => {
         const originalAsk = ask;
-        const originalDie = die;
+        const originalRunEv = runEv;
         ask = async () => {};
-        // This assertion targets the monthly lodging charge, not random death outcomes.
-        die = () => { S.alive = true; S.st.hp = 100; };
-        try { await monthPass(); } finally { ask = originalAsk; die = originalDie; }
+        // Isolate the monthly lodging charge from random story-event outcomes.
+        runEv = async () => {};
+        S.flags.titan = 0;
+        S.flags.jailUntil = 0;
+        try { await monthPass(); } finally { ask = originalAsk; runEv = originalRunEv; }
         save();
       });
       const monthAdvanced = await page.evaluate(() => ({
