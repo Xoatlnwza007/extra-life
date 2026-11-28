@@ -1,0 +1,396 @@
+{
+  "schema_version": 1,
+  "policy": "Optional original-player quest adaptations inspired by manga cover-story structures. These are not retellings, do not assign actions to canon characters, and never alter manga-canon outcomes.",
+  "quest_chains": [
+    {
+      "id": "drifting_crew_rebuild",
+      "title": "A Crew Without a Flag",
+      "inspired_by_cover_story_id": "buggy_crew_adventure_chronicles",
+      "canon_status": "optional_original",
+      "play_scope": "sandbox_only",
+      "spoiler_gate_arc": "east_blue",
+      "stages": [
+        {
+          "id": "find_the_scattered",
+          "title": "Find the Scattered",
+          "setup": "A storm scatters a small pirate crew and leaves its quartermaster stranded near a fishing village.",
+          "objectives": [
+            "Locate two missing crew members",
+            "Recover a damaged logbook or learn its contents from witnesses"
+          ],
+          "approaches": [
+            "Search the shoreline and wreckage",
+            "Ask dockworkers and pay for leads",
+            "Track the rival scavengers who reached the wreck first"
+          ],
+          "fail_forward": "The crew is found later, but loses supplies or trust; the next stage remains available."
+        },
+        {
+          "id": "earn_a_new_berth",
+          "title": "Earn a New Berth",
+          "setup": "The survivors need repairs and a safe place to regroup, but the village fears attracting pirates.",
+          "objectives": [
+            "Secure repairs or a replacement vessel",
+            "Resolve the village's concern without forcing allegiance"
+          ],
+          "approaches": [
+            "Pay fairly for repairs",
+            "Work off the cost",
+            "Negotiate protection with a local group"
+          ],
+          "fail_forward": "A rough vessel is secured at a higher cost, and the village remains cautious."
+        },
+        {
+          "id": "choose_the_flag",
+          "title": "Choose the Flag",
+          "setup": "A rival offers the crew a shortcut if they abandon one of their own.",
+          "objectives": [
+            "Decide whether to reunite, recruit, or part ways",
+            "Settle the rival's claim"
+          ],
+          "approaches": [
+            "Stand together and confront the rival",
+            "Negotiate a split settlement",
+            "Use a decoy route to get everyone clear"
+          ],
+          "fail_forward": "The crew escapes the immediate threat, but its final roster and reputation reflect the cost."
+        }
+      ],
+      "outcomes": [
+        "A grateful independent crew becomes a recurring contact",
+        "A repaired ship and local trade contact are gained",
+        "The crew disperses peacefully, leaving future leads"
+      ],
+      "canon_effect": "none",
+      "player_can_override": true,
+      "source_urls": [
+        "https://onepiecebreaks.com/cover-stories/"
+      ]
+    },
+    {
+      "id": "redemption_takoyaki_trade",
+      "title": "A Second Chance at the Wharf",
+      "inspired_by_cover_story_id": "hatchans_sea_floor_stroll",
+      "canon_status": "optional_original",
+      "play_scope": "sandbox_only",
+      "spoiler_gate_arc": "east_blue",
+      "stages": [
+        {
+          "id": "the_wharf_incident",
+          "title": "The Wharf Incident",
+          "setup": "A former gang lookout is blamed when a delivery of seafood disappears.",
+          "objectives": [
+            "Find the missing cargo",
+            "Determine whether the suspect is being framed"
+          ],
+          "approaches": [
+            "Inspect the route and tide marks",
+            "Question vendors and deckhands",
+            "Offer to replace the cargo while investigating"
+          ],
+          "fail_forward": "The cargo is not recovered, but a witness identifies the next lead."
+        },
+        {
+          "id": "prove_good_faith",
+          "title": "Prove Good Faith",
+          "setup": "The suspect wants to open a food stall but local merchants distrust their past.",
+          "objectives": [
+            "Secure a stall or temporary permit",
+            "Complete a fair trade or community task"
+          ],
+          "approaches": [
+            "Pay the normal fee",
+            "Help repair the market",
+            "Find a neutral sponsor"
+          ],
+          "fail_forward": "A temporary stall opens with limited stock and reduced local trust."
+        },
+        {
+          "id": "the_first_opening_day",
+          "title": "The First Opening Day",
+          "setup": "A sabotage attempt threatens the stall's first busy day.",
+          "objectives": [
+            "Protect customers and supplies",
+            "Choose how to handle the saboteur"
+          ],
+          "approaches": [
+            "Expose the saboteur publicly",
+            "Settle the dispute privately",
+            "Protect the stall first and pursue evidence later"
+          ],
+          "fail_forward": "The stall survives with damaged stock; its owner remembers whether the player protected people."
+        }
+      ],
+      "outcomes": [
+        "A neutral food vendor and recovery contact",
+        "A low-cost supply source with cautious trust",
+        "A local rival relationship shaped by the player's choice"
+      ],
+      "canon_effect": "none",
+      "player_can_override": true,
+      "source_urls": [
+        "https://onepiecebreaks.com/cover-stories/"
+      ]
+    },
+    {
+      "id": "fallen_ruler_workshop",
+      "title": "The Workshop After the Fall",
+      "inspired_by_cover_story_id": "wapols_omnivorous_hurrah",
+      "canon_status": "optional_original",
+      "play_scope": "sandbox_only",
+      "spoiler_gate_arc": "alabasta",
+      "stages": [
+        {
+          "id": "scrap_and_shelter",
+          "title": "Scrap and Shelter",
+          "setup": "A displaced island official is turning salvaged machinery into a workshop while former retainers demand unpaid wages.",
+          "objectives": [
+            "Assess the workshop's safety",
+            "Hear the workers' claims"
+          ],
+          "approaches": [
+            "Audit the materials and accounts",
+            "Mediate a wage agreement",
+            "Help workers establish an independent shop"
+          ],
+          "fail_forward": "The workshop pauses operations, but the workers' claims and evidence remain available."
+        },
+        {
+          "id": "a_market_for_miracles",
+          "title": "A Market for Miracles",
+          "setup": "A merchant offers a lucrative contract that may rely on unsafe or misleading products.",
+          "objectives": [
+            "Verify the contract",
+            "Choose whether to accept, renegotiate, or expose it"
+          ],
+          "approaches": [
+            "Test the goods independently",
+            "Negotiate safety terms",
+            "Warn the market and refuse the deal"
+          ],
+          "fail_forward": "The contract is lost or delayed, but the player gains evidence and a reputation consequence."
+        },
+        {
+          "id": "who_owns_the_future",
+          "title": "Who Owns the Future?",
+          "setup": "The workshop's success brings pressure to concentrate power or share ownership.",
+          "objectives": [
+            "Resolve the ownership dispute",
+            "Decide who receives the workshop's future profits"
+          ],
+          "approaches": [
+            "Support worker ownership",
+            "Back the founder under transparent terms",
+            "Broker a cooperative arrangement"
+          ],
+          "fail_forward": "The workshop survives in a reduced form; its ownership and prices reflect the compromise."
+        }
+      ],
+      "outcomes": [
+        "Worker-run workshop with modest local benefits",
+        "Independent entrepreneur contact with higher prices",
+        "Cooperative trade hub and improved settlement stability"
+      ],
+      "canon_effect": "none",
+      "player_can_override": true,
+      "source_urls": [
+        "https://onepiecebreaks.com/cover-stories/"
+      ]
+    },
+    {
+      "id": "baroque_cells_rescue",
+      "title": "Names on the Ledger",
+      "inspired_by_cover_story_id": "miss_goldenweeks_operation",
+      "canon_status": "optional_original",
+      "play_scope": "sandbox_only",
+      "spoiler_gate_arc": "alabasta",
+      "stages": [
+        {
+          "id": "the_old_network",
+          "title": "The Old Network",
+          "setup": "Former members of a dissolved criminal outfit ask the player to locate a missing courier before a bounty hunter does.",
+          "objectives": [
+            "Find the courier's last known route",
+            "Learn what information the courier carries"
+          ],
+          "approaches": [
+            "Follow paper records",
+            "Question old associates",
+            "Intercept the bounty hunter"
+          ],
+          "fail_forward": "The courier moves to a new hiding place; the player receives a reliable contact trail."
+        },
+        {
+          "id": "inside_contact",
+          "title": "An Inside Contact",
+          "setup": "The courier is held in a private lockup, and an insider offers help for a price.",
+          "objectives": [
+            "Verify the insider's motives",
+            "Create a safe extraction plan"
+          ],
+          "approaches": [
+            "Pay for a controlled release",
+            "Gather proof of illegal detention",
+            "Arrange a diversion and escape"
+          ],
+          "fail_forward": "The extraction fails cleanly, but the detainee is transferred and can be tracked."
+        },
+        {
+          "id": "what_to_do_with_the_names",
+          "title": "What to Do With the Names",
+          "setup": "The recovered ledger could expose victims, former criminals, and powerful clients.",
+          "objectives": [
+            "Decide how to handle the ledger",
+            "Protect people named in it"
+          ],
+          "approaches": [
+            "Deliver it to the victims",
+            "Redact identities and expose the scheme",
+            "Destroy it after preserving evidence"
+          ],
+          "fail_forward": "The ledger is partly compromised; some names leak and the player must help those affected."
+        }
+      ],
+      "outcomes": [
+        "Victim protection network and improved trust",
+        "Public scandal with a local faction response",
+        "Destroyed ledger but a surviving witness network"
+      ],
+      "canon_effect": "none",
+      "player_can_override": true,
+      "source_urls": [
+        "https://onepiecebreaks.com/cover-stories/"
+      ]
+    },
+    {
+      "id": "fugitive_doctors_debt",
+      "title": "The Price of a Safe Harbor",
+      "inspired_by_cover_story_id": "cp9_independent_report",
+      "canon_status": "optional_original",
+      "play_scope": "sandbox_only",
+      "spoiler_gate_arc": "water_7",
+      "stages": [
+        {
+          "id": "the_medical_bill",
+          "title": "The Medical Bill",
+          "setup": "A fugitive crew seeks medicine for an injured crewmate but cannot safely enter a public clinic.",
+          "objectives": [
+            "Find a legitimate treatment route",
+            "Keep the clinic out of the crew's dispute"
+          ],
+          "approaches": [
+            "Pay the clinic's posted price",
+            "Trade supplies for treatment",
+            "Find a discreet independent doctor"
+          ],
+          "fail_forward": "Treatment is delayed but the patient stabilizes; the crew's debt increases."
+        },
+        {
+          "id": "a_town_under_pressure",
+          "title": "A Town Under Pressure",
+          "setup": "Pursuers threaten a town that sheltered the fugitives.",
+          "objectives": [
+            "Identify the pursuers' leverage",
+            "Protect residents without forcing them to take sides"
+          ],
+          "approaches": [
+            "Evacuate vulnerable residents",
+            "Expose the pursuers' misconduct",
+            "Negotiate a temporary safe passage"
+          ],
+          "fail_forward": "The town suffers limited disruption, but residents retain a route to safety."
+        },
+        {
+          "id": "leave_or_stay",
+          "title": "Leave or Stay",
+          "setup": "The crew can disappear, repay the town, or remain to help rebuild.",
+          "objectives": [
+            "Choose the crew's next step",
+            "Settle the outstanding debt or obligation"
+          ],
+          "approaches": [
+            "Arrange a quiet departure and repayment",
+            "Stay to repair the damage",
+            "Turn over evidence and seek a lawful settlement"
+          ],
+          "fail_forward": "The crew leaves under pressure; the town's attitude records whether the player helped."
+        }
+      ],
+      "outcomes": [
+        "A discreet medical contact",
+        "A town that offers shelter to trustworthy crews",
+        "A fugitive contact with a complicated debt"
+      ],
+      "canon_effect": "none",
+      "player_can_override": true,
+      "source_urls": [
+        "https://onepiecebreaks.com/cover-stories/"
+      ]
+    },
+    {
+      "id": "independent_fleet_pact",
+      "title": "Seven Sails, Seven Agendas",
+      "inspired_by_cover_story_id": "straw_hat_grand_fleet_stories",
+      "canon_status": "optional_original",
+      "play_scope": "sandbox_only",
+      "spoiler_gate_arc": "dressrosa",
+      "stages": [
+        {
+          "id": "captains_at_anchor",
+          "title": "Captains at Anchor",
+          "setup": "Several independent captains arrive at the same port, each claiming a different version of a shared agreement.",
+          "objectives": [
+            "Hear each captain's terms",
+            "Identify the actual point of conflict"
+          ],
+          "approaches": [
+            "Hold an open meeting",
+            "Speak to each crew separately",
+            "Review the original pact and witnesses"
+          ],
+          "fail_forward": "The captains refuse a joint meeting, but individual negotiations remain possible."
+        },
+        {
+          "id": "the_shared_problem",
+          "title": "The Shared Problem",
+          "setup": "A blockade threatens all crews, but their preferred responses differ.",
+          "objectives": [
+            "Find a response that does not erase each crew's independence",
+            "Secure food and safe passage"
+          ],
+          "approaches": [
+            "Coordinate a convoy",
+            "Negotiate separate passage windows",
+            "Create a diversion to open a civilian route"
+          ],
+          "fail_forward": "Only part of the fleet gets through; the remaining captains remember who was helped."
+        },
+        {
+          "id": "no_one_owns_the_flag",
+          "title": "No One Owns the Flag",
+          "setup": "A proposed alliance risks turning independent crews into subordinates.",
+          "objectives": [
+            "Set the terms of future cooperation",
+            "Decide whether the pact is temporary or lasting"
+          ],
+          "approaches": [
+            "Create a voluntary mutual-aid pact",
+            "Keep the crews independent but share signals",
+            "Decline the alliance and settle immediate obligations"
+          ],
+          "fail_forward": "The pact dissolves without a battle; individual crew relationships persist."
+        }
+      ],
+      "outcomes": [
+        "A voluntary allied convoy",
+        "Independent captains who share intelligence",
+        "Several separate crew contacts with distinct loyalties"
+      ],
+      "canon_effect": "none",
+      "player_can_override": true,
+      "source_urls": [
+        "https://onepiecebreaks.com/cover-stories/"
+      ]
+    }
+  ]
+}
