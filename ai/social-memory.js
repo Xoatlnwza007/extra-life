@@ -68,14 +68,14 @@
     const legacy = clamp(Number((character && character.relationships || {})[targetId]) || 0, -100, 100);
     const raw = character && character.relationshipProfiles && character.relationshipProfiles[targetId];
     const dimensions = { ...DEFAULT_DIMENSIONS };
-    for (const key of BOND_DIMENSIONS) dimensions[key] = clamp(Number(raw && raw[key] ?? 0), -100, 100);
+    for (const key of BOND_DIMENSIONS) dimensions[key] = clamp(Number((raw && raw[key]) ?? 0), -100, 100);
     if (!raw) dimensions.familiarity = legacy;
-    const score = clamp(
+    const score = raw ? clamp(
       dimensions.trust * 0.30 + dimensions.affection * 0.20 +
       dimensions.respect * 0.20 + dimensions.familiarity * 0.20 -
       dimensions.fear * 0.05 - dimensions.rivalry * 0.05,
       -100, 100
-    );
+    ) : legacy;
     return { targetId: String(targetId), score: Math.round(score), legacyScore: legacy, dimensions };
   }
 
