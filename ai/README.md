@@ -330,3 +330,21 @@ consumption and awakening, exposes sea/Seastone weakness, and builds a compact
 progress summary for UI use. It is loaded as `OnePieceProgressionSystem`.
 The coordinator does not itself award training points, spend currency, or save
 the character; game rules and persistence remain owned by the main game layer.
+
+
+### Crew autonomy, recruitment and upkeep (prepared extension)
+
+The crew helper layer also supports consent-based recruitment. `evaluateRecruitment(character, offer)`
+scores an offer from the NPC's relationship with the captain, active goal alignment,
+role skill, personality and perceived risk. `recruitMember` refuses an offer below
+the willingness threshold rather than treating an NPC as a controllable inventory item.
+The threshold and offer context can be tuned by the game layer.
+
+Crew member records now carry bounded loyalty, morale, fatigue and role skill, plus
+an autonomy directive (autonomous by default). `updateMemberCondition` changes
+these values immutably. `setCrewSupplies`, `applyCrewMonth` and
+`getCrewReadiness` provide a first upkeep model: food shortage and unpaid wages
+affect morale/loyalty, rest reduces fatigue, and shared victories can improve morale.
+Low morale/loyalty produces warnings, not forced departures; the later relationship
+and NPC-agency layer must decide how a member responds. These helpers are not yet
+wired into the in-game crew panel or the annual/monthly game economy.
