@@ -363,15 +363,16 @@ async function main() {
       assert.equal(tripRestored.month, 1);
       assert.equal(tripRestored.money, 975);
 
-      await page.evaluate(async () => {
-        const originalAsk = ask;
-        const originalRunEv = runEv;
-        ask = async () => {};
-        // Isolate the monthly lodging charge from random story-event outcomes.
-        runEv = async () => {};
+      await page.evaluate(() => {
+        // Test the extracted rent hook without advancing unrelated random story events.
+        S.mo = 2;
+        S.alive = true;
         S.flags.titan = 0;
         S.flags.jailUntil = 0;
-        try { await monthPass(); } finally { ask = originalAsk; runEv = originalRunEv; }
+        S.job = null;
+        S.kids = [];
+        AUTO.on = false;
+        applyTravelMonthlyCharge();
         save();
       });
       const monthAdvanced = await page.evaluate(() => ({
