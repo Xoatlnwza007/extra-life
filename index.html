@@ -17754,25 +17754,13 @@ window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?
     { src: './ai/marine-ui.js', globalName: 'OnePieceMarineUI' }
   ]);
 
+  // All companion modules are embedded above this runtime in index.html.
+  // Do not fetch external JavaScript: a missing inline module is a hard readiness failure.
   function loadCompanionModules(host = root) {
-    const doc = host && host.document;
-    if (!doc || !doc.head || !doc.createElement) return Promise.resolve(false);
     if (host.__onePieceModulesPromise) return host.__onePieceModulesPromise;
-
-    const promise = COMPANION_MODULES.reduce((chain, item) => chain.then(results => {
-      if (host[item.globalName]) return results.concat(true);
-      return new Promise(resolve => {
-        const script = doc.createElement('script');
-        script.src = item.src;
-        script.async = false;
-        script.onload = () => resolve(!!host[item.globalName]);
-        script.onerror = () => {
-          host.__onePieceModuleErrors = (host.__onePieceModuleErrors || []).concat(item.src);
-          resolve(false);
-        };
-        doc.head.appendChild(script);
-      }).then(loaded => results.concat(loaded));
-    }), Promise.resolve([])).then(results => results.every(Boolean));
+    const missing = COMPANION_MODULES.filter(item => !host[item.globalName]);
+    host.__onePieceModuleErrors = missing.map(item => item.src);
+    const promise = Promise.resolve(missing.length === 0);
     host.__onePieceModulesPromise = promise;
     host.OnePieceSystemsReady = promise;
     return promise;
