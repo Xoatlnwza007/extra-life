@@ -259,8 +259,8 @@ test('main game is a single-file One Piece runtime with Playtest controls', () =
   const firstInlineModule = html.indexOf('<script data-inline-module="decision-engine">');
   const worldRuntime = html.indexOf('<script data-inline-module="world-simulation">');
   assert.ok(gameBootstrap >= 0, 'game bootstrap is present');
-  assert.ok(firstInlineModule > gameBootstrap, 'One Piece runtime modules are bundled after the game script');
-  assert.ok(worldRuntime > firstInlineModule, 'world runtime is bundled after its companion modules');
+  assert.ok(firstInlineModule >= 0 && firstInlineModule < gameBootstrap, 'companion modules load before the game bootstrap');
+  assert.ok(worldRuntime > firstInlineModule && worldRuntime < gameBootstrap, 'world runtime initializes after its companion modules but before game bootstrap');
   assert.doesNotMatch(html, /<script\s+src=["'][^"']+\.js["']/i, 'the playable HTML must not fetch external JavaScript');
   assert.doesNotMatch(html, /script\.src\s*=\s*item\.src/, 'inline runtime must not dynamically fetch companion modules');
   for (const moduleName of ['decision-engine','character-state','npc-brain','event-adapter','east-blue-starter','crew-system','devil-fruit-system','haki-system','progression-system','marine-system','combat-adapter','marine-ui']) {
