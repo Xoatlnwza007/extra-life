@@ -13,6 +13,7 @@ const eventAdapter = require('../ai/event-adapter.js');
 const world = require('../ai/world-simulation.js');
 const crews = require('../ai/crew-system.js');
 const npcLife = require('../ai/npc-life.js');
+const socialMemory = require('../ai/social-memory.js');
 
  
 test('browser bootstrap loads the One Piece companion systems in dependency order', async () => {
@@ -1371,4 +1372,85 @@ test('NPC goals and activity choices remain local and do not force canon outcome
   }, { discoverableArea: true });
   assert.equal(result.resolved, true);
   assert.equal(result.worldEffects.locationChanged, false);
+});
+
+
+test('episodic recall ranks memories by people, tags, location and importance', () => {
+  let character = stateApi.createCharacterState({ id: 'recaller' });
+  character = socialMemory.recordEpisode(character, {
+    id: 'memory-help', event: 'A navigator shared food after a storm',
+    actorIds: ['navigator'], targetIds: ['recaller'], tags: ['help', 'storm'],
+    location: 'Drum Island', importance: 5, createdAt: '2026-01-01T00:00:00.000Z'
+  });
+  character = socialMemory.recordEpisode(character, {
+    id: 'memory-market', event: 'Bought apples at the market',
+    actorIds: ['merchant'], tags: ['trade'], location: 'Loguetown',
+    importance: 2, createdAt: '2026-01-02T00:00:00.000Z'
+  });
+  const recalled = socialMemory.recallMemories(character, {
+    people: ['navigator'], tags: ['help'], location: 'Drum Island'
+  }, { now: Date.parse('2026-01-03T00:00:00.000Z') });
+  assert.equal(recalled[0].memory.id, 'memory-help');
+  assert.ok(recalled[0].score > 0);
+});
+
+test('NPC bonds track trust, affection, respect, fear and rivalry separately', () => {
+  let character = stateApi.createCharacterState({ id: 'bonded-npc' });
+  character = socialMemory.updateBond(character, 'player', {
+    trust: 60, affection: 20, respect: 30, fear: 5
+  }, { event: 'player protected the village' });
+  let bond = socialMemory.getBond(character, 'player');
+  assert.equal(bond.dimensions.trust, 60);
+  assert.equal(bond.dimensions.affection, 20);
+  assert.equal(bond.dimensions.fear, 5);
+  assert.equal(socialMemory.bondLabel(bond), 'friendly');
+  character = socialMemory.updateBond(character, 'player', { fear: 90, rivalry: 50 });
+  bond = socialMemory.getBond(character, 'player');
+  assert.equal(bond.dimensions.fear, 95);
+  assert.equal(bond.dimensions.rivalry, 50);
+  assert.equal(socialMemory.getBond(character, 'player').score < 50, true);
+});
+
+test('social reactions recall prior harm and become guarded without deleting positive bonds', () => {
+  let character = stateApi.createCharacterState({ id: 'cautious-npc' });
+  character = socialMemory.updateBond(character, 'player', { trust: 45, affection: 30 });
+  character = socialMemory.recordEpisode(character, {
+    event: 'Player threatened the NPC', actorIds: ['player'],
+    targetIds: ['cautious-npc'], tags: ['threat', 'violence'],
+    importance: 5, polarity: 'negative', createdAt: '2026-01-01T00:00:00.000Z'
+  });
+  character = socialMemory.updateBond(character, 'player', { fear: 80 });
+  const reaction = socialMemory.evaluateSocialResponse(character, 'player', {
+    tags: ['violence'], now: Date.parse('2026-01-02T00:00:00.000Z')
+  });
+  assert.equal(reaction.stance, 'guarded');
+  assert.equal(reaction.recalled.length, 1);
+  assert.ok(reaction.willingnessToHelp < 50);
+});
+
+test('mutual interactions create separate memories and distinct relationship changes', () => {
+  const first = stateApi.createCharacterState({ id: 'first' });
+  const second = stateApi.createCharacterState({ id: 'second' });
+  const result = socialMemory.recordMutualInteraction(first, second, {
+    event: 'Shared supplies during a storm', tags: ['help', 'storm'],
+    location: 'Drum Island', importance: 4, createdAt: '2026-01-01T00:00:00.000Z'
+  }, { trust: 15, respect: 5 }, { trust: 8, affection: 10 });
+  assert.equal(result.recorded, true);
+  assert.equal(result.first.memories.length, 1);
+  assert.equal(result.second.memories.length, 1);
+  assert.equal(result.first.memories[0].actorIds[0], 'first');
+  assert.equal(result.second.memories[0].actorIds[0], 'second');
+  assert.equal(socialMemory.getBond(result.first, 'second').dimensions.trust, 15);
+  assert.equal(socialMemory.getBond(result.second, 'first').dimensions.affection, 10);
+  assert.equal(first.memories.length, 0);
+  assert.equal(second.memories.length, 0);
+});
+
+test('social memory layer preserves legacy scalar relationships', () => {
+  const character = stateApi.createCharacterState({
+    id: 'legacy-npc', relationships: { player: 65 }
+  });
+  const bond = socialMemory.getBond(character, 'player');
+  assert.equal(bond.score, 65);
+  assert.equal(socialMemory.bondLabel(bond), 'trusted');
 });
