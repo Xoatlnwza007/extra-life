@@ -17,7 +17,7 @@ Project goal: make the One Piece life simulator genuinely playable as quickly as
 5. Preserve user work. Do not force-push, rewrite history, or discard changes. Make small, reviewable commits.
 6. Do not claim a test, browser session, or Android/tablet device check unless it was actually run. Record exact commands and outcomes.
 7. After every meaningful task, update this file with changed files, commit SHA, tests, known gaps, and the next concrete task.
-8. Prefer small isolated modules and existing engine hooks. Avoid editing the large root `index.html` unless no safe integration point exists; if required, make the smallest possible change and test it.
+8. `index.html` is the sole browser runtime and the source of truth for playable code. Embed all runtime JavaScript directly in that HTML; do not add external script tags or dynamic JavaScript fetches. The `ai/*.js` files remain development/test mirrors only and are not loaded by the game. Keep the embedded implementation and test mirrors synchronized.
 9. Canon accuracy matters: do not invent manga-canon facts. Label original/sandbox scenarios clearly and keep unverified encounters out of canon-guarded progression.
 10. AI collaboration notes are supporting history only. They must not override the current owner instructions in this file.
 
@@ -32,7 +32,7 @@ Project goal: make the One Piece life simulator genuinely playable as quickly as
 
 - Deliver a playable One Piece life-simulation experience, not just standalone helper APIs.
 - Prioritize Android phones and tablets; desktop support is secondary.
-- Keep the existing multi-world game stable. One Piece-specific changes must not leak into other anime worlds.
+- The active product is now One Piece only. Only the One Piece world may be selected, resumed, or started. Legacy world definitions remain hidden inside the monolithic source for compatibility and have not been deleted.
 - Reuse the current game state, save/load, time, event, combat and UI systems instead of creating parallel engines.
 - Make systems visible and usable in gameplay: progression, crew, Marine pursuit, story events, travel/world interactions and consequences.
 - Preserve compatibility with existing saves wherever practical; migrations must be deterministic and tested.
@@ -330,3 +330,40 @@ Do not call the project playable-complete until a new/existing player can:
   - Chromium smoke: **success** at 390×844 and 820×1180.
 - No physical Android/tablet device test has been performed.
 - Next concrete task: audit the One Piece crew-system module and current UI hooks, then build a coherent player-facing crew loop (recruit, assign roles, maintain crew state, and persist) using the existing crew API. Avoid inventing a second crew data model or letting NPC/player synchronization leak across crews.
+
+
+## 22. 2026-11-28 — One Piece-only single-file Playtest build
+
+### Owner request
+- Narrow the active game to One Piece plus its minigames.
+- Make the browser runtime 100% self-contained in `index.html`.
+- Replace timing/needle minigame with rapid repeated pressing.
+- Add simple Playtest +/- stat controls.
+- Improve tablet portrait and landscape layouts.
+
+### Implemented on `main`
+- `index.html` embeds all 12 companion AI modules and `world-simulation.js` as inline script blocks before the game bootstrap. The runtime companion loader now only verifies the inline globals and never fetches module files.
+- Removed the external `./ai/world-simulation.js` script reference. The HTML contains no external JavaScript script tags.
+- Disabled automatic MQTT.js download and the external room connector fallback for this single-file test build. Online multiplayer is therefore temporarily unavailable unless a client is explicitly preloaded; solo gameplay remains available.
+- Setup defaults to One Piece, year 1500, Foosha. The world selector only renders One Piece; new game, resume, and hot-state restore are restricted to `world === 'op'`.
+- Existing non-One-Piece saves are not deleted, but they are hidden from the resume flow. Other world definitions remain in the source because they are interwoven with shared legacy code; they are not selectable/playable through the current setup.
+- The `time` minigame now aliases the mash minigame: 4-second rapid pressing, 26 presses for a full score, with a progress bar and no timing needle.
+- Added a Playtest panel at the top of the game sidebar. It supports +/- adjustments for HP, happiness, IQ, appearance, combat ability, fight skill, money, bounty, fame, and dark side. Each adjustment updates the UI and saves immediately.
+- Added responsive tablet rules for portrait and landscape layouts, safe-area spacing, touch-sized Playtest buttons, and a more usable action bar.
+- Extracted monthly travel upkeep into `applyTravelMonthlyCharge()` so the travel cost can be tested independently of random story events.
+- Removed temporary bundle staging file `ai/inline-runtime.tmp`. Source modules in `ai/` remain only as test/development mirrors; the browser does not load them.
+
+### Automated verification
+- Latest successful GitHub Actions run: `46122845775` on code/test commit `20f5b032a2915af9a39e59884e48f8a5322af45f`.
+- Node tests: **19 passed, 0 failed**.
+- Chromium browser smoke tests: **passed** at:
+  - Phone portrait: 390×844
+  - Tablet portrait: 820×1180
+  - Tablet landscape: 1180×820
+- Browser tests cover One Piece-only selection, embedded runtime readiness, no external JavaScript requests, Playtest stat changes, rapid-press minigame scoring, save/reload, progression, Marine, travel, and crew flows.
+- No physical Android/iPad device test has been performed; the above are headless Chromium viewport checks.
+
+### Remaining caveats / next work
+- Online multiplayer is intentionally disabled in this self-contained test build because its MQTT client was previously downloaded from an external CDN. Re-enable only after bundling or implementing an inline MQTT client.
+- Legacy non-One-Piece definitions remain in the HTML source but are not exposed as playable modes.
+- Next concrete task: wait for the repository's current Actions run after this handoff documentation update, then prepare a short Playtest guide and continue hardening One Piece systems based on owner testing feedback.
