@@ -194,6 +194,131 @@
     return (crews || []).find(crew => crew.status === 'active' && (crew.members || []).some(member => member.characterId === id)) || null;
   }
 
+
+  // Recruitment is a negotiation, not an automatic player command.
+  function evaluateRecruitment(character, offer = {}) {
+    if (!character || !character.id) return { eligible: false, score: 0, reasons: ['missing-character'] };
+    const relationship = clamp(Number((character.relationships || {})[offer.captainId || 'player']) || 0, -100, 100);
+    const traits = Array.isArray(character.traits) ? character.traits : [];
+    const desiredTags = new Set(Array.isArray(offer.sharedGoals) ? offer.sharedGoals : []);
+    const goals = (character.goals || []).filter(goal => goal.status === 'active');
+    const aligned = goals.some(goal => (goal.tags || []).some(tag => desiredTags.has(tag)));
+    const role = String(offer.role || 'fighter');
+    const skill = clamp(Number((character.skills || {})[role]) || 0, 0, 100);
+    const risk = clamp(Number(offer.riskLevel) || 0, 0, 100);
+    let score = 50 + relationship * 0.35 + (aligned ? 12 : 0) + skill * 0.12;
+    if (traits.includes('independent')) score -= 8;
+    if (traits.includes('loyal')) score += 7;
+    if (traits.includes('cautious')) score -= risk * 0.12;
+    if (traits.includes('brave') || traits.includes('reckless')) score += risk * 0.06;
+    if (character.needs && Number(character.needs.safety) > 80 && risk > 40) score -= 10;
+    score = clamp(score, 0, 100);
+    return {
+      eligible: true,
+      score: Math.round(score),
+      willing: score >= clamp(Number(offer.minimumScore) || 60, 0, 100),
+      reasons: [
+        relationship >= 20 ? 'positive-relationship' : relationship <= -20 ? 'negative-relationship' : 'neutral-relationship',
+        aligned ? 'shared-goal' : 'no-shared-goal',
+        skill > 0 ? 'role-skill-match' : 'role-training-needed',
+        risk > 40 ? 'high-risk-offer' : 'ordinary-risk'
+      ]
+    };
+  }
+
+  function recruitMember(crew, character, role = 'fighter', options = {}) {
+    if (!character || !character.id) return { crew, joined: false, reason: 'invalid-character' };
+    const evaluation = evaluateRecruitment(character, { ...options, role });
+    if (!evaluation.eligible) return { crew, joined: false, reason: 'invalid-character', evaluation };
+    if (!evaluation.willing) return { crew, joined: false, reason: 'declined', evaluation };
+    const result = joinCrew(crew, character.id, role, {
+      ...options,
+      memberProfile: character,
+      loyalty: clamp(evaluation.score, 0, 100)
+    });
+    return { ...result, evaluation };
+  }
+
+  function updateMemberCondition(crew, characterId, changes = {}, options = {}) {
+    if (!crew || !characterId) return { crew, updated: false, reason: 'invalid-member' };
+    const current = (crew.members || []).find(member => member.characterId === String(characterId));
+    if (!current) return { crew, updated: false, reason: 'not-member' };
+    const bounded = {};
+    for (const key of ['loyalty', 'morale', 'fatigue', 'skill']) {
+      if (changes[key] !== undefined) {
+        const value = Number(changes[key]);
+        if (!Number.isFinite(value)) return { crew, updated: false, reason: 'invalid-' + key };
+        bounded[key] = clamp(value, 0, 100);
+      }
+    }
+    if (changes.directive !== undefined) {
+      const allowed = ['autonomous', 'follow-captain', 'protect-crew', 'pursue-goal', 'avoid-combat', 'custom'];
+      if (!allowed.includes(changes.directive)) return { crew, updated: false, reason: 'invalid-directive' };
+      bounded.directive = changes.directive;
+    }
+    const members = crew.members.map(member => member.characterId === String(characterId)
+      ? { ...member, ...bounded, updatedAt: options.at || new Date().toISOString() }
+      : member);
+    return { crew: { ...crew, members }, updated: true, member: members.find(item => item.characterId === String(characterId)) };
+  }
+
+  function setCrewSupplies(crew, supplies = {}) {
+    if (!crew) return crew;
+    const nextSupplies = { ...(crew.supplies || {}) };
+    for (const [key, raw] of Object.entries(supplies)) {
+      const value = Number(raw);
+      if (!Number.isFinite(value)) continue;
+      nextSupplies[key] = clamp(Math.floor(value), 0, 1000000);
+    }
+    return { ...crew, supplies: nextSupplies };
+  }
+
+  function applyCrewMonth(crew, options = {}) {
+    if (!crew || crew.status !== 'active') return { crew, events: [], changed: false };
+    const foodPerMember = Math.max(0, Number(options.foodPerMember ?? 1));
+    const wagesPerMember = Math.max(0, Number(options.wagesPerMember ?? 0));
+    const members = (crew.members || []).map(member => ({ ...member }));
+    const supplies = { ...(crew.supplies || {}) };
+    const events = [];
+    const foodCost = Math.ceil(members.length * foodPerMember);
+    const availableFood = Math.max(0, Number(supplies.food) || 0);
+    supplies.food = Math.max(0, availableFood - foodCost);
+    const shortage = Math.max(0, foodCost - availableFood);
+    for (const member of members) {
+      const morale = clamp(Number(member.morale ?? 60) - (shortage ? 12 : 0) + (options.sharedVictory ? 4 : 0), 0, 100);
+      const fatigue = clamp(Number(member.fatigue ?? 20) + (options.rested ? -15 : 5), 0, 100);
+      const loyalty = clamp(Number(member.loyalty ?? 50) - (shortage ? 3 : 0), 0, 100);
+      Object.assign(member, { morale, fatigue, loyalty });
+      if (morale <= 20 || loyalty <= 15) events.push({ type: 'member-at-risk', characterId: member.characterId, morale, loyalty });
+    }
+    const updated = {
+      ...crew,
+      members,
+      supplies,
+      history: [...(crew.history || []), {
+        type: 'monthly-crew-upkeep', foodCost, shortage, wagesPerMember,
+        at: options.at || new Date().toISOString()
+      }].slice(-100)
+    };
+    return { crew: updated, events, changed: true, foodCost, shortage };
+  }
+
+  function getCrewReadiness(crew) {
+    const members = (crew && crew.members) || [];
+    if (!members.length) return { score: 0, morale: 0, loyalty: 0, fatigue: 0, memberCount: 0 };
+    const average = key => members.reduce((sum, member) => sum + clamp(Number(member[key] ?? (key === 'fatigue' ? 20 : 60)), 0, 100), 0) / members.length;
+    const morale = average('morale');
+    const loyalty = average('loyalty');
+    const fatigue = average('fatigue');
+    return {
+      score: Math.round(clamp(morale * 0.4 + loyalty * 0.4 + (100 - fatigue) * 0.2, 0, 100)),
+      morale: Math.round(morale),
+      loyalty: Math.round(loyalty),
+      fatigue: Math.round(fatigue),
+      memberCount: members.length
+    };
+  }
+
   function disbandCrew(crew, reason = 'disbanded') {
     if (!crew || crew.status !== 'active') return crew;
     return {
@@ -205,7 +330,7 @@
     };
   }
 
-  const api = Object.freeze({ DEFAULT_ROLES, createCrew, joinCrew, leaveCrew, setMemberRole, transferCaptaincy, addBounty, adjustReputation, crewRelationLabel, setCrewRelation, resolveCrewEncounter, findCrewForMember, disbandCrew });
+  const api = Object.freeze({ DEFAULT_ROLES, createCrew, joinCrew, leaveCrew, setMemberRole, transferCaptaincy, addBounty, adjustReputation, crewRelationLabel, setCrewRelation, resolveCrewEncounter, findCrewForMember, evaluateRecruitment, recruitMember, updateMemberCondition, setCrewSupplies, applyCrewMonth, getCrewReadiness, disbandCrew });
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.OnePieceCrewSystem = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
