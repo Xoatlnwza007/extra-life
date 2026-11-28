@@ -422,7 +422,7 @@ async function main() {
         crewPanelBox.x + crewPanelBox.width <= viewport.width &&
         crewPanelBox.y + crewPanelBox.height <= viewport.height,
         'crew panel must remain inside the phone/tablet viewport');
-      save();
+      await page.evaluate(() => save());
       const crewBeforeReload = await page.evaluate(() => {
         const crew = S.crews.find(item => item.id === S.playerCrewId);
         return {
