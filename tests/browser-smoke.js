@@ -33,14 +33,18 @@ async function main() {
         hasTouch: viewport.width < 1300
       });
       const pageErrors = [];
+      const externalScriptRequests = [];
       page.on('pageerror', error => pageErrors.push(error.message));
+      page.on('request', request => {
+        if (request.resourceType() === 'script') externalScriptRequests.push(request.url());
+      });
       await page.goto('http://127.0.0.1:4173/', { waitUntil: 'domcontentloaded' });
       await page.waitForFunction(() => !!window.OnePieceWorldSimulation && !!window.OnePieceSystemsReady);
       await page.waitForFunction(async () => await window.OnePieceSystemsReady === true);
       await page.waitForFunction(() => typeof WORLDS !== 'undefined' &&
         WORLDS.op.meets.filter(event => event.id.startsWith('op_eb_')).length === 4);
       assert.equal(await page.locator('button.world').count(), 1, 'only One Piece is offered in the world selector');
-      assert.equal(await page.locator('button.world').innerText(), 'วันพีซ');
+      assert.equal(await page.locator('button.world .wt').innerText(), 'วันพีซ');
 
       const starterMetadata = await page.evaluate(() => WORLDS.op.meets
         .filter(event => event.id.startsWith('op_eb_'))
@@ -450,6 +454,7 @@ async function main() {
         };
       });
       assert.deepEqual(crewAfterReload, crewBeforeReload);
+      assert.deepEqual(externalScriptRequests, [], 'single-file HTML must not request external JavaScript');
       assert.deepEqual(pageErrors, [], 'browser page errors: ' + pageErrors.join('; '));
       await page.close();
       process.stdout.write('PASS phone/tablet smoke at ' + viewport.width + 'x' + viewport.height + '\n');
