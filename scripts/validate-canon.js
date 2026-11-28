@@ -133,6 +133,21 @@ function validateDatasets(input = {}) {
         errors.push('event ' + event.id + ': ends after its arc');
       }
     }
+    if (event.chapter_milestones !== undefined) {
+      if (!Array.isArray(event.chapter_milestones)) {
+        errors.push('event ' + event.id + ': chapter_milestones must be an array');
+      } else {
+        for (const milestone of event.chapter_milestones) {
+          if (!Number.isInteger(milestone.chapter) || (arc && milestone.chapter < arc.chapter_start) ||
+              (arc && arc.chapter_end !== null && milestone.chapter > arc.chapter_end)) {
+            errors.push('event ' + event.id + ': milestone chapter is outside its arc');
+          }
+          if (!milestone.label || !milestone.note || !isHttpUrl(milestone.source_url)) {
+            errors.push('event ' + event.id + ': milestone needs a label, note, and valid source URL');
+          }
+        }
+      }
+    }
     if (!Array.isArray(event.involved_characters) || !Array.isArray(event.baseline_flags)) {
       errors.push('event ' + event.id + ': involved_characters and baseline_flags must be arrays');
     }
