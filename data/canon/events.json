@@ -1,0 +1,674 @@
+{
+  "schema_version": 1,
+  "timeline_policy": "Canon events are reference anchors only; player outcomes may diverge.",
+  "coverage": "Representative first tranche; not exhaustive.",
+  "events": [
+    {
+      "id": "east_blue_crew_formation",
+      "order": 1,
+      "arc_id": "east_blue",
+      "title": "The voyage begins",
+      "chapter_range": {
+        "start": 1,
+        "end": 68
+      },
+      "location": "East Blue",
+      "involved_characters": [
+        "Monkey D. Luffy",
+        "Roronoa Zoro",
+        "Nami",
+        "Usopp",
+        "Sanji"
+      ],
+      "summary": "Luffy sets out from Dawn Island and gradually gathers the first members of his crew through a series of East Blue adventures.",
+      "canonical_outcome": "A small pirate crew forms and sets its course toward the Grand Line.",
+      "baseline_flags": [
+        "east_blue.first_voyage_begun",
+        "straw_hat_crew.initial_members_gathered"
+      ],
+      "player_hook": "A new pirate can begin at the edge of the East Blue, meet local crews, and pursue a personal reason to sail.",
+      "canon_status": "manga_canon",
+      "player_can_override": true,
+      "trigger_mode": "scenario_anchor_only",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ]
+    },
+    {
+      "id": "arlong_park_liberation",
+      "order": 2,
+      "arc_id": "east_blue",
+      "title": "The Arlong Park conflict",
+      "chapter_range": {
+        "start": 69,
+        "end": 95
+      },
+      "location": "Cocoyasi Village",
+      "involved_characters": [
+        "Monkey D. Luffy",
+        "Nami",
+        "Arlong",
+        "Nojiko"
+      ],
+      "summary": "Nami's connection to Arlong's rule is exposed, and the conflict culminates in the liberation of Cocoyasi Village.",
+      "canonical_outcome": "Arlong's control over the village is broken and Nami is free to choose her own future.",
+      "baseline_flags": [
+        "east_blue.arlong_defeated",
+        "cocoyasi.liberated",
+        "nami.free"
+      ],
+      "player_hook": "A player may encounter a village under pirate protection-rackets, investigate the local power structure, and decide whether to intervene.",
+      "canon_status": "manga_canon",
+      "player_can_override": true,
+      "trigger_mode": "scenario_anchor_only",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ]
+    },
+    {
+      "id": "alabasta_civil_war_resolved",
+      "order": 3,
+      "arc_id": "alabasta",
+      "title": "The Alabasta conflict",
+      "chapter_range": {
+        "start": 101,
+        "end": 217
+      },
+      "location": "Alabasta Kingdom",
+      "involved_characters": [
+        "Monkey D. Luffy",
+        "Nefertari Vivi",
+        "Crocodile",
+        "Nefertari Cobra"
+      ],
+      "summary": "The Straw Hats help Vivi expose the plot behind Alabasta's civil conflict and confront the forces seeking to seize the kingdom.",
+      "canonical_outcome": "Crocodile's takeover attempt is stopped and the fighting in Alabasta comes to an end.",
+      "baseline_flags": [
+        "alabasta.coup_stopped",
+        "baroque_works.leadership_defeated",
+        "alabasta.civil_conflict_resolved"
+      ],
+      "player_hook": "An arriving crew can take contracts from either side, investigate manipulated information, or seek a peaceful route before the conflict escalates.",
+      "canon_status": "manga_canon",
+      "player_can_override": true,
+      "trigger_mode": "scenario_anchor_only",
+      "source_urls": [
+        "https://one-piece.com/story/alabasta/index.html",
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ]
+    },
+    {
+      "id": "skypiea_golden_bell",
+      "order": 4,
+      "arc_id": "sky_island",
+      "title": "The bell of Shandora",
+      "chapter_range": {
+        "start": 218,
+        "end": 303
+      },
+      "location": "Skypiea / Upper Yard",
+      "involved_characters": [
+        "Monkey D. Luffy",
+        "Enel",
+        "Noland",
+        "Kalgara"
+      ],
+      "summary": "The conflict in the sky island reaches its climax as the history of Shandora and the promise connected to its golden bell come to the surface.",
+      "canonical_outcome": "The bell rings across the sky, reaching people below and resolving a long-standing promise.",
+      "baseline_flags": [
+        "skypiea.golden_bell_rung",
+        "shandora.history_revealed"
+      ],
+      "player_hook": "A crew may search for a lost signal, learn competing versions of an island's history, and choose whose account to trust.",
+      "canon_status": "manga_canon",
+      "player_can_override": true,
+      "trigger_mode": "scenario_anchor_only",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ]
+    },
+    {
+      "id": "davy_back_fight",
+      "order": 5,
+      "arc_id": "davy_back_fight",
+      "title": "The Davy Back challenge",
+      "chapter_range": {
+        "start": 304,
+        "end": 321
+      },
+      "location": "Long Ring Long Land",
+      "involved_characters": [
+        "Monkey D. Luffy",
+        "Foxy",
+        "Foxy Pirates"
+      ],
+      "summary": "A pirate crew uses the Davy Back Fight to challenge another crew and put membership and pride at stake.",
+      "canonical_outcome": "The challenge concludes and the crews continue their voyages.",
+      "baseline_flags": [
+        "long_ring_long_land.davy_back_concluded"
+      ],
+      "player_hook": "A rival crew may propose a multi-round contest with negotiable stakes; the player can refuse, renegotiate, or compete.",
+      "canon_status": "manga_canon",
+      "player_can_override": true,
+      "trigger_mode": "scenario_anchor_only",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ]
+    },
+    {
+      "id": "water_seven_crew_crisis",
+      "order": 6,
+      "arc_id": "water_seven",
+      "title": "The Water Seven crisis",
+      "chapter_range": {
+        "start": 322,
+        "end": 374
+      },
+      "location": "Water Seven",
+      "involved_characters": [
+        "Monkey D. Luffy",
+        "Usopp",
+        "Nico Robin",
+        "Franky",
+        "Iceburg"
+      ],
+      "summary": "The crew faces a crisis over its damaged ship, while Robin's disappearance and the secrets of Water Seven pull the island into a larger conflict.",
+      "canonical_outcome": "The crew's internal conflict and the mystery surrounding Robin lead directly into the events at Enies Lobby.",
+      "baseline_flags": [
+        "water_seven.going_merry_critical",
+        "water_seven.robin_missing"
+      ],
+      "player_hook": "A ship-repair stop can become a story about scarce materials, shipwright politics, loyalty, and the cost of replacing a beloved vessel.",
+      "canon_status": "manga_canon",
+      "player_can_override": true,
+      "trigger_mode": "scenario_anchor_only",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ]
+    },
+    {
+      "id": "enies_lobby_rescue",
+      "order": 7,
+      "arc_id": "enies_lobby",
+      "title": "The Enies Lobby rescue",
+      "chapter_range": {
+        "start": 375,
+        "end": 441
+      },
+      "location": "Enies Lobby",
+      "involved_characters": [
+        "Monkey D. Luffy",
+        "Nico Robin",
+        "Franky",
+        "CP9"
+      ],
+      "summary": "The Straw Hats confront the World Government's agents to bring Robin back, making their loyalty to a crewmate unmistakable.",
+      "canonical_outcome": "Robin and Franky are rescued, and the crew escapes after openly challenging the Government.",
+      "baseline_flags": [
+        "enies_lobby.robin_rescued",
+        "enies_lobby.government_flag_burned"
+      ],
+      "player_hook": "A rescue mission can branch between stealth, negotiation, sabotage, and direct assault, with consequences for allies and wanted status.",
+      "canon_status": "manga_canon",
+      "player_can_override": true,
+      "trigger_mode": "scenario_anchor_only",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ]
+    },
+    {
+      "id": "thriller_bark_shadow_crisis",
+      "order": 8,
+      "arc_id": "thriller_bark",
+      "title": "The Thriller Bark shadow crisis",
+      "chapter_range": {
+        "start": 442,
+        "end": 490
+      },
+      "location": "Thriller Bark",
+      "involved_characters": [
+        "Monkey D. Luffy",
+        "Gecko Moria",
+        "Brook",
+        "Perona"
+      ],
+      "summary": "The crew enters a ship-like island in the Florian Triangle, where stolen shadows and an army of zombies threaten visitors.",
+      "canonical_outcome": "Moria's scheme is stopped and Brook is able to continue his journey.",
+      "baseline_flags": [
+        "thriller_bark.moria_defeated",
+        "brook.journey_resumed"
+      ],
+      "player_hook": "A fogbound ship graveyard can host a mystery about stolen identities, missing shadows, and bargains with an isolated power.",
+      "canon_status": "manga_canon",
+      "player_can_override": true,
+      "trigger_mode": "scenario_anchor_only",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ]
+    },
+    {
+      "id": "sabaody_separation",
+      "order": 9,
+      "arc_id": "sabaody_archipelago",
+      "title": "The Sabaody separation",
+      "chapter_range": {
+        "start": 491,
+        "end": 513
+      },
+      "location": "Sabaody Archipelago",
+      "involved_characters": [
+        "Straw Hat Pirates",
+        "Bartholomew Kuma",
+        "Kizaru",
+        "Sentomaru"
+      ],
+      "summary": "The crew's encounter with overwhelming forces at Sabaody ends with its members scattered to different destinations.",
+      "canonical_outcome": "The Straw Hats are separated and must survive and grow independently before reuniting.",
+      "baseline_flags": [
+        "sabaody.crew_separated",
+        "straw_hat_crew.training_period_begins"
+      ],
+      "player_hook": "A high-risk port incident can split a player crew, opening parallel survival and reunion storylines without forcing the same separation.",
+      "canon_status": "manga_canon",
+      "player_can_override": true,
+      "trigger_mode": "scenario_anchor_only",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ]
+    },
+    {
+      "id": "amazon_lily_arrival",
+      "order": 10,
+      "arc_id": "amazon_lily",
+      "title": "The Amazon Lily arrival",
+      "chapter_range": {
+        "start": 514,
+        "end": 524
+      },
+      "location": "Amazon Lily",
+      "involved_characters": [
+        "Monkey D. Luffy",
+        "Boa Hancock",
+        "Kuja Pirates"
+      ],
+      "summary": "Luffy arrives on a secluded island ruled by the Kuja and learns more about the crisis surrounding his brother.",
+      "canonical_outcome": "Luffy gains a path toward Impel Down and the attempt to reach Ace.",
+      "baseline_flags": [
+        "amazon_lily.luffy_arrived",
+        "ace_rescue_route.discovered"
+      ],
+      "player_hook": "A shipwrecked outsider must navigate unfamiliar customs, earn trust, and decide whether to aid a stranger's desperate mission.",
+      "canon_status": "manga_canon",
+      "player_can_override": true,
+      "trigger_mode": "scenario_anchor_only",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ]
+    },
+    {
+      "id": "impel_down_breakout",
+      "order": 11,
+      "arc_id": "impel_down",
+      "title": "The Impel Down breakout",
+      "chapter_range": {
+        "start": 525,
+        "end": 549
+      },
+      "location": "Impel Down",
+      "involved_characters": [
+        "Monkey D. Luffy",
+        "Bon Clay",
+        "Buggy",
+        "Jinbe",
+        "Magellan"
+      ],
+      "summary": "A desperate rescue attempt turns into a prison escape involving prisoners and former enemies who temporarily cooperate.",
+      "canonical_outcome": "A group of inmates escapes and heads toward the coming war.",
+      "baseline_flags": [
+        "impel_down.mass_escape",
+        "ace_rescue_attempt_continues"
+      ],
+      "player_hook": "A prison-break scenario can be solved through alliances, forged access, diversion, or a risky breakout, with trust between temporary allies at stake.",
+      "canon_status": "manga_canon",
+      "player_can_override": true,
+      "trigger_mode": "scenario_anchor_only",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ]
+    },
+    {
+      "id": "marineford_war_outcome",
+      "order": 12,
+      "arc_id": "marineford",
+      "title": "The Summit War",
+      "chapter_range": {
+        "start": 550,
+        "end": 597
+      },
+      "location": "Marineford",
+      "involved_characters": [
+        "Portgas D. Ace",
+        "Edward Newgate",
+        "Monkey D. Luffy",
+        "Whitebeard Pirates",
+        "Blackbeard Pirates"
+      ],
+      "summary": "The rescue of Ace collides with a world-scale war, whose losses and aftermath reshape the balance of power and the age of piracy.",
+      "canonical_outcome": "The war ends with major losses and the world enters a new period of upheaval.",
+      "baseline_flags": [
+        "marineford.summit_war_ended",
+        "world.power_balance_shifted",
+        "post_war_training_period"
+      ],
+      "player_hook": "The player may experience the war as a distant news event, a supply run, an evacuation, or a personal mission; participation is optional.",
+      "canon_status": "manga_canon",
+      "player_can_override": true,
+      "trigger_mode": "world_news_anchor",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ]
+    },
+    {
+      "id": "fishman_island_rebellion",
+      "order": 13,
+      "arc_id": "fish_man_island",
+      "title": "The Fish-Man Island rebellion",
+      "chapter_range": {
+        "start": 598,
+        "end": 653
+      },
+      "location": "Fish-Man Island",
+      "involved_characters": [
+        "Monkey D. Luffy",
+        "Jinbe",
+        "Shirahoshi",
+        "Hody Jones"
+      ],
+      "summary": "After reuniting, the Straw Hats become involved in a conflict rooted in discrimination, inherited hatred, and the future of Fish-Man Island.",
+      "canonical_outcome": "Hody Jones's rebellion is defeated and the island's unresolved social wounds remain a major concern.",
+      "baseline_flags": [
+        "fish_man_island.hody_defeated",
+        "fish_man_island.reconciliation_path_open"
+      ],
+      "player_hook": "A player can support relief efforts, investigate extremist recruitment, protect civilians, or negotiate between communities.",
+      "canon_status": "manga_canon",
+      "player_can_override": true,
+      "trigger_mode": "scenario_anchor_only",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ]
+    },
+    {
+      "id": "punk_hazard_alliance",
+      "order": 14,
+      "arc_id": "punk_hazard",
+      "title": "The Punk Hazard alliance",
+      "chapter_range": {
+        "start": 654,
+        "end": 700
+      },
+      "location": "Punk Hazard",
+      "involved_characters": [
+        "Monkey D. Luffy",
+        "Trafalgar Law",
+        "Caesar Clown",
+        "Smoker"
+      ],
+      "summary": "An alliance forms on a dangerous island split by extreme environments, exposing experiments and a supply chain tied to the underworld.",
+      "canonical_outcome": "The alliance's conflict with Caesar's operation sets up a wider confrontation with the underworld.",
+      "baseline_flags": [
+        "punk_hazard.law_luffy_alliance",
+        "punk_hazard.caesar_defeated"
+      ],
+      "player_hook": "A hazardous research island can generate rescue, sabotage, evidence-gathering, and escape routes with competing factions.",
+      "canon_status": "manga_canon",
+      "player_can_override": true,
+      "trigger_mode": "scenario_anchor_only",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ]
+    },
+    {
+      "id": "dressrosa_liberation",
+      "order": 15,
+      "arc_id": "dressrosa",
+      "title": "The Dressrosa uprising",
+      "chapter_range": {
+        "start": 701,
+        "end": 801
+      },
+      "location": "Dressrosa",
+      "involved_characters": [
+        "Monkey D. Luffy",
+        "Trafalgar Law",
+        "Donquixote Doflamingo",
+        "Rebecca"
+      ],
+      "summary": "The truth behind Dressrosa's ruler and its transformed citizens emerges as an uprising challenges the Donquixote Family.",
+      "canonical_outcome": "Doflamingo's rule ends and the Straw Hat Grand Fleet is formed from allied crews.",
+      "baseline_flags": [
+        "dressrosa.doflamingo_defeated",
+        "dressrosa.kingdom_liberated",
+        "straw_hat_grand_fleet.formed"
+      ],
+      "player_hook": "A kingdom-wide cover-up can be investigated through witnesses, missing records, underground markets, and alliances with local groups.",
+      "canon_status": "manga_canon",
+      "player_can_override": true,
+      "trigger_mode": "scenario_anchor_only",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ]
+    },
+    {
+      "id": "zou_mink_revelation",
+      "order": 16,
+      "arc_id": "zou",
+      "title": "The secret of Zou",
+      "chapter_range": {
+        "start": 802,
+        "end": 822
+      },
+      "location": "Zou",
+      "involved_characters": [
+        "Minks",
+        "Kin'emon",
+        "Raizo",
+        "Inuarashi",
+        "Nekomamushi"
+      ],
+      "summary": "The Minks reveal the depth of their loyalty and the island becomes a key link between the Straw Hats, Wano, and the Road Poneglyphs.",
+      "canonical_outcome": "The alliance gains crucial information and a new direction for its journey.",
+      "baseline_flags": [
+        "zou.raizo_protected",
+        "zou.road_poneglyph_found",
+        "ninja_pirate_mink_samurai_alliance"
+      ],
+      "player_hook": "A hidden community can test whether a visitor respects its customs and protectors before it shares sensitive information.",
+      "canon_status": "manga_canon",
+      "player_can_override": true,
+      "trigger_mode": "scenario_anchor_only",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ]
+    },
+    {
+      "id": "whole_cake_escape",
+      "order": 17,
+      "arc_id": "whole_cake_island",
+      "title": "The Whole Cake Island escape",
+      "chapter_range": {
+        "start": 823,
+        "end": 902
+      },
+      "location": "Totto Land",
+      "involved_characters": [
+        "Sanji",
+        "Monkey D. Luffy",
+        "Charlotte Linlin",
+        "Brook",
+        "Germa 66"
+      ],
+      "summary": "A political marriage becomes a trap, and the crew's attempt to bring Sanji home turns into a dangerous escape from Big Mom's territory.",
+      "canonical_outcome": "The crew escapes Totto Land after securing important information and surviving the collapse of the wedding plan.",
+      "baseline_flags": [
+        "whole_cake.sanji_rejoined",
+        "whole_cake.escape_completed",
+        "road_poneglyph_copy_obtained"
+      ],
+      "player_hook": "A player can infiltrate a powerful family's celebration, negotiate with relatives, steal records, or help an ally escape.",
+      "canon_status": "manga_canon",
+      "player_can_override": true,
+      "trigger_mode": "scenario_anchor_only",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ]
+    },
+    {
+      "id": "levely_world_conclave",
+      "order": 18,
+      "arc_id": "levely",
+      "title": "The Levely",
+      "chapter_range": {
+        "start": 903,
+        "end": 908
+      },
+      "location": "Mary Geoise",
+      "involved_characters": [
+        "World Leaders",
+        "Nefertari Vivi",
+        "Revolutionary Army"
+      ],
+      "summary": "Leaders from across the world gather at Mary Geoise while hidden political tensions and unseen operations move beneath the public summit.",
+      "canonical_outcome": "The summit closes with major unanswered questions and consequences for the world's political order.",
+      "baseline_flags": [
+        "levely.summit_concluded",
+        "world.political_tension_escalated"
+      ],
+      "player_hook": "This event is best represented through newspapers, rumors, diplomatic requests, and changes to regional conditions rather than forcing the player into the summit.",
+      "canon_status": "manga_canon",
+      "player_can_override": true,
+      "trigger_mode": "world_news_anchor",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ]
+    },
+    {
+      "id": "wano_country_liberation",
+      "order": 19,
+      "arc_id": "wano_country",
+      "title": "The raid on Onigashima",
+      "chapter_range": {
+        "start": 909,
+        "end": 1057
+      },
+      "location": "Wano Country / Onigashima",
+      "involved_characters": [
+        "Monkey D. Luffy",
+        "Kaidou",
+        "Kouzuki Momonosuke",
+        "Yamato",
+        "Ninja-Pirate-Mink-Samurai Alliance"
+      ],
+      "summary": "An alliance challenges Kaidou and his forces, while Wano's history and the Kozuki family's fate become central to the battle.",
+      "canonical_outcome": "Kaidou's rule is broken and Wano enters a new period under Momonosuke.",
+      "baseline_flags": [
+        "wano.raid_concluded",
+        "wano.kaidou_defeated",
+        "wano.new_shogun_installed"
+      ],
+      "player_hook": "A player may join the resistance, smuggle supplies, free prisoners, or remain outside Wano and learn the result through news.",
+      "canon_status": "manga_canon",
+      "player_can_override": true,
+      "trigger_mode": "scenario_anchor_only",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ]
+    },
+    {
+      "id": "egghead_incident",
+      "order": 20,
+      "arc_id": "egghead",
+      "title": "The Egghead incident",
+      "chapter_range": {
+        "start": 1058,
+        "end": 1126
+      },
+      "location": "Egghead",
+      "involved_characters": [
+        "Monkey D. Luffy",
+        "Dr. Vegapunk",
+        "Jewelry Bonney",
+        "CP0",
+        "World Government"
+      ],
+      "summary": "The Straw Hats become involved in Vegapunk's research and a confrontation that exposes more of the world's hidden history before they escape the island.",
+      "canonical_outcome": "The incident sends shockwaves through the world and the Straw Hats depart toward Elbaph.",
+      "baseline_flags": [
+        "egghead.incident_concluded",
+        "world.hidden_history_publicly_discussed",
+        "straw_hat_crew.elbaph_route"
+      ],
+      "player_hook": "Represent the incident through optional research contracts, extraction missions, scientific rumors, and global news updates.",
+      "canon_status": "manga_canon",
+      "player_can_override": true,
+      "trigger_mode": "world_news_anchor",
+      "source_urls": [
+        "https://one-piece.com/story/egghead/index.html",
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ]
+    },
+    {
+      "id": "elbaph_arrival",
+      "order": 21,
+      "arc_id": "elbaph",
+      "title": "The Elbaph adventure begins",
+      "chapter_range": {
+        "start": 1127,
+        "end": null
+      },
+      "location": "Elbaph",
+      "involved_characters": [
+        "Straw Hat Pirates",
+        "Loki",
+        "Saul",
+        "Scopper Gaban",
+        "Giant Warrior Pirates"
+      ],
+      "summary": "The crew reaches the land of the giants, where its layered geography, old friendships, inherited history, and new conflicts open the next stage of the voyage.",
+      "canonical_outcome": "Ongoing; outcomes must be extended only after verifying newer manga chapters.",
+      "baseline_flags": [
+        "elbaph.arc_opened",
+        "elbaph.story_in_progress"
+      ],
+      "player_hook": "Elbaph can be an optional high-level destination with exploration, giant culture, ancient records, and political tensions; avoid hardcoding unresolved outcomes.",
+      "canon_status": "manga_canon",
+      "player_can_override": true,
+      "trigger_mode": "scenario_anchor_only",
+      "source_urls": [
+        "https://one-piece.com/story/elbaph/index.html",
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ]
+    }
+  ]
+}
