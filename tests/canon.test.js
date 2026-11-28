@@ -22,6 +22,8 @@ test('cover stories remain separate from the main manga event timeline', () => {
   const { coverStories, events } = loadDatasets();
   assert.ok(coverStories.length >= 5);
   assert.ok(coverStories.every(story => story.canon_status === 'cover_story'));
+  const fleet = coverStories.find(story => story.id === 'straw_hat_grand_fleet_stories');
+  assert.deepEqual(fleet.chapter_range, { start: 864, end: 919 });
   assert.ok(events.every(event => event.canon_status === 'manga_canon'));
 });
 
