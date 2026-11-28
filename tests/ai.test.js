@@ -12,6 +12,8 @@ globalThis.OnePieceNPCBrain = brain;
 const eventAdapter = require('../ai/event-adapter.js');
 const world = require('../ai/world-simulation.js');
 const crews = require('../ai/crew-system.js');
+const npcLife = require('../ai/npc-life.js');
+const socialMemory = require('../ai/social-memory.js');
 
  
 test('browser bootstrap loads the One Piece companion systems in dependency order', async () => {
@@ -75,7 +77,7 @@ test('browser bootstrap reports a missing companion module without stopping late
   };
   assert.equal(await world.loadCompanionModules(host), false);
   assert.deepEqual(host.__onePieceModuleErrors, ['./ai/event-adapter.js']);
-  assert.equal(scripts.length, 4);
+  assert.equal(scripts.length, 6);
 });
 
 test('game touch stylesheet adapts controls for phones and tablets', () => {
@@ -1242,4 +1244,213 @@ test('Marine system rejects zero-bounty targets and cannot advance a resolved pu
   const force = marines.createMarineForce();
   assert.equal(marines.registerWanted(force, { id: 'civilian', bounty: 0 }).reason, 'no-bounty');
   assert.equal(marines.advancePursuit({ status: 'captured' }).reason, 'no-active-pursuit');
+});
+
+
+test('crew recruitment respects an NPC\'s own willingness and shared goals', () => {
+  const crew = crews.createCrew({ id: 'crew-agency', captainId: 'player' });
+  const cautiousStranger = stateApi.createCharacterState({
+    id: 'stranger', traits: ['cautious', 'independent'],
+    relationships: { player: -35 }, needs: { safety: 90 },
+    goals: [{ id: 'g', status: 'active', tags: ['protect-family'] }]
+  });
+  const declined = crews.recruitMember(crew, cautiousStranger, 'navigator', {
+    captainId: 'player', riskLevel: 80, sharedGoals: ['adventure']
+  });
+  assert.equal(declined.joined, false);
+  assert.equal(declined.reason, 'declined');
+  assert.equal(declined.crew, crew);
+
+  const trustedNavigator = stateApi.createCharacterState({
+    id: 'navigator', traits: ['loyal'],
+    relationships: { player: 80 },
+    skills: { navigator: 85 },
+    goals: [{ id: 'g2', status: 'active', tags: ['explore'] }]
+  });
+  const joined = crews.recruitMember(crew, trustedNavigator, 'navigator', {
+    captainId: 'player', sharedGoals: ['explore']
+  });
+  assert.equal(joined.joined, true);
+  assert.equal(joined.member.characterId, 'navigator');
+  assert.equal(joined.member.role, 'navigator');
+  assert.equal(joined.member.skill, 85);
+  assert.ok(joined.member.loyalty >= 80);
+  assert.equal(joined.member.directive, 'autonomous');
+});
+
+test('crew members have bounded morale, loyalty, fatigue and independent directives', () => {
+  let crew = crews.createCrew({ id: 'crew-condition', captainId: 'player' });
+  crew = crews.joinCrew(crew, 'member-1', 'cook').crew;
+  const updated = crews.updateMemberCondition(crew, 'member-1', {
+    morale: 120, loyalty: -20, fatigue: 35, directive: 'avoid-combat'
+  });
+  assert.equal(updated.updated, true);
+  assert.equal(updated.member.morale, 100);
+  assert.equal(updated.member.loyalty, 0);
+  assert.equal(updated.member.fatigue, 35);
+  assert.equal(updated.member.directive, 'avoid-combat');
+  assert.equal(crews.getCrewReadiness(updated.crew).memberCount, 2);
+  assert.equal(crews.updateMemberCondition(updated.crew, 'member-1', { directive: 'mind-control' }).updated, false);
+});
+
+test('crew monthly upkeep consumes supplies and treasury and exposes morale risks', () => {
+  let crew = crews.createCrew({ id: 'crew-upkeep', captainId: 'player', treasury: 0, supplies: { food: 0 } });
+  crew = crews.joinCrew(crew, 'member-2', 'doctor').crew;
+  const result = crews.applyCrewMonth(crew, {
+    foodPerMember: 2, wagesPerMember: 10, rested: false,
+    at: '2026-01-01T00:00:00.000Z'
+  });
+  assert.equal(result.foodCost, 4);
+  assert.equal(result.shortage, 4);
+  assert.equal(result.wageCost, 20);
+  assert.equal(result.unpaidWages, 20);
+  assert.ok(result.crew.members.every(member => member.morale < 60));
+  assert.ok(result.events.every(event => event.type === 'member-at-risk'));
+  assert.equal(crews.getCrewReadiness(result.crew).memberCount, 2);
+});
+
+
+test('NPC life profiles provide career-specific actions and a daily schedule', () => {
+  const profile = npcLife.createLifeProfile({
+    id: 'doctor-npc', career: 'doctor', location: 'Drum Village',
+    needs: { food: 30, rest: 55 }, skills: { doctor: 25 }
+  });
+  assert.equal(profile.career, 'doctor');
+  assert.equal(npcLife.getScheduledActivity(profile, { hour: 9 }), 'work');
+  const candidates = npcLife.generateCandidates(profile, { hour: 9 });
+  assert.ok(candidates.some(action => action.id === 'study'));
+  assert.ok(candidates.some(action => action.id === 'help'));
+  assert.ok(candidates.some(action => action.scheduled));
+  assert.equal(npcLife.generateCandidates({ ...profile, status: 'dead' }, {}).length, 0);
+});
+
+test('NPC life simulation cannot travel without a valid route and preserves location', () => {
+  const profile = npcLife.createLifeProfile({ id: 'sailor', career: 'sailor', location: 'Foosha Village' });
+  const travel = npcLife.resolveActivity(profile, { id: 'travel', available: true, relief: {} }, {});
+  assert.equal(travel.resolved, false);
+  assert.equal(travel.reason, 'no-valid-route');
+  assert.equal(profile.location, 'Foosha Village');
+  const moved = npcLife.resolveActivity(profile, {
+    id: 'travel', available: true, relief: {}, destination: 'Shells Town'
+  }, { travelCost: 5, at: '2026-01-01T00:00:00.000Z' });
+  assert.equal(moved.resolved, true);
+  assert.equal(moved.profile.location, 'Shells Town');
+  assert.equal(moved.profile.money, 0);
+  assert.equal(moved.worldEffects.from, 'Foosha Village');
+});
+
+test('NPC independent turns advance needs, career skills, money and personal goals', () => {
+  const profile = npcLife.createLifeProfile({
+    id: 'merchant-npc', career: 'merchant', location: 'Loguetown',
+    money: 10, needs: { wealth: 10 },
+    goals: [{ id: 'g', action: 'trade', tags: ['trade'], status: 'active', progress: 0, targetProgress: 1 }]
+  });
+  const result = npcLife.takeTurn(profile, { hour: 10 }, {
+    decide: (state, candidates) => ({
+      action: candidates.find(candidate => candidate.id === 'trade'),
+      ranking: [{ id: 'trade', score: 10 }]
+    })
+  });
+  assert.equal(result.resolved, true);
+  assert.equal(result.action, 'trade');
+  assert.ok(result.profile.money > 10);
+  assert.ok(result.profile.needs.wealth > 10);
+  assert.equal(result.profile.goals[0].status, 'completed');
+  assert.ok(result.profile.skills.merchant > 0);
+});
+
+test('NPC goals and activity choices remain local and do not force canon outcomes', () => {
+  const profile = npcLife.createLifeProfile({
+    id: 'free-agent', career: 'explorer', location: 'Unknown Island',
+    goals: [{ id: 'g', description: 'Find a safe route', tags: ['explore'], status: 'active' }]
+  });
+  const candidates = npcLife.generateCandidates(profile, { discoverableArea: true });
+  assert.ok(candidates.some(action => action.id === 'explore'));
+  assert.ok(!candidates.some(action => action.id === 'travel' && action.available));
+  const result = npcLife.resolveActivity(profile, {
+    id: 'explore', available: true, tags: ['explore'], relief: {}
+  }, { discoverableArea: true });
+  assert.equal(result.resolved, true);
+  assert.equal(result.worldEffects.locationChanged, false);
+});
+
+
+test('episodic recall ranks memories by people, tags, location and importance', () => {
+  let character = stateApi.createCharacterState({ id: 'recaller' });
+  character = socialMemory.recordEpisode(character, {
+    id: 'memory-help', event: 'A navigator shared food after a storm',
+    actorIds: ['navigator'], targetIds: ['recaller'], tags: ['help', 'storm'],
+    location: 'Drum Island', importance: 5, createdAt: '2026-01-01T00:00:00.000Z'
+  });
+  character = socialMemory.recordEpisode(character, {
+    id: 'memory-market', event: 'Bought apples at the market',
+    actorIds: ['merchant'], tags: ['trade'], location: 'Loguetown',
+    importance: 2, createdAt: '2026-01-02T00:00:00.000Z'
+  });
+  const recalled = socialMemory.recallMemories(character, {
+    people: ['navigator'], tags: ['help'], location: 'Drum Island'
+  }, { now: Date.parse('2026-01-03T00:00:00.000Z') });
+  assert.equal(recalled[0].memory.id, 'memory-help');
+  assert.ok(recalled[0].score > 0);
+});
+
+test('NPC bonds track trust, affection, respect, fear and rivalry separately', () => {
+  let character = stateApi.createCharacterState({ id: 'bonded-npc' });
+  character = socialMemory.updateBond(character, 'player', {
+    trust: 60, affection: 20, respect: 30, fear: 5
+  }, { event: 'player protected the village' });
+  let bond = socialMemory.getBond(character, 'player');
+  assert.equal(bond.dimensions.trust, 60);
+  assert.equal(bond.dimensions.affection, 20);
+  assert.equal(bond.dimensions.fear, 5);
+  assert.equal(socialMemory.bondLabel(bond), 'friendly');
+  character = socialMemory.updateBond(character, 'player', { fear: 90, rivalry: 50 });
+  bond = socialMemory.getBond(character, 'player');
+  assert.equal(bond.dimensions.fear, 95);
+  assert.equal(bond.dimensions.rivalry, 50);
+  assert.equal(socialMemory.getBond(character, 'player').score < 50, true);
+});
+
+test('social reactions recall prior harm and become guarded without deleting positive bonds', () => {
+  let character = stateApi.createCharacterState({ id: 'cautious-npc' });
+  character = socialMemory.updateBond(character, 'player', { trust: 45, affection: 30 });
+  character = socialMemory.recordEpisode(character, {
+    event: 'Player threatened the NPC', actorIds: ['player'],
+    targetIds: ['cautious-npc'], tags: ['threat', 'violence'],
+    importance: 5, polarity: 'negative', createdAt: '2026-01-01T00:00:00.000Z'
+  });
+  character = socialMemory.updateBond(character, 'player', { fear: 100, rivalry: 40 });
+  const reaction = socialMemory.evaluateSocialResponse(character, 'player', {
+    tags: ['violence'], now: Date.parse('2026-01-02T00:00:00.000Z')
+  });
+  assert.equal(reaction.stance, 'guarded');
+  assert.equal(reaction.recalled.length, 1);
+  assert.ok(reaction.willingnessToHelp < 50);
+});
+
+test('mutual interactions create separate memories and distinct relationship changes', () => {
+  const first = stateApi.createCharacterState({ id: 'first' });
+  const second = stateApi.createCharacterState({ id: 'second' });
+  const result = socialMemory.recordMutualInteraction(first, second, {
+    event: 'Shared supplies during a storm', tags: ['help', 'storm'],
+    location: 'Drum Island', importance: 4, createdAt: '2026-01-01T00:00:00.000Z'
+  }, { trust: 15, respect: 5 }, { trust: 8, affection: 10 });
+  assert.equal(result.recorded, true);
+  assert.equal(result.first.memories.length, 1);
+  assert.equal(result.second.memories.length, 1);
+  assert.equal(result.first.memories[0].actorIds[0], 'first');
+  assert.equal(result.second.memories[0].actorIds[0], 'second');
+  assert.equal(socialMemory.getBond(result.first, 'second').dimensions.trust, 15);
+  assert.equal(socialMemory.getBond(result.second, 'first').dimensions.affection, 10);
+  assert.equal(first.memories.length, 0);
+  assert.equal(second.memories.length, 0);
+});
+
+test('social memory layer preserves legacy scalar relationships', () => {
+  const character = stateApi.createCharacterState({
+    id: 'legacy-npc', relationships: { player: 65 }
+  });
+  const bond = socialMemory.getBond(character, 'player');
+  assert.equal(bond.score, 65);
+  assert.equal(socialMemory.bondLabel(bond), 'trusted');
 });

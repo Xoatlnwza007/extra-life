@@ -14,6 +14,7 @@
       personalityPreferences: { ...(input.personalityPreferences || {}) },
       riskTolerance: clamp(Number(input.riskTolerance ?? 35), 0, 100),
       needs: { ...(input.needs || {}) },
+      skills: { ...(input.skills || {}) },
       memories: Array.isArray(input.memories) ? input.memories.slice(-100) : [],
       goals: Array.isArray(input.goals) ? input.goals : [],
       relationships: { ...(input.relationships || {}) },

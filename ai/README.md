@@ -330,3 +330,56 @@ consumption and awakening, exposes sea/Seastone weakness, and builds a compact
 progress summary for UI use. It is loaded as `OnePieceProgressionSystem`.
 The coordinator does not itself award training points, spend currency, or save
 the character; game rules and persistence remain owned by the main game layer.
+
+
+### Crew autonomy, recruitment and upkeep (prepared extension)
+
+The crew helper layer also supports consent-based recruitment. `evaluateRecruitment(character, offer)`
+scores an offer from the NPC's relationship with the captain, active goal alignment,
+role skill, personality and perceived risk. `recruitMember` refuses an offer below
+the willingness threshold rather than treating an NPC as a controllable inventory item.
+The threshold and offer context can be tuned by the game layer.
+
+Crew member records now carry bounded loyalty, morale, fatigue and role skill, plus
+an autonomy directive (autonomous by default). `updateMemberCondition` changes
+these values immutably. `setCrewSupplies`, `applyCrewMonth` and
+`getCrewReadiness` provide a first upkeep model: food shortage and unpaid wages
+affect morale/loyalty, rest reduces fatigue, and shared victories can improve morale.
+Low morale/loyalty produces warnings, not forced departures; the later relationship
+and NPC-agency layer must decide how a member responds. These helpers are not yet
+wired into the in-game crew panel or the annual/monthly game economy.
+
+
+## Autonomous NPC life profiles (prepared module)
+
+`npc-life.js` is a separate, framework-independent life-simulation layer. It defines
+career archetypes (merchant, doctor, sailor, craftsman, fighter, scholar, musician,
+farmer, explorer and independent), bounded survival/social/purpose needs, personal
+goals, skill growth, money, inventory, location, daily schedule blocks and autonomy
+state. `generateCandidates` builds actions from the NPC's career and available
+world context; `takeTurn` delegates choice to the existing utility decision engine.
+`resolveActivity` applies only the selected local outcome, advances needs/skills/goals,
+and emits a small world-effect record for the game layer to interpret.
+
+Travel requires a reachable destination; exploration does not silently teleport an
+NPC. Inactive characters cannot act. The module is not yet connected to the existing
+monthly population loop, world economy, or game UI. This separation allows the
+activity vocabulary and world-effect contract to be reviewed before integration.
+
+
+## Episodic memory and multidimensional relationships (prepared module)
+
+`social-memory.js` extends the existing simple memory/relationship helpers without
+changing their legacy data shape. Episodic records can include actors, targets,
+witnesses, location, tags, emotion, polarity, importance, confidence and expiry.
+`recallMemories` retrieves relevant episodes by people, tags and place, ranking
+them by relevance, salience and recency rather than only taking the newest entries.
+
+Relationships can be represented as separate dimensions: trust, affection, respect,
+fear, rivalry and familiarity. `getBond` still reads legacy scalar relationship
+values when no dimensional profile exists; `updateBond` stores the expanded profile
+and keeps the legacy scalar score synchronized. `evaluateSocialResponse` returns
+a cautious/warm/uncertain stance based on the bond and recalled experiences.
+`recordMutualInteraction` stores distinct memories and asymmetric relationship
+changes for each participant. These are decision inputs, not scripted dialogue:
+the later integration layer must let NPC goals and personality decide what to do.
