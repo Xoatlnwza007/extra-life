@@ -39,6 +39,28 @@ test('events resolve to existing locations, factions and characters', () => {
   }
 });
 
+
+test('verified event chapter milestones stay within their arcs and include sources', () => {
+  const { arcs, events } = loadDatasets();
+  const arcById = new Map(arcs.map(arc => [arc.id, arc]));
+  let milestoneCount = 0;
+  let eventCount = 0;
+  for (const event of events) {
+    if (!event.chapter_milestones) continue;
+    eventCount++;
+    const arc = arcById.get(event.arc_id);
+    for (const milestone of event.chapter_milestones) {
+      milestoneCount++;
+      assert.ok(Number.isInteger(milestone.chapter), event.id + ' chapter number');
+      assert.ok(milestone.chapter >= arc.chapter_start, event.id + ' chapter lower bound');
+      if (arc.chapter_end !== null) assert.ok(milestone.chapter <= arc.chapter_end, event.id + ' chapter upper bound');
+      assert.ok(milestone.source_url.startsWith('https://'), event.id + ' source');
+    }
+  }
+  assert.equal(eventCount, 7);
+  assert.equal(milestoneCount, 11);
+});
+
 test('all 19 major cover-story serials and two short follow-ups are catalogued separately from the main timeline', () => {
   const { coverStories, events } = loadDatasets();
   assert.equal(coverStories.length, 21);
