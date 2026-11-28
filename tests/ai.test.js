@@ -263,6 +263,7 @@ test('main game is a single-file One Piece runtime with Playtest controls', () =
   assert.ok(worldRuntime > firstInlineModule && worldRuntime < gameBootstrap, 'world runtime initializes after its companion modules but before game bootstrap');
   assert.doesNotMatch(html, /<script\s+src=["'][^"']+\.js["']/i, 'the playable HTML must not fetch external JavaScript');
   assert.doesNotMatch(html, /script\.src\s*=\s*item\.src/, 'inline runtime must not dynamically fetch companion modules');
+  assert.doesNotMatch(html, /unpkg\.com\/mqtt|claude\.use\(['"]room['"]\)/, 'single-file test build must not load an external multiplayer client');
   for (const moduleName of ['decision-engine','character-state','npc-brain','event-adapter','east-blue-starter','crew-system','devil-fruit-system','haki-system','progression-system','marine-system','combat-adapter','marine-ui']) {
     assert.match(html, new RegExp('data-inline-module="' + moduleName + '"'));
   }
