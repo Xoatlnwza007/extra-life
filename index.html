@@ -12,7 +12,7 @@
 @media (min-width:700px) and (max-width:900px) and (orientation:portrait){
   .board{grid-template-columns:minmax(0,1fr);gap:14px}
   .colside{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-  .colside>section:nth-child(3){grid-column:1/-1}
+  .pt-panel{grid-column:1/-1}
   #scene{height:clamp(300px,45vw,430px)}
   .pt-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .actbar{max-height:35dvh;overflow-y:auto;overscroll-behavior:contain}
@@ -3574,10 +3574,7 @@ html.calm *{animation:none!important;transition:none!important}
       <section class="panel"><h3>บันทึกชีวิต</h3><div class="logbox" id="log"></div></section>
     </div>
     <aside class="colside">
-      <section class="panel"><h3>ไทม์ไลน์ของโลก</h3><p class="hint" id="tlHint"></p><div class="tlbox" id="tlBox"><ol class="tl" id="tl"></ol></div></section>
-      <section class="panel"><h3>ตัวละครหลักที่รู้จัก</h3><div class="cast" id="cast"></div></section>
-      <section class="panel"><h3>ครอบครัว</h3><div class="fam" id="fam"></div></section>
-<section class="panel pt-panel" id="playtestPanel"><h3>เครื่องมือ Playtest</h3><details id="ptDetails"><summary>เปิดแผงเพิ่ม / ลดค่าสถานะ</summary><p class="fine">ใช้ทดสอบระบบได้ทันที ค่าที่ปรับจะบันทึกลงเซฟปัจจุบัน</p><div class="pt-grid">
+    <section class="panel pt-panel" id="playtestPanel"><h3>เครื่องมือ Playtest</h3><details id="ptDetails"><summary>เปิดแผงเพิ่ม / ลดค่าสถานะ</summary><p class="fine">ใช้ทดสอบระบบได้ทันที ค่าที่ปรับจะบันทึกลงเซฟปัจจุบัน</p><div class="pt-grid">
 <div class="pt-row"><span>สุขภาพ</span><div><button type="button" data-pt-key="hp" data-pt-delta="-10" aria-label="ลดสุขภาพ">−</button><b id="pt-hp">0</b><button type="button" data-pt-key="hp" data-pt-delta="10" aria-label="เพิ่มสุขภาพ">+</button></div></div>
 <div class="pt-row"><span>ความสุข</span><div><button type="button" data-pt-key="joy" data-pt-delta="-10" aria-label="ลดความสุข">−</button><b id="pt-joy">0</b><button type="button" data-pt-key="joy" data-pt-delta="10" aria-label="เพิ่มความสุข">+</button></div></div>
 <div class="pt-row"><span>สติปัญญา</span><div><button type="button" data-pt-key="iq" data-pt-delta="-10" aria-label="ลดสติปัญญา">−</button><b id="pt-iq">0</b><button type="button" data-pt-key="iq" data-pt-delta="10" aria-label="เพิ่มสติปัญญา">+</button></div></div>
@@ -3589,6 +3586,10 @@ html.calm *{animation:none!important;transition:none!important}
 <div class="pt-row"><span>ชื่อเสียง</span><div><button type="button" data-pt-key="fame" data-pt-delta="-10" aria-label="ลดชื่อเสียง">−</button><b id="pt-fame">0</b><button type="button" data-pt-key="fame" data-pt-delta="10" aria-label="เพิ่มชื่อเสียง">+</button></div></div>
 <div class="pt-row"><span>ด้านมืด</span><div><button type="button" data-pt-key="dark" data-pt-delta="-10" aria-label="ลดด้านมืด">−</button><b id="pt-dark">0</b><button type="button" data-pt-key="dark" data-pt-delta="10" aria-label="เพิ่มด้านมืด">+</button></div></div>
 </div></details></section>
+      <section class="panel"><h3>ไทม์ไลน์ของโลก</h3><p class="hint" id="tlHint"></p><div class="tlbox" id="tlBox"><ol class="tl" id="tl"></ol></div></section>
+      <section class="panel"><h3>ตัวละครหลักที่รู้จัก</h3><div class="cast" id="cast"></div></section>
+      <section class="panel"><h3>ครอบครัว</h3><div class="fam" id="fam"></div></section>
+
     </aside>
   </div></main>
   <nav class="actbar gutter"><div class="inner">
