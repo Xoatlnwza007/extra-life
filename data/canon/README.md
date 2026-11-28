@@ -10,7 +10,7 @@ This folder is a **data-only content layer**. It does not yet change the browser
 - `factions.json`: pirate crews, communities, government bodies, and alliances referenced by the events.
 - `characters.json`: concise references for named characters directly involved in the event anchors.
 - `cover_stories.json`: all 19 major manga cover-story serials plus two short `Where They Are Now` follow-ups, kept separate from the main event timeline.
-- `fan_ideas.json`: community theories, what-if prompts, and fan worldbuilding formats transformed into original, optional sandbox hooks.
+- `fan_ideas.json`: 16 community theories, what-if prompts, and fan worldbuilding formats transformed into original, optional sandbox hooks.
 
 This is a curated game-content catalogue, not an exhaustive encyclopedia. The arc index was last checked through manga Chapter 1199 on 2026-11-28. The Elbaph story is ongoing and remains open-ended. The catalogue contains 21 records: 19 major serials and two supplemental short follow-ups. The 19-item major-serial count groups the eight separated Straw Hat mini-stories into one serial.
 
@@ -34,7 +34,7 @@ Fan ideas are always tagged `fanon_sandbox` and `play_scope: sandbox_only`. They
 
 ## Sources and adaptation
 
-Use the official ONE PIECE.com story index for the main arc index and the VIZ chapter listing to verify the latest published chapter. The cover-story catalogue uses a cross-checked chapter-range index from One Piece Breaks and the One Piece Wiki as secondary research references. The One Piece Wiki is also a secondary research index for event, character, faction, and location references. Community sources are inspiration only.
+Use the official ONE PIECE.com story index for the main arc index and the VIZ chapter listing to verify the latest published chapter. The cover-story catalogue uses a cross-checked chapter-range index from One Piece Breaks and the One Piece Wiki as secondary research references. The One Piece Wiki is also a secondary research index for event, character, faction, and location references. Community sources are inspiration only. Their ideas are re-authored into original hooks; named canon characters and unresolved mysteries are not assigned speculative outcomes.
 
 No long passages are copied. Community theories and prompts are paraphrased and transformed into new scenario hooks. Keep source URLs and author/community attribution with each item.
 
