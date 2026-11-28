@@ -365,8 +365,11 @@ async function main() {
 
       await page.evaluate(async () => {
         const originalAsk = ask;
+        const originalDie = die;
         ask = async () => {};
-        try { await monthPass(); } finally { ask = originalAsk; }
+        // This assertion targets the monthly lodging charge, not random death outcomes.
+        die = () => { S.alive = true; S.st.hp = 100; };
+        try { await monthPass(); } finally { ask = originalAsk; die = originalDie; }
         save();
       });
       const monthAdvanced = await page.evaluate(() => ({
