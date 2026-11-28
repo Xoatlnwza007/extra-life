@@ -33,6 +33,17 @@
       "source_urls": [
         "https://one-piece.com/story/index.html",
         "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ],
+      "location_id": "east_blue",
+      "involved_faction_ids": [
+        "straw_hat_pirates"
+      ],
+      "involved_character_ids": [
+        "monkey_d_luffy",
+        "roronoa_zoro",
+        "nami",
+        "usopp",
+        "sanji"
       ]
     },
     {
@@ -65,6 +76,18 @@
       "source_urls": [
         "https://one-piece.com/story/index.html",
         "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ],
+      "location_id": "cocoyasi_village",
+      "involved_faction_ids": [
+        "straw_hat_pirates",
+        "arlong_pirates",
+        "cocoyasi_villagers"
+      ],
+      "involved_character_ids": [
+        "monkey_d_luffy",
+        "nami",
+        "arlong",
+        "nojiko"
       ]
     },
     {
@@ -98,6 +121,18 @@
         "https://one-piece.com/story/alabasta/index.html",
         "https://one-piece.com/story/index.html",
         "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ],
+      "location_id": "alabasta_kingdom",
+      "involved_faction_ids": [
+        "straw_hat_pirates",
+        "baroque_works",
+        "alabasta_royal_family"
+      ],
+      "involved_character_ids": [
+        "monkey_d_luffy",
+        "nefertari_vivi",
+        "crocodile",
+        "nefertari_cobra"
       ]
     },
     {
@@ -129,6 +164,18 @@
       "source_urls": [
         "https://one-piece.com/story/index.html",
         "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ],
+      "location_id": "skypiea_upper_yard",
+      "involved_faction_ids": [
+        "straw_hat_pirates",
+        "enel_followers",
+        "shandia"
+      ],
+      "involved_character_ids": [
+        "monkey_d_luffy",
+        "enel",
+        "mont_blanc_noland",
+        "kalgara"
       ]
     },
     {
@@ -158,6 +205,15 @@
       "source_urls": [
         "https://one-piece.com/story/index.html",
         "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ],
+      "location_id": "long_ring_long_land",
+      "involved_faction_ids": [
+        "straw_hat_pirates",
+        "foxy_pirates"
+      ],
+      "involved_character_ids": [
+        "monkey_d_luffy",
+        "foxy"
       ]
     },
     {
@@ -190,6 +246,20 @@
       "source_urls": [
         "https://one-piece.com/story/index.html",
         "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ],
+      "location_id": "water_seven",
+      "involved_faction_ids": [
+        "straw_hat_pirates",
+        "galley_la",
+        "cp9",
+        "franky_family"
+      ],
+      "involved_character_ids": [
+        "monkey_d_luffy",
+        "usopp",
+        "nico_robin",
+        "franky",
+        "iceburg"
       ]
     },
     {
@@ -221,6 +291,17 @@
       "source_urls": [
         "https://one-piece.com/story/index.html",
         "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ],
+      "location_id": "enies_lobby",
+      "involved_faction_ids": [
+        "straw_hat_pirates",
+        "cp9",
+        "world_government"
+      ],
+      "involved_character_ids": [
+        "monkey_d_luffy",
+        "nico_robin",
+        "franky"
       ]
     },
     {
@@ -252,6 +333,17 @@
       "source_urls": [
         "https://one-piece.com/story/index.html",
         "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ],
+      "location_id": "thriller_bark",
+      "involved_faction_ids": [
+        "straw_hat_pirates",
+        "thriller_bark_pirates"
+      ],
+      "involved_character_ids": [
+        "monkey_d_luffy",
+        "gecko_moria",
+        "brook",
+        "perona"
       ]
     },
     {
@@ -283,6 +375,17 @@
       "source_urls": [
         "https://one-piece.com/story/index.html",
         "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ],
+      "location_id": "sabaody_archipelago",
+      "involved_faction_ids": [
+        "straw_hat_pirates",
+        "marines",
+        "world_government"
+      ],
+      "involved_character_ids": [
+        "bartholomew_kuma",
+        "b_andorsino_kizaru",
+        "sentomaru"
       ]
     },
     {
@@ -313,6 +416,15 @@
       "source_urls": [
         "https://one-piece.com/story/index.html",
         "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ],
+      "location_id": "amazon_lily",
+      "involved_faction_ids": [
+        "straw_hat_pirates",
+        "kuja"
+      ],
+      "involved_character_ids": [
+        "monkey_d_luffy",
+        "boa_hancock"
       ]
     },
     {
@@ -345,6 +457,19 @@
       "source_urls": [
         "https://one-piece.com/story/index.html",
         "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ],
+      "location_id": "impel_down",
+      "involved_faction_ids": [
+        "straw_hat_pirates",
+        "impel_down_prisoners",
+        "impel_down_staff"
+      ],
+      "involved_character_ids": [
+        "monkey_d_luffy",
+        "bentham",
+        "buggy",
+        "jinbe",
+        "magellan"
       ]
     },
     {
@@ -378,6 +503,18 @@
       "source_urls": [
         "https://one-piece.com/story/index.html",
         "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ],
+      "location_id": "marineford",
+      "involved_faction_ids": [
+        "straw_hat_pirates",
+        "whitebeard_pirates",
+        "blackbeard_pirates",
+        "marines"
+      ],
+      "involved_character_ids": [
+        "portgas_d_ace",
+        "edward_newgate",
+        "monkey_d_luffy"
       ]
     },
     {
@@ -409,6 +546,18 @@
       "source_urls": [
         "https://one-piece.com/story/index.html",
         "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ],
+      "location_id": "fish_man_island",
+      "involved_faction_ids": [
+        "straw_hat_pirates",
+        "fish_man_island_royals",
+        "new_fishman_pirates"
+      ],
+      "involved_character_ids": [
+        "monkey_d_luffy",
+        "jinbe",
+        "shirahoshi",
+        "hody_jones"
       ]
     },
     {
@@ -440,6 +589,19 @@
       "source_urls": [
         "https://one-piece.com/story/index.html",
         "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ],
+      "location_id": "punk_hazard",
+      "involved_faction_ids": [
+        "straw_hat_pirates",
+        "heart_pirates",
+        "punk_hazard_researchers",
+        "marines"
+      ],
+      "involved_character_ids": [
+        "monkey_d_luffy",
+        "trafalgar_d_water_law",
+        "caesar_clown",
+        "smoker"
       ]
     },
     {
@@ -472,6 +634,19 @@
       "source_urls": [
         "https://one-piece.com/story/index.html",
         "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ],
+      "location_id": "dressrosa",
+      "involved_faction_ids": [
+        "straw_hat_pirates",
+        "heart_pirates",
+        "donquixote_family",
+        "tontatta"
+      ],
+      "involved_character_ids": [
+        "monkey_d_luffy",
+        "trafalgar_d_water_law",
+        "donquixote_doflamingo",
+        "rebecca"
       ]
     },
     {
@@ -505,6 +680,18 @@
       "source_urls": [
         "https://one-piece.com/story/index.html",
         "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ],
+      "location_id": "zou",
+      "involved_faction_ids": [
+        "straw_hat_pirates",
+        "minks",
+        "kozuki_clan"
+      ],
+      "involved_character_ids": [
+        "kin_emon",
+        "raizo",
+        "inuarashi",
+        "nekomamushi"
       ]
     },
     {
@@ -538,6 +725,19 @@
       "source_urls": [
         "https://one-piece.com/story/index.html",
         "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ],
+      "location_id": "totto_land",
+      "involved_faction_ids": [
+        "straw_hat_pirates",
+        "big_mom_pirates",
+        "fire_tank_pirates",
+        "germa_66"
+      ],
+      "involved_character_ids": [
+        "sanji",
+        "monkey_d_luffy",
+        "charlotte_linlin",
+        "brook"
       ]
     },
     {
@@ -568,6 +768,15 @@
       "source_urls": [
         "https://one-piece.com/story/index.html",
         "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ],
+      "location_id": "mary_geoise",
+      "involved_faction_ids": [
+        "world_leaders",
+        "world_government",
+        "revolutionary_army"
+      ],
+      "involved_character_ids": [
+        "nefertari_vivi"
       ]
     },
     {
@@ -601,6 +810,19 @@
       "source_urls": [
         "https://one-piece.com/story/index.html",
         "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ],
+      "location_id": "wano_country",
+      "involved_faction_ids": [
+        "straw_hat_pirates",
+        "kozuki_clan",
+        "beast_pirates",
+        "ninja_pirate_mink_samurai_alliance"
+      ],
+      "involved_character_ids": [
+        "monkey_d_luffy",
+        "kaidou",
+        "kozuki_momonosuke",
+        "yamato"
       ]
     },
     {
@@ -635,6 +857,18 @@
         "https://one-piece.com/story/egghead/index.html",
         "https://one-piece.com/story/index.html",
         "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ],
+      "location_id": "egghead",
+      "involved_faction_ids": [
+        "straw_hat_pirates",
+        "world_government",
+        "marines",
+        "punk_hazard_researchers"
+      ],
+      "involved_character_ids": [
+        "monkey_d_luffy",
+        "vegapunk",
+        "jewelry_bonney"
       ]
     },
     {
@@ -668,6 +902,17 @@
         "https://one-piece.com/story/elbaph/index.html",
         "https://one-piece.com/story/index.html",
         "https://onepiece.fandom.com/wiki/Story_Arcs"
+      ],
+      "location_id": "elbaph",
+      "involved_faction_ids": [
+        "straw_hat_pirates",
+        "giant_warrior_pirates",
+        "elbaph_giants"
+      ],
+      "involved_character_ids": [
+        "loki",
+        "jaguar_d_saul",
+        "scopper_gaban"
       ]
     }
   ]
