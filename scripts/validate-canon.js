@@ -29,6 +29,7 @@ function validateDatasets(input = {}) {
   const locations = input.locations || readJson('locations.json').locations;
   const factions = input.factions || readJson('factions.json').factions;
   const characters = input.characters || readJson('characters.json').characters;
+  const scenarioHooks = input.scenarioHooks || readJson('scenario_hooks.json').scenarios;
   const errors = [];
   const arcById = new Map();
   const locationById = new Map();
@@ -66,6 +67,7 @@ function validateDatasets(input = {}) {
   uniqueIds(locations, 'locations', locationById);
   uniqueIds(factions, 'factions', factionById);
   uniqueIds(characters, 'characters', characterById);
+  uniqueIds(scenarioHooks, 'scenario_hooks');
 
   const orderedArcs = [...arcs].sort((a, b) => Number(a.order) - Number(b.order));
   for (let i = 0; i < orderedArcs.length; i++) {
@@ -157,6 +159,32 @@ function validateDatasets(input = {}) {
     validateSources(story, 'cover_story ' + story.id);
   }
 
+  const eventById = new Map(events.map(event => [event.id, event]));
+  for (const scenario of scenarioHooks) {
+    const event = eventById.get(scenario.event_id);
+    if (!event) errors.push('scenario ' + scenario.id + ': unknown event_id ' + scenario.event_id);
+    if (event && scenario.arc_id !== event.arc_id) errors.push('scenario ' + scenario.id + ': arc_id does not match event');
+    if (!Array.isArray(scenario.choices) || scenario.choices.length < 3) errors.push('scenario ' + scenario.id + ': at least three player choices are required');
+    if (Array.isArray(scenario.choices)) {
+      const choiceIds = new Set();
+      for (const choice of scenario.choices) {
+        if (!choice.id || choiceIds.has(choice.id)) errors.push('scenario ' + scenario.id + ': missing or duplicate choice id');
+        choiceIds.add(choice.id);
+        if (!choice.label || !choice.approach || !choice.tradeoff || !choice.possible_result) {
+          errors.push('scenario ' + scenario.id + ': incomplete choice ' + choice.id);
+        }
+      }
+    }
+    if (scenario.canon_effect !== 'none') errors.push('scenario ' + scenario.id + ': optional scenario cannot change canon');
+    if (scenario.outcome_scope !== 'local_world_state') errors.push('scenario ' + scenario.id + ': outcomes must stay in local world state');
+    if (scenario.player_can_override !== true || scenario.player_choice_required !== true) {
+      errors.push('scenario ' + scenario.id + ': player must retain control over the outcome');
+    }
+    if (!scenario.fail_forward || !scenario.setup || !scenario.spoiler_gate_arc) {
+      errors.push('scenario ' + scenario.id + ': missing setup, spoiler gate, or fail-forward rule');
+    }
+  }
+
   for (const idea of fanIdeas) {
     if (idea.canon_status !== 'fanon_sandbox') errors.push('fan_idea ' + idea.id + ': must be fanon_sandbox');
     if (idea.play_scope !== 'sandbox_only') errors.push('fan_idea ' + idea.id + ': must be sandbox_only');
@@ -166,7 +194,7 @@ function validateDatasets(input = {}) {
 
   return { ok: errors.length === 0, errors, counts: {
     arcs: arcs.length, events: events.length, cover_stories: coverStories.length,
-    fan_ideas: fanIdeas.length, locations: locations.length,
+    fan_ideas: fanIdeas.length, scenario_hooks: scenarioHooks.length, locations: locations.length,
     factions: factions.length, characters: characters.length
   }};
 }
@@ -179,7 +207,8 @@ function loadDatasets() {
     fanIdeas: readJson('fan_ideas.json').ideas,
     locations: readJson('locations.json').locations,
     factions: readJson('factions.json').factions,
-    characters: readJson('characters.json').characters
+    characters: readJson('characters.json').characters,
+    scenarioHooks: readJson('scenario_hooks.json').scenarios
   };
 }
 
