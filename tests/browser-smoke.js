@@ -26,11 +26,11 @@ async function main() {
   await new Promise(resolve => server.listen(4173, '127.0.0.1', resolve));
   const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] });
   try {
-    for (const viewport of [{ width: 390, height: 844 }, { width: 820, height: 1180 }]) {
+    for (const viewport of [{ width: 390, height: 844 }, { width: 820, height: 1180 }, { width: 1180, height: 820 }]) {
       const page = await browser.newPage({
         viewport,
         isMobile: viewport.width < 600,
-        hasTouch: viewport.width < 600
+        hasTouch: viewport.width < 1300
       });
       const pageErrors = [];
       page.on('pageerror', error => pageErrors.push(error.message));
@@ -39,6 +39,9 @@ async function main() {
       await page.waitForFunction(async () => await window.OnePieceSystemsReady === true);
       await page.waitForFunction(() => typeof WORLDS !== 'undefined' &&
         WORLDS.op.meets.filter(event => event.id.startsWith('op_eb_')).length === 4);
+      assert.equal(await page.locator('button.world').count(), 1, 'only One Piece is offered in the world selector');
+      assert.equal(await page.locator('button.world').innerText(), 'วันพีซ');
+
       const starterMetadata = await page.evaluate(() => WORLDS.op.meets
         .filter(event => event.id.startsWith('op_eb_'))
         .map(event => ({ origin: event.origin, canonStatus: event.canonStatus })));
@@ -56,6 +59,22 @@ async function main() {
       await page.locator('#startBtn').click();
       await page.locator('#game:not([hidden])').waitFor({ state: 'visible' });
       await page.locator('#extra-life-progression-tools .el-progression-trigger').waitFor({ state: 'visible' });
+      await page.locator('#ptDetails summary').click();
+      const beforePlaytest = await page.evaluate(() => ({ hp: S.st.hp, money: S.money, bounty: S.flags.bounty || 0 }));
+      await page.locator('[data-pt-key="hp"][data-pt-delta="10"]').click();
+      await page.locator('[data-pt-key="money"][data-pt-delta="10"]').click();
+      await page.locator('[data-pt-key="bounty"][data-pt-delta="1000000"]').click();
+      const afterPlaytest = await page.evaluate(() => ({ hp: S.st.hp, money: S.money, bounty: S.flags.bounty }));
+      assert.equal(afterPlaytest.hp, Math.min(100, beforePlaytest.hp + 10));
+      assert.equal(afterPlaytest.money, beforePlaytest.money + 10);
+      assert.equal(afterPlaytest.bounty, beforePlaytest.bounty + 1000000);
+      await page.evaluate(() => { window.__timingMash = miniGame('time', 'ทดสอบกดรัว', 'ทดสอบการเปลี่ยนระบบจับจังหวะ'); });
+      await page.locator('#mg .mgb').waitFor({ state: 'visible' });
+      assert.match(await page.locator('#mg .mgb').innerText(), /กดรัว/);
+      assert.equal(await page.locator('#mg .mgz u').count(), 0, 'timing mode no longer renders a timing needle');
+      await page.evaluate(() => { const button = document.querySelector('#mg .mgb'); for (let i = 0; i < 32; i++) button.click(); });
+      assert.equal(await page.evaluate(() => window.__timingMash), 1, 'rapid pressing should reach the capped score');
+
 
       await page.evaluate(() => {
         S.powers = [...new Set([...(S.powers || []), 'haki_arm', 'df_para'])];
