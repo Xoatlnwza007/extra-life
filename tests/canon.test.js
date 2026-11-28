@@ -8,6 +8,7 @@ test('first-tranche canon and story data passes structural validation', () => {
   assert.equal(result.ok, true);
   assert.equal(result.counts.arcs, 20);
   assert.equal(result.counts.events, 21);
+  assert.equal(result.counts.scenario_hooks, 21);
   assert.equal(result.counts.locations, 21);
   assert.equal(result.counts.factions, 36);
   assert.ok(result.counts.characters >= 40);
@@ -50,6 +51,21 @@ test('all 19 major cover-story serials and two short follow-ups are catalogued s
   const fleet = coverStories.find(story => story.id === 'straw_hat_grand_fleet_stories');
   assert.deepEqual(fleet.chapter_range, { start: 864, end: 919 });
   assert.ok(events.every(event => event.canon_status === 'manga_canon'));
+});
+
+
+test('each canon anchor has an optional three-path scenario that cannot force canon outcomes', () => {
+  const { events, scenarioHooks } = loadDatasets();
+  assert.equal(scenarioHooks.length, events.length);
+  const eventIds = new Set(events.map(event => event.id));
+  for (const scenario of scenarioHooks) {
+    assert.ok(eventIds.has(scenario.event_id), scenario.id + ' event reference');
+    assert.equal(scenario.choices.length, 3, scenario.id + ' choice count');
+    assert.equal(scenario.canon_effect, 'none', scenario.id + ' canon isolation');
+    assert.equal(scenario.outcome_scope, 'local_world_state', scenario.id + ' outcome scope');
+    assert.equal(scenario.player_can_override, true, scenario.id + ' player override');
+    assert.ok(scenario.fail_forward.length > 0, scenario.id + ' fail forward');
+  }
 });
 
 test('all community-inspired story ideas remain optional sandbox-only content', () => {
