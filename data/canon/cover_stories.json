@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "coverage": "Curated initial set; not an exhaustive cover-story index.",
+  "canon_policy": "Manga cover serials are kept separate from main-arc events.",
+  "cover_stories": [
+    {
+      "id": "buggy_crew_adventure_chronicles",
+      "title": "Buggy's Crew Adventure Chronicles",
+      "chapter_range": {
+        "start": 35,
+        "end": 75
+      },
+      "canon_status": "cover_story",
+      "summary": "Follows Buggy and his crew as they recover from their defeat and attempt to reunite.",
+      "story_use": "A side-story template for scattered crew members, recovery, and rebuilding a pirate crew.",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Buggy%27s_Crew_Adventure_Chronicles",
+        "https://onepiece.fandom.com/wiki/Category%3ACover_Stories"
+      ]
+    },
+    {
+      "id": "diary_of_koby_meppo",
+      "title": "Diary of Koby-Meppo",
+      "chapter_range": {
+        "start": 83,
+        "end": 119
+      },
+      "canon_status": "cover_story",
+      "summary": "Follows Koby and Helmeppo as they begin their training and rise from low-level recruits.",
+      "story_use": "Useful as a reference for off-screen character progression; Marine-focused content remains low priority in this project.",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Diary_of_Koby-Meppo",
+        "https://onepiece.fandom.com/wiki/Category%3ACover_Stories"
+      ]
+    },
+    {
+      "id": "ace_great_blackbeard_search",
+      "title": "Ace's Great Blackbeard Search",
+      "chapter_range": {
+        "start": 272,
+        "end": 305
+      },
+      "canon_status": "cover_story",
+      "summary": "Ace's search for Blackbeard intersects with an island family, a letter, and a visit to a Marine base.",
+      "story_use": "A delivery-and-infiltration side quest that can be reimagined with original characters and local factions.",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Ace%27s_Great_Blackbeard_Search",
+        "https://onepiece.fandom.com/wiki/Category%3ACover_Stories"
+      ]
+    },
+    {
+      "id": "enel_great_space_operations",
+      "title": "Enel's Great Space Operations",
+      "chapter_range": {
+        "start": 428,
+        "end": 474
+      },
+      "canon_status": "cover_story",
+      "summary": "Enel reaches the moon, encounters automata and space pirates, and discovers a connection between the moon and sky-island peoples.",
+      "story_use": "A long-term exploration seed for lost technology, ancient machines, and the world's wider geography.",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Enel%27s_Great_Space_Operations",
+        "https://onepiece.fandom.com/wiki/Category%3ACover_Stories"
+      ]
+    },
+    {
+      "id": "straw_hat_grand_fleet_stories",
+      "title": "The Stories of the Self-Proclaimed Straw Hat Grand Fleet",
+      "chapter_range": null,
+      "canon_status": "cover_story",
+      "summary": "Follows members of the Grand Fleet after they depart from Dressrosa and shows how their separate voyages develop.",
+      "story_use": "A strong reference for autonomous allied crews, their own choices, and world events that continue off-screen.",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/The_Stories_of_the_Self-Proclaimed_Straw_Hat_Grand_Fleet",
+        "https://onepiece.fandom.com/wiki/Category%3ACover_Stories"
+      ]
+    },
+    {
+      "id": "gang_bege_oh_my_family",
+      "title": "'Gang' Bege's Oh My Family",
+      "chapter_range": {
+        "start": 948,
+        "end": 994
+      },
+      "canon_status": "cover_story",
+      "summary": "Follows the Fire Tank Pirates as they travel and pursue a family reunion after the events of Whole Cake Island.",
+      "story_use": "A model for family-driven side quests, travel, and crew loyalty that can evolve separately from the main protagonist.",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/%22Gang%22_Bege%27s_Oh_My_Family",
+        "https://onepiece.fandom.com/wiki/Category%3ACover_Stories"
+      ]
+    },
+    {
+      "id": "yamato_golden_harvest_pilgrimage",
+      "title": "Oni Child Yamato's Golden Harvest Surrogate Pilgrimage",
+      "chapter_range": {
+        "start": 1109,
+        "end": 1162
+      },
+      "canon_status": "cover_story",
+      "summary": "Follows Yamato's journey across Wano to complete a pilgrimage while encountering people and problems in the recovering country.",
+      "story_use": "A model for post-arc world recovery, regional travel, local disputes, and character-led side stories.",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Oni_Child_Yamato%27s_Golden_Harvest_Surrogate_Pilgrimage",
+        "https://onepiece.fandom.com/wiki/Category%3ACover_Stories"
+      ]
+    }
+  ]
+}
