@@ -38,10 +38,12 @@ test('events resolve to existing locations, factions and characters', () => {
   }
 });
 
-test('all 19 major manga cover-story serials are catalogued separately from the main timeline', () => {
+test('all 19 major cover-story serials and two short follow-ups are catalogued separately from the main timeline', () => {
   const { coverStories, events } = loadDatasets();
-  assert.equal(coverStories.length, 19);
-  assert.equal(new Set(coverStories.map(story => story.id)).size, 19);
+  assert.equal(coverStories.length, 21);
+  assert.equal(coverStories.filter(story => story.catalogue_group === 'major_serial').length, 19);
+  assert.equal(coverStories.filter(story => story.catalogue_group === 'supplemental_short_run').length, 2);
+  assert.equal(new Set(coverStories.map(story => story.id)).size, 21);
   assert.ok(coverStories.every(story => story.chapter_range && story.chapter_range.start < story.chapter_range.end));
   assert.ok(coverStories.every(story => story.story_use && story.source_urls.length >= 2));
   assert.ok(coverStories.every(story => story.canon_status === 'cover_story'));
