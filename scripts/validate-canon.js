@@ -26,10 +26,16 @@ function validateDatasets(input = {}) {
   const events = input.events || readJson('events.json').events;
   const coverStories = input.coverStories || readJson('cover_stories.json').cover_stories;
   const fanIdeas = input.fanIdeas || readJson('fan_ideas.json').ideas;
+  const locations = input.locations || readJson('locations.json').locations;
+  const factions = input.factions || readJson('factions.json').factions;
+  const characters = input.characters || readJson('characters.json').characters;
   const errors = [];
   const arcById = new Map();
+  const locationById = new Map();
+  const factionById = new Map();
+  const characterById = new Map();
 
-  function uniqueIds(items, label) {
+  function uniqueIds(items, label, targetMap) {
     const seen = new Set();
     for (const item of items) {
       if (!item || typeof item.id !== 'string' || !item.id.trim()) {
@@ -38,6 +44,7 @@ function validateDatasets(input = {}) {
       }
       if (seen.has(item.id)) errors.push(label + ': duplicate id ' + item.id);
       seen.add(item.id);
+      if (targetMap) targetMap.set(item.id, item);
     }
   }
 
@@ -52,10 +59,13 @@ function validateDatasets(input = {}) {
     }
   }
 
-  uniqueIds(arcs, 'arcs');
+  uniqueIds(arcs, 'arcs', arcById);
   uniqueIds(events, 'events');
   uniqueIds(coverStories, 'cover_stories');
   uniqueIds(fanIdeas, 'fan_ideas');
+  uniqueIds(locations, 'locations', locationById);
+  uniqueIds(factions, 'factions', factionById);
+  uniqueIds(characters, 'characters', characterById);
 
   const orderedArcs = [...arcs].sort((a, b) => Number(a.order) - Number(b.order));
   for (let i = 0; i < orderedArcs.length; i++) {
@@ -69,7 +79,6 @@ function validateDatasets(input = {}) {
     if (!Array.isArray(arc.locations) || !arc.locations.length) errors.push('arcs: locations missing at ' + arc.id);
     if (typeof arc.player_divergence_allowed !== 'boolean') errors.push('arcs: player_divergence_allowed missing at ' + arc.id);
     validateSources(arc, 'arc ' + arc.id);
-    arcById.set(arc.id, arc);
     if (i > 0) {
       const previous = orderedArcs[i - 1];
       if (previous.chapter_end !== null && arc.chapter_start <= previous.chapter_end) {
@@ -82,7 +91,24 @@ function validateDatasets(input = {}) {
     }
   }
 
-  uniqueIds(events, 'events');
+  for (const location of locations) {
+    if (!arcById.has(location.arc_id)) errors.push('location ' + location.id + ': unknown arc_id ' + location.arc_id);
+    if (!ALLOWED_TAGS.has(location.canon_status)) errors.push('location ' + location.id + ': invalid canon_status');
+    validateSources(location, 'location ' + location.id);
+  }
+
+  for (const faction of factions) {
+    if (!ALLOWED_TAGS.has(faction.canon_status)) errors.push('faction ' + faction.id + ': invalid canon_status');
+    if (!faction.group_type || !faction.name) errors.push('faction ' + faction.id + ': missing name or group_type');
+    validateSources(faction, 'faction ' + faction.id);
+  }
+
+  for (const character of characters) {
+    if (!ALLOWED_TAGS.has(character.canon_status)) errors.push('character ' + character.id + ': invalid canon_status');
+    if (!character.name || !character.story_role) errors.push('character ' + character.id + ': missing name or story_role');
+    validateSources(character, 'character ' + character.id);
+  }
+
   for (const event of events) {
     const arc = arcById.get(event.arc_id);
     if (!arc) errors.push('event ' + event.id + ': unknown arc_id ' + event.arc_id);
@@ -105,6 +131,15 @@ function validateDatasets(input = {}) {
     if (!Array.isArray(event.involved_characters) || !Array.isArray(event.baseline_flags)) {
       errors.push('event ' + event.id + ': involved_characters and baseline_flags must be arrays');
     }
+    if (!locationById.has(event.location_id)) errors.push('event ' + event.id + ': unknown location_id ' + event.location_id);
+    for (const id of event.involved_faction_ids || []) {
+      if (!factionById.has(id)) errors.push('event ' + event.id + ': unknown faction_id ' + id);
+    }
+    for (const id of event.involved_character_ids || []) {
+      if (!characterById.has(id)) errors.push('event ' + event.id + ': unknown character_id ' + id);
+    }
+    if (!Array.isArray(event.involved_faction_ids) || !event.involved_faction_ids.length) errors.push('event ' + event.id + ': involved_faction_ids missing');
+    if (!Array.isArray(event.involved_character_ids)) errors.push('event ' + event.id + ': involved_character_ids must be an array');
     if (event.player_can_override !== true) errors.push('event ' + event.id + ': player_can_override must remain true');
     if (event.timeline_policy === 'force_player') errors.push('event ' + event.id + ': canon cannot force player route');
     validateSources(event, 'event ' + event.id);
@@ -127,7 +162,9 @@ function validateDatasets(input = {}) {
   }
 
   return { ok: errors.length === 0, errors, counts: {
-    arcs: arcs.length, events: events.length, cover_stories: coverStories.length, fan_ideas: fanIdeas.length
+    arcs: arcs.length, events: events.length, cover_stories: coverStories.length,
+    fan_ideas: fanIdeas.length, locations: locations.length,
+    factions: factions.length, characters: characters.length
   }};
 }
 
@@ -136,7 +173,10 @@ function loadDatasets() {
     arcs: readJson('arcs.json').arcs,
     events: readJson('events.json').events,
     coverStories: readJson('cover_stories.json').cover_stories,
-    fanIdeas: readJson('fan_ideas.json').ideas
+    fanIdeas: readJson('fan_ideas.json').ideas,
+    locations: readJson('locations.json').locations,
+    factions: readJson('factions.json').factions,
+    characters: readJson('characters.json').characters
   };
 }
 
