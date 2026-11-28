@@ -17,6 +17,8 @@
       shipName: input.shipName || null,
       bounty: clamp(Number(input.bounty) || 0, 0, Number.MAX_SAFE_INTEGER),
       reputation: clamp(Number(input.reputation) || 0, -100, 100),
+      treasury: clamp(Number(input.treasury) || 0, 0, Number.MAX_SAFE_INTEGER),
+      supplies: { ...(input.supplies || {}) },
       status: 'active',
       foundedAt: input.foundedAt || new Date().toISOString(),
       history: []
@@ -36,7 +38,15 @@
     const capacity = Math.max(1, Math.floor(Number(options.capacity) || 10));
     if ((crew.members || []).length >= capacity) return { crew, joined: false, reason: 'crew-full' };
     const safeRole = DEFAULT_ROLES.includes(role) && role !== 'captain' ? role : 'fighter';
-    const member = { characterId: id, role: safeRole, joinedAt: options.joinedAt || new Date().toISOString() };
+    const profile = options.memberProfile || {};
+    const member = {
+      characterId: id, role: safeRole, joinedAt: options.joinedAt || new Date().toISOString(),
+      loyalty: clamp(Number(options.loyalty ?? 50), 0, 100),
+      morale: clamp(Number(options.morale ?? 60), 0, 100),
+      fatigue: clamp(Number(options.fatigue ?? 20), 0, 100),
+      skill: clamp(Number((profile.skills || {})[safeRole] ?? options.skill ?? 0), 0, 100),
+      directive: 'autonomous'
+    };
     const next = {
       ...crew,
       members: [...(crew.members || []), member],
@@ -284,10 +294,13 @@
     const availableFood = Math.max(0, Number(supplies.food) || 0);
     supplies.food = Math.max(0, availableFood - foodCost);
     const shortage = Math.max(0, foodCost - availableFood);
+    const wageCost = Math.ceil(members.length * wagesPerMember);
+    const treasury = Math.max(0, Number(crew.treasury) || 0);
+    const unpaidWages = Math.max(0, wageCost - treasury);
     for (const member of members) {
-      const morale = clamp(Number(member.morale ?? 60) - (shortage ? 12 : 0) + (options.sharedVictory ? 4 : 0), 0, 100);
+      const morale = clamp(Number(member.morale ?? 60) - (shortage ? 12 : 0) - (unpaidWages ? 8 : 0) + (options.sharedVictory ? 4 : 0), 0, 100);
       const fatigue = clamp(Number(member.fatigue ?? 20) + (options.rested ? -15 : 5), 0, 100);
-      const loyalty = clamp(Number(member.loyalty ?? 50) - (shortage ? 3 : 0), 0, 100);
+      const loyalty = clamp(Number(member.loyalty ?? 50) - (shortage ? 3 : 0) - (unpaidWages ? 4 : 0), 0, 100);
       Object.assign(member, { morale, fatigue, loyalty });
       if (morale <= 20 || loyalty <= 15) events.push({ type: 'member-at-risk', characterId: member.characterId, morale, loyalty });
     }
@@ -295,12 +308,13 @@
       ...crew,
       members,
       supplies,
+      treasury: Math.max(0, treasury - Math.min(treasury, wageCost)),
       history: [...(crew.history || []), {
-        type: 'monthly-crew-upkeep', foodCost, shortage, wagesPerMember,
+        type: 'monthly-crew-upkeep', foodCost, shortage, wageCost, unpaidWages,
         at: options.at || new Date().toISOString()
       }].slice(-100)
     };
-    return { crew: updated, events, changed: true, foodCost, shortage };
+    return { crew: updated, events, changed: true, foodCost, shortage, wageCost, unpaidWages };
   }
 
   function getCrewReadiness(crew) {
