@@ -348,3 +348,20 @@ affect morale/loyalty, rest reduces fatigue, and shared victories can improve mo
 Low morale/loyalty produces warnings, not forced departures; the later relationship
 and NPC-agency layer must decide how a member responds. These helpers are not yet
 wired into the in-game crew panel or the annual/monthly game economy.
+
+
+## Autonomous NPC life profiles (prepared module)
+
+`npc-life.js` is a separate, framework-independent life-simulation layer. It defines
+career archetypes (merchant, doctor, sailor, craftsman, fighter, scholar, musician,
+farmer, explorer and independent), bounded survival/social/purpose needs, personal
+goals, skill growth, money, inventory, location, daily schedule blocks and autonomy
+state. `generateCandidates` builds actions from the NPC's career and available
+world context; `takeTurn` delegates choice to the existing utility decision engine.
+`resolveActivity` applies only the selected local outcome, advances needs/skills/goals,
+and emits a small world-effect record for the game layer to interpret.
+
+Travel requires a reachable destination; exploration does not silently teleport an
+NPC. Inactive characters cannot act. The module is not yet connected to the existing
+monthly population loop, world economy, or game UI. This separation allows the
+activity vocabulary and world-effect contract to be reviewed before integration.
