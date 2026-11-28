@@ -60,6 +60,7 @@ async function main() {
       }
 
       await page.locator('button.world').filter({ hasText: 'วันพีซ' }).click();
+      await page.evaluate(() => localStorage.setItem('el-help', '1'));
       await page.locator('#startBtn').click();
       await page.locator('#game:not([hidden])').waitFor({ state: 'visible' });
       await page.locator('#extra-life-progression-tools .el-progression-trigger').waitFor({ state: 'visible' });
