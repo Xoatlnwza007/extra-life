@@ -15,35 +15,30 @@
 
   function getCatalog(shop) {
     return (Array.isArray(shop) ? shop : []).filter(isWeapon).map(item => ({
-      id: String(item.id),
-      name: String(item.n || item.name || item.id),
-      power: Math.max(0, finite(item.pw)),
-      category: item.cat || 'wpn',
+      id: String(item.id), name: String(item.n || item.name || item.id),
+      power: Math.max(0, finite(item.pw)), category: item.cat || 'wpn',
       rarity: item.rarity || 'common',
-      maxDurability: Math.max(1, finite(item.maxDurability, 100)),
-      source: item
+      maxDurability: Math.max(1, finite(item.maxDurability, 100)), source: item
     }));
   }
 
   function getOwnedWeaponIds(state) {
-    const own = state && state.own;
-    const items = own && Array.isArray(own.items) ? own.items : [];
+    const items = state && state.own && Array.isArray(state.own.items) ? state.own.items : [];
     return new Set(items.map(String));
   }
 
   function resolveWeapon(state, shop, weaponId) {
-    const catalog = getCatalog(shop);
     const owned = getOwnedWeaponIds(state);
-    const candidates = catalog.filter(item => owned.has(item.id));
+    const candidates = getCatalog(shop).filter(item => owned.has(item.id));
     if (weaponId != null) return candidates.find(item => item.id === String(weaponId)) || null;
 
-    const equippedId = state && state.equipment && state.equipment.weaponId;
-    if (equippedId != null) {
-      const equipped = candidates.find(item => item.id === String(equippedId));
-      if (equipped) return equipped;
+    const equipment = state && state.equipment;
+    if (equipment && Object.prototype.hasOwnProperty.call(equipment, 'weaponId')) {
+      if (equipment.weaponId == null) return null;
+      return candidates.find(item => item.id === String(equipment.weaponId)) || null;
     }
 
-    // Preserve the legacy rule: the strongest owned weapon contributes.
+    // Legacy saves have no equipment.weaponId: preserve strongest-owned behavior.
     return candidates.sort((a, b) => b.power - a.power)[0] || null;
   }
 
@@ -67,8 +62,7 @@
 
   function unequipWeapon(state) {
     if (!state || typeof state !== 'object') return { ok: false, reason: 'invalid-state', state };
-    const equipment = { ...(state.equipment || {}), weaponId: null };
-    return { ok: true, state: { ...state, equipment } };
+    return { ok: true, state: { ...state, equipment: { ...(state.equipment || {}), weaponId: null } } };
   }
 
   function getCombatStats(state, shop) {
@@ -78,11 +72,8 @@
     const condition = usable ? durability / weapon.maxDurability : 0;
     const power = usable ? Math.round(weapon.power * (condition < 0.2 ? 0.5 : condition < 0.5 ? 0.8 : 1)) : 0;
     return {
-      weaponId: usable ? weapon.id : null,
-      weaponName: usable ? weapon.name : null,
-      weaponPower: power,
-      durability,
-      maxDurability: usable ? weapon.maxDurability : 0,
+      weaponId: usable ? weapon.id : null, weaponName: usable ? weapon.name : null,
+      weaponPower: power, durability, maxDurability: usable ? weapon.maxDurability : 0,
       broken: Boolean(weapon && !usable)
     };
   }
@@ -116,10 +107,8 @@
       durability: nextValue, weapon };
   }
 
-  const api = Object.freeze({
-    isWeapon, getCatalog, getOwnedWeaponIds, resolveWeapon, getDurability,
-    equipWeapon, unequipWeapon, getCombatStats, damageDurability, repairWeapon
-  });
+  const api = Object.freeze({ isWeapon, getCatalog, getOwnedWeaponIds, resolveWeapon,
+    getDurability, equipWeapon, unequipWeapon, getCombatStats, damageDurability, repairWeapon });
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.OnePieceWeaponSystem = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
