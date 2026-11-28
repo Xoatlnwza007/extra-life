@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "source_policy": "Official ONE PIECE.com story index; chapter ranges are official section ranges. Elbaph is open-ended and ongoing.",
+  "source_policy": "Official ONE PIECE.com arc boundaries cross-checked against VIZ chapter listings. Last verified against VIZ Chapter 1199 on 2026-11-28. Elbaph is open-ended and ongoing.",
   "arcs": [
     {
       "id": "east_blue",
@@ -420,5 +420,8 @@
         "https://www.viz.com/shonenjump/chapters/one-piece"
       ]
     }
-  ]
+  ],
+  "last_verified_chapter": 1199,
+  "last_verified_date": "2026-11-28",
+  "current_arc_id": "elbaph"
 }
