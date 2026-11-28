@@ -66,10 +66,13 @@
     {
       "id": "straw_hat_grand_fleet_stories",
       "title": "The Stories of the Self-Proclaimed Straw Hat Grand Fleet",
-      "chapter_range": null,
+      "chapter_range": {
+        "start": 864,
+        "end": 919
+      },
       "canon_status": "cover_story",
       "summary": "Follows members of the Grand Fleet after they depart from Dressrosa and shows how their separate voyages develop.",
-      "story_use": "A strong reference for autonomous allied crews, their own choices, and world events that continue off-screen.",
+      "story_use": "A reference for independent allied crews: each captain follows personal goals, makes different moral choices, and changes how the wider world sees the fleet.",
       "source_urls": [
         "https://onepiece.fandom.com/wiki/The_Stories_of_the_Self-Proclaimed_Straw_Hat_Grand_Fleet",
         "https://onepiece.fandom.com/wiki/Category%3ACover_Stories"
