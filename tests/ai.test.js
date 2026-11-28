@@ -1243,3 +1243,66 @@ test('Marine system rejects zero-bounty targets and cannot advance a resolved pu
   assert.equal(marines.registerWanted(force, { id: 'civilian', bounty: 0 }).reason, 'no-bounty');
   assert.equal(marines.advancePursuit({ status: 'captured' }).reason, 'no-active-pursuit');
 });
+
+
+test('crew recruitment respects an NPC\'s own willingness and shared goals', () => {
+  const crew = crews.createCrew({ id: 'crew-agency', captainId: 'player' });
+  const cautiousStranger = stateApi.createCharacterState({
+    id: 'stranger', traits: ['cautious', 'independent'],
+    relationships: { player: -35 }, needs: { safety: 90 },
+    goals: [{ id: 'g', status: 'active', tags: ['protect-family'] }]
+  });
+  const declined = crews.recruitMember(crew, cautiousStranger, 'navigator', {
+    captainId: 'player', riskLevel: 80, sharedGoals: ['adventure']
+  });
+  assert.equal(declined.joined, false);
+  assert.equal(declined.reason, 'declined');
+  assert.equal(declined.crew, crew);
+
+  const trustedNavigator = stateApi.createCharacterState({
+    id: 'navigator', traits: ['loyal'],
+    relationships: { player: 80 },
+    skills: { navigator: 85 },
+    goals: [{ id: 'g2', status: 'active', tags: ['explore'] }]
+  });
+  const joined = crews.recruitMember(crew, trustedNavigator, 'navigator', {
+    captainId: 'player', sharedGoals: ['explore']
+  });
+  assert.equal(joined.joined, true);
+  assert.equal(joined.member.characterId, 'navigator');
+  assert.equal(joined.member.role, 'navigator');
+  assert.equal(joined.member.skill, 85);
+  assert.ok(joined.member.loyalty >= 80);
+  assert.equal(joined.member.directive, 'autonomous');
+});
+
+test('crew members have bounded morale, loyalty, fatigue and independent directives', () => {
+  let crew = crews.createCrew({ id: 'crew-condition', captainId: 'player' });
+  crew = crews.joinCrew(crew, 'member-1', 'cook').crew;
+  const updated = crews.updateMemberCondition(crew, 'member-1', {
+    morale: 120, loyalty: -20, fatigue: 35, directive: 'avoid-combat'
+  });
+  assert.equal(updated.updated, true);
+  assert.equal(updated.member.morale, 100);
+  assert.equal(updated.member.loyalty, 0);
+  assert.equal(updated.member.fatigue, 35);
+  assert.equal(updated.member.directive, 'avoid-combat');
+  assert.equal(crews.getCrewReadiness(updated.crew).memberCount, 2);
+  assert.equal(crews.updateMemberCondition(updated.crew, 'member-1', { directive: 'mind-control' }).updated, false);
+});
+
+test('crew monthly upkeep consumes supplies and treasury and exposes morale risks', () => {
+  let crew = crews.createCrew({ id: 'crew-upkeep', captainId: 'player', treasury: 0, supplies: { food: 0 } });
+  crew = crews.joinCrew(crew, 'member-2', 'doctor').crew;
+  const result = crews.applyCrewMonth(crew, {
+    foodPerMember: 2, wagesPerMember: 10, rested: false,
+    at: '2026-01-01T00:00:00.000Z'
+  });
+  assert.equal(result.foodCost, 4);
+  assert.equal(result.shortage, 4);
+  assert.equal(result.wageCost, 20);
+  assert.equal(result.unpaidWages, 20);
+  assert.ok(result.crew.members.every(member => member.morale < 60));
+  assert.ok(result.events.every(event => event.type === 'member-at-risk'));
+  assert.equal(crews.getCrewReadiness(result.crew).memberCount, 2);
+});
