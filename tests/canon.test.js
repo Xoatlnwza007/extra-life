@@ -13,8 +13,11 @@ test('first-tranche canon and story data passes structural validation', () => {
   assert.ok(result.counts.characters >= 40);
 });
 
-test('official manga arc ranges are sequential and Elbaph remains open-ended', () => {
+test('official manga arc ranges are sequential and Elbaph remains open-ended through the latest verified chapter', () => {
   const { arcs } = loadDatasets();
+  const arcData = require('../data/canon/arcs.json');
+  assert.equal(arcData.last_verified_chapter, 1199);
+  assert.equal(arcData.current_arc_id, 'elbaph');
   assert.equal(arcs[0].chapter_start, 1);
   assert.equal(arcs.at(-1).id, 'elbaph');
   assert.equal(arcs.at(-1).chapter_end, null);
@@ -35,9 +38,12 @@ test('events resolve to existing locations, factions and characters', () => {
   }
 });
 
-test('cover stories remain separate from the main manga event timeline', () => {
+test('all 19 major manga cover-story serials are catalogued separately from the main timeline', () => {
   const { coverStories, events } = loadDatasets();
-  assert.ok(coverStories.length >= 5);
+  assert.equal(coverStories.length, 19);
+  assert.equal(new Set(coverStories.map(story => story.id)).size, 19);
+  assert.ok(coverStories.every(story => story.chapter_range && story.chapter_range.start < story.chapter_range.end));
+  assert.ok(coverStories.every(story => story.story_use && story.source_urls.length >= 2));
   assert.ok(coverStories.every(story => story.canon_status === 'cover_story'));
   const fleet = coverStories.find(story => story.id === 'straw_hat_grand_fleet_stories');
   assert.deepEqual(fleet.chapter_range, { start: 864, end: 919 });
