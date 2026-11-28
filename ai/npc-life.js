@@ -126,7 +126,7 @@
     const skills = { ...(profile.skills || {}) };
     const skillKey = context.skillKey || (action.id === 'train' ? 'combat' : profile.career);
     if (['work', 'train', 'craft', 'study', 'trade', 'help'].includes(action.id)) {
-      skills[skillKey] = clamp(Number(skills[skillKey]) + Math.max(1, Number(context.skillGain) || 1), 0, 100);
+      skills[skillKey] = clamp((Number(skills[skillKey]) || 0) + Math.max(1, Number(context.skillGain) || 1), 0, 100);
     }
     const destination = context.destination || action.destination || profile.location;
     const goals = (profile.goals || []).map(goal => {
