@@ -1,0 +1,924 @@
+<script data-inline-module="decision-engine">
+/* One Piece Life Simulator — autonomous decision engine
+ * Pure utility scorer. No DOM, storage, or game-global dependencies.
+ * Integration contract: decide(state, candidates, context) -> { action, ranking }.
+ */
+(function (root) {
+  'use strict';
+
+  const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
+  const num = (v, fallback = 0) => Number.isFinite(Number(v)) ? Number(v) : fallback;
+  const tokens = value => Array.isArray(value) ? value : String(value || '').split(/[\s,|]+/).filter(Boolean);
+
+  function needValue(state, action) {
+    const needs = state.needs || {};
+    const relief = action.relief || {};
+    let score = 0;
+    for (const [key, amount] of Object.entries(relief)) {
+      const deficit = clamp(100 - num(needs[key], 50), 0, 100) / 100;
+      score += deficit * num(amount) * 0.24;
+    }
+    return score;
+  }
+
+  function goalValue(state, action) {
+    const goals = state.goals || [];
+    const tags = new Set(tokens(action.tags));
+    let score = 0;
+    for (const goal of goals) {
+      if (goal.status && goal.status !== 'active') continue;
+      const weight = clamp(num(goal.priority, 50) / 50, 0.2, 2);
+      if (goal.action === action.id || (goal.tags || []).some(tag => tags.has(tag))) {
+        score += 18 * weight;
+      }
+    }
+    return score;
+  }
+
+  function personalityValue(state, action) {
+    const traits = state.traits || [];
+    const tags = tokens(action.tags);
+    let score = 0;
+    for (const trait of traits) {
+      const preferences = (state.personalityPreferences || {})[trait] || {};
+      for (const tag of tags) score += num(preferences[tag]) * 3;
+      if (action.risk > 0 && trait === 'cautious') score -= action.risk * 0.12;
+      if (action.risk > 0 && ['brave', 'reckless', 'ambitious'].includes(trait)) score += action.risk * 0.07;
+    }
+    return score;
+  }
+
+  function memoryValue(state, action) {
+    const memories = state.memories || [];
+    const tags = new Set(tokens(action.tags));
+    let score = 0;
+    for (const memory of memories.slice(-40)) {
+      if (memory.expired) continue;
+      const relevance = (memory.tags || []).filter(tag => tags.has(tag)).length;
+      if (!relevance) continue;
+      const strength = clamp(num(memory.importance, 1), 0, 5);
+      const polarity = memory.polarity === 'negative' ? -1 : 1;
+      score += relevance * strength * polarity * 1.5;
+    }
+    return clamp(score, -15, 15);
+  }
+
+  function scoreAction(state, action, context = {}) {
+    if (action.available === false) return { id: action.id, score: -Infinity, reasons: ['unavailable'] };
+    const risk = clamp(num(action.risk), 0, 100);
+    const riskTolerance = clamp(num(state.riskTolerance, 35), 0, 100);
+    const riskPenalty = Math.max(0, risk - riskTolerance) * 0.28;
+    const resourceCost = num(action.resourceCost) * (1 + num(context.resourcePressure) / 100);
+    const travelCost = num(action.travelCost) * (1 + num(context.travelDanger) / 100);
+    const reward = num(action.expectedReward);
+    const opportunity = num(action.opportunityValue);
+    const relationship = num(action.relationshipValue);
+    const need = needValue(state, action);
+    const goal = goalValue(state, action);
+    const personality = personalityValue(state, action);
+    const memory = memoryValue(state, action);
+    const score = need + goal + personality + memory + opportunity + relationship + reward
+      - riskPenalty - resourceCost - travelCost;
+    return {
+      id: action.id,
+      score: Number(score.toFixed(3)),
+      reasons: [
+        ['needs', need], ['goals', goal], ['personality', personality],
+        ['memory', memory], ['opportunity', opportunity], ['relationships', relationship],
+        ['reward', reward], ['risk penalty', -riskPenalty],
+        ['resource cost', -resourceCost], ['travel cost', -travelCost]
+      ].filter(([, value]) => Math.abs(value) > 0.001)
+    };
+  }
+
+  function decide(state, candidates, context = {}) {
+    const ranking = (candidates || [])
+      .map(action => ({ action, evaluation: scoreAction(state || {}, action, context) }))
+      .filter(item => Number.isFinite(item.evaluation.score))
+      .sort((a, b) => b.evaluation.score - a.evaluation.score);
+    return {
+      action: ranking.length ? ranking[0].action : null,
+      ranking: ranking.map(item => ({ id: item.evaluation.id, score: item.evaluation.score, reasons: item.evaluation.reasons }))
+    };
+  }
+
+  const api = Object.freeze({ decide, scoreAction });
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  root.OnePieceDecisionEngine = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+</script>
+<script data-inline-module="character-state">
+/* One Piece Life Simulator — persistent NPC memory and goals.
+ * Pure state helpers. Storage is owned by the game layer.
+ */
+(function (root) {
+  'use strict';
+
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+  const makeId = (prefix) => prefix + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+
+  function createCharacterState(input = {}) {
+    return {
+      id: input.id || makeId('character'),
+      traits: Array.isArray(input.traits) ? [...input.traits] : [],
+      personalityPreferences: { ...(input.personalityPreferences || {}) },
+      riskTolerance: clamp(Number(input.riskTolerance ?? 35), 0, 100),
+      needs: { ...(input.needs || {}) },
+      memories: Array.isArray(input.memories) ? input.memories.slice(-100) : [],
+      goals: Array.isArray(input.goals) ? input.goals : [],
+      relationships: { ...(input.relationships || {}) },
+      inventory: Array.isArray(input.inventory) ? input.inventory : [],
+      lastDecision: input.lastDecision || null,
+      updatedAt: input.updatedAt || new Date().toISOString()
+    };
+  }
+
+  function remember(character, event, options = {}) {
+    if (!character || !event) return character;
+    const memory = {
+      id: options.id || makeId('memory'),
+      event: String(event),
+      tags: Array.isArray(options.tags) ? [...new Set(options.tags.map(String))] : [],
+      importance: clamp(Number(options.importance ?? 1), 0, 5),
+      polarity: options.polarity === 'negative' ? 'negative' : 'positive',
+      createdAt: options.createdAt || new Date().toISOString(),
+      expiresAt: options.expiresAt || null,
+      expired: false,
+      source: options.source || 'world'
+    };
+    const memories = [...(character.memories || []), memory];
+    return { ...character, memories: memories.slice(-100), updatedAt: new Date().toISOString() };
+  }
+
+  function addGoal(character, goal) {
+    if (!character || !goal || !goal.description) return character;
+    const nextGoal = {
+      id: goal.id || makeId('goal'),
+      description: String(goal.description),
+      action: goal.action || null,
+      tags: Array.isArray(goal.tags) ? [...new Set(goal.tags.map(String))] : [],
+      priority: clamp(Number(goal.priority ?? 50), 0, 100),
+      status: 'active',
+      createdAt: goal.createdAt || new Date().toISOString(),
+      deadline: goal.deadline || null
+    };
+    return { ...character, goals: [...(character.goals || []), nextGoal], updatedAt: new Date().toISOString() };
+  }
+
+  function updateGoal(character, goalId, status) {
+    const allowed = ['active', 'completed', 'abandoned'];
+    if (!character || !allowed.includes(status)) return character;
+    return {
+      ...character,
+      goals: (character.goals || []).map(goal => goal.id === goalId
+        ? { ...goal, status, updatedAt: new Date().toISOString() }
+        : goal),
+      updatedAt: new Date().toISOString()
+    };
+  }
+
+  function getRelationship(character, targetId) {
+    if (!character || !targetId) return 0;
+    const value = (character.relationships || {})[targetId];
+    return clamp(Number(value) || 0, -100, 100);
+  }
+
+  function adjustRelationship(character, targetId, delta, options = {}) {
+    if (!character || !targetId) return character;
+    const amount = Number(delta);
+    if (!Number.isFinite(amount) || amount === 0) return character;
+    const current = getRelationship(character, targetId);
+    const score = clamp(current + amount, -100, 100);
+    const history = [...(character.relationshipHistory || []), {
+      targetId: String(targetId),
+      delta: score - current,
+      score,
+      event: options.event ? String(options.event) : null,
+      createdAt: options.createdAt || new Date().toISOString()
+    }].slice(-50);
+    return {
+      ...character,
+      relationships: { ...(character.relationships || {}), [targetId]: score },
+      relationshipHistory: history,
+      updatedAt: new Date().toISOString()
+    };
+  }
+
+  function interact(first, second, delta, options = {}) {
+    if (!first || !second || !first.id || !second.id || first.id === second.id) {
+      return { first, second };
+    }
+    const firstDelta = Number(delta);
+    const secondDelta = Number(options.replyDelta ?? delta);
+    const nextFirst = Number.isFinite(firstDelta)
+      ? adjustRelationship(first, second.id, firstDelta, {
+          event: options.event || 'interaction',
+          createdAt: options.createdAt
+        })
+      : first;
+    const nextSecond = Number.isFinite(secondDelta)
+      ? adjustRelationship(second, first.id, secondDelta, {
+          event: options.replyEvent || options.event || 'interaction',
+          createdAt: options.createdAt
+        })
+      : second;
+    return { first: nextFirst, second: nextSecond };
+  }
+
+  function relationshipLabel(score) {
+    const value = clamp(Number(score) || 0, -100, 100);
+    if (value >= 80) return 'devoted';
+    if (value >= 50) return 'trusted';
+    if (value >= 20) return 'friendly';
+    if (value <= -80) return 'nemesis';
+    if (value <= -50) return 'hostile';
+    if (value <= -20) return 'unfriendly';
+    return 'neutral';
+  }
+
+  function advanceTime(character, now = Date.now()) {
+    if (!character) return character;
+    const memories = (character.memories || []).map(memory => {
+      if (!memory.expiresAt || memory.expired) return memory;
+      return { ...memory, expired: new Date(memory.expiresAt).getTime() <= now };
+    });
+    const goals = (character.goals || []).map(goal => {
+      if (goal.status !== 'active' || !goal.deadline) return goal;
+      return new Date(goal.deadline).getTime() <= now
+        ? { ...goal, status: 'abandoned', expiredAt: new Date(now).toISOString() }
+        : goal;
+    });
+    return { ...character, memories, goals, updatedAt: new Date(now).toISOString() };
+  }
+
+  const api = Object.freeze({ createCharacterState, remember, addGoal, updateGoal, getRelationship, adjustRelationship, interact, relationshipLabel, advanceTime });
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  root.OnePieceCharacterState = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+</script>
+<script data-inline-module="npc-brain">
+/* One Piece Life Simulator — NPC decision adapter.
+ * Bridges character state + candidate activities to decision-engine.js.
+ */
+(function (root) {
+  'use strict';
+
+  function getDependencies() {
+    const engine = root.OnePieceDecisionEngine;
+    const stateApi = root.OnePieceCharacterState;
+    if (!engine || !stateApi) throw new Error('Load decision-engine.js and character-state.js before npc-brain.js');
+    return { engine, stateApi };
+  }
+
+  function decide(character, candidates, context = {}) {
+    const { engine } = getDependencies();
+    const result = engine.decide(character || {}, candidates || [], context);
+    return {
+      action: result.action,
+      ranking: result.ranking,
+      characterId: character && character.id || null,
+      decidedAt: new Date().toISOString()
+    };
+  }
+
+  function recordOutcome(character, decision, outcome = {}) {
+    const { stateApi } = getDependencies();
+    if (!character || !decision || !decision.action) return character;
+    const action = decision.action;
+    const next = {
+      ...character,
+      lastDecision: {
+        actionId: action.id,
+        decidedAt: decision.decidedAt || new Date().toISOString(),
+        score: (decision.ranking || []).find(item => item.id === action.id)?.score ?? null
+      }
+    };
+    const event = outcome.event || ('ทำกิจกรรม: ' + (action.label || action.name || action.id));
+    return stateApi.remember(next, event, {
+      tags: [...new Set([...(Array.isArray(action.tags) ? action.tags : []), ...(Array.isArray(outcome.tags) ? outcome.tags : outcome.tags ? [outcome.tags] : [])].map(String))],
+      importance: outcome.importance ?? 1,
+      polarity: outcome.polarity || 'positive',
+      source: 'npc-action'
+    });
+  }
+
+  const api = Object.freeze({ decide, recordOutcome });
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  root.OnePieceNPCBrain = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+</script>
+<script data-inline-module="event-adapter">
+/* One Piece Life Simulator — event decision adapter
+ * Bridges legacy game choices to OnePieceDecisionEngine without executing
+ * choice effects. The original choice object is returned for the game to apply.
+ */
+(function (root) {
+  'use strict';
+
+  function number(value, fallback = 0) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  }
+
+  function isAvailable(choice) {
+    const source = choice || {};
+    return source.available !== false && source.disabled !== true &&
+      source.ok !== false && source.skip !== true;
+  }
+
+  function toCandidate(choice, index) {
+    const source = choice || {};
+    const effects = source.effects || source.effect || {};
+    const tags = source.tags || source.aiTags || source.category || source.g || [];
+    const relief = source.relief || source.needRelief || {};
+    return {
+      id: String(source.id ?? source.key ?? 'choice-' + index),
+      available: isAvailable(source),
+      tags,
+      relief,
+      risk: number(source.risk ?? source.danger),
+      resourceCost: number(source.resourceCost ?? source.cost),
+      travelCost: number(source.travelCost),
+      expectedReward: number(source.expectedReward ?? source.reward ?? effects.reward),
+      opportunityValue: number(source.opportunityValue),
+      relationshipValue: number(source.relationshipValue ?? effects.relationship),
+      original: source
+    };
+  }
+
+  function choose(state, choices, context = {}) {
+    const options = Array.isArray(choices) ? choices : [];
+    const available = options.filter(isAvailable);
+    if (!available.length) return { choice: null, ranking: [], usedAI: false };
+
+    const engine = root.OnePieceDecisionEngine;
+    if (!engine || typeof engine.decide !== 'function') {
+      return { choice: available[0], ranking: [], usedAI: false };
+    }
+
+    const candidates = available.map(toCandidate);
+    const result = engine.decide(state || {}, candidates, context);
+    if (!result || !result.action) {
+      return { choice: available[0], ranking: [], usedAI: false };
+    }
+
+    return {
+      choice: result.action.original || available[0],
+      ranking: result.ranking || [],
+      usedAI: true
+    };
+  }
+
+  const api = Object.freeze({ choose, toCandidate, isAvailable });
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  root.OnePieceEventAdapter = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+</script>
+<script data-inline-module="east-blue-starter">
+/* One Piece Life Simulator — original East Blue starter side-story.
+ * These events are explicitly sandbox/original content, not manga canon.
+ * The factory receives the legacy game's effect helpers and preserves its
+ * existing event/choice contract.
+ */
+(function (root) {
+  'use strict';
+
+  function create(api = {}) {
+    const call = (name, ...args) => {
+      if (typeof api[name] === 'function') return api[name](...args);
+      return undefined;
+    };
+    const flag = (state, key, value = 1) => {
+      state.flags = state.flags || {};
+      state.flags[key] = value;
+    };
+
+    return [
+      {
+        id: 'op_eb_toma_net',
+        t: '[เนื้อเรื่องเสริม] อวนที่หายไป',
+        once: 1,
+        w: 10,
+        origin: 'original',
+        canonStatus: 'sandbox',
+        homeOnly: true,
+        when: S => S.place === 'foosha' && S.age >= 8 && S.age <= 18 && !S.flags?.eb_toma_met,
+        play() {
+          return {
+            text: 'ชาวประมงชื่อโทมะกำลังตามหาอวนกับลังเสบียงที่กระแสน้ำพัดหายไป เขาขอให้คุณช่วยก่อนที่แสงสุดท้ายจะหมดลง',
+            choices: [
+              {
+                l: 'ช่วยเดินสำรวจแนวโขดหิน',
+                g: 'kind help brave',
+                f(S) {
+                  flag(S, 'eb_toma_met');
+                  flag(S, 'eb_net_found');
+                  call('bond', 'eb_toma', 12);
+                  call('skill', 'ride', 2);
+                  call('st', 'joy', 3);
+                  call('say', 'คุณพบอวนติดอยู่กับโขดหินและช่วยลากกลับมา โทมะจำความช่วยเหลือของคุณไว้', 'good');
+                }
+              },
+              {
+                l: 'ช่วยตามหา แต่ขอค่าตอบแทนเล็กน้อย',
+                g: 'ambitious trade',
+                f(S) {
+                  flag(S, 'eb_toma_met');
+                  flag(S, 'eb_net_found');
+                  call('bond', 'eb_toma', 5);
+                  call('mon', 4);
+                  call('say', 'คุณช่วยโทมะกู้เสบียงกลับมาได้ เขาจ่ายค่าตอบแทนตามที่ตกลง', 'good');
+                }
+              },
+              {
+                l: 'ถามชาวบ้านให้ช่วยกันค้นหา',
+                g: 'curious kind',
+                f(S) {
+                  flag(S, 'eb_toma_met');
+                  flag(S, 'eb_net_found');
+                  call('bond', 'eb_toma', 8);
+                  call('skill', 'charm', 1);
+                  call('say', 'ข่าวแพร่ไปทั่วหมู่บ้าน ไม่นานทุกคนก็ช่วยกันหาอวนจนพบ', 'good');
+                }
+              }
+            ]
+          };
+        }
+      },
+      {
+        id: 'op_eb_dock_repair',
+        t: '[เนื้อเรื่องเสริม] ซ่อมท่าเรือก่อนน้ำขึ้น',
+        once: 1,
+        w: 10,
+        origin: 'original',
+        canonStatus: 'sandbox',
+        homeOnly: true,
+        when: S => S.place === 'foosha' && S.age >= 9 && !!S.flags?.eb_net_found && !S.flags?.eb_boat_repaired,
+        play() {
+          return {
+            text: 'หลังจากได้อวนคืน โทมะชวนคุณไปดูเรือประมงลำเล็กที่เชือกผูกกับท่าเรือเริ่มขาด ไม้กระดานบางแผ่นก็หลวมจนเดินแทบไม่ได้',
+            choices: [
+              {
+                l: 'ช่วยช่างไม้เปลี่ยนกระดาน',
+                g: 'craft help diligent',
+                f(S) {
+                  flag(S, 'eb_boat_repaired');
+                  call('bond', 'eb_toma', 8);
+                  call('skill', 'craft', 3);
+                  call('say', 'คุณช่วยยึดกระดานและตรวจเชือกผูกเรือจนแน่นหนา', 'good');
+                }
+              },
+              {
+                l: 'รวบรวมเพื่อนบ้านมาช่วยกัน',
+                g: 'kind leader',
+                f(S) {
+                  flag(S, 'eb_boat_repaired');
+                  call('bond', 'eb_toma', 10);
+                  call('skill', 'charm', 2);
+                  call('st', 'joy', 2);
+                  call('say', 'ทุกคนช่วยกันซ่อมท่าเรือ งานที่ดูหนักจึงเสร็จก่อนน้ำขึ้น', 'good');
+                }
+              },
+              {
+                l: 'เรียนรู้วิธีผูกปมและซ่อมเชือก',
+                g: 'curious diligent',
+                f(S) {
+                  flag(S, 'eb_boat_repaired');
+                  call('bond', 'eb_toma', 6);
+                  call('skill', 'ride', 2);
+                  call('say', 'โทมะสอนปมเชือกสำหรับเรือให้คุณจนจำได้ขึ้นใจ', 'good');
+                }
+              }
+            ]
+          };
+        }
+      },
+      {
+        id: 'op_eb_delivery_chart',
+        t: '[เนื้อเรื่องเสริม] แผนที่จากคนส่งของ',
+        once: 1,
+        w: 10,
+        origin: 'original',
+        canonStatus: 'sandbox',
+        homeOnly: true,
+        when: S => S.place === 'foosha' && S.age >= 10 && !!S.flags?.eb_boat_repaired && !S.flags?.eb_chart_received,
+        play() {
+          return {
+            text: 'คนส่งของจากท่าเรือฝากห่อเอกสารไว้กับโทมะ ข้างในมีแผนที่เส้นทางชายฝั่งที่เขียนด้วยมือและคำเตือนเรื่องแนวหินใต้น้ำ',
+            choices: [
+              {
+                l: 'อ่านแผนที่และจดจำแนวชายฝั่ง',
+                g: 'curious study',
+                f(S) {
+                  flag(S, 'eb_chart_received');
+                  call('bond', 'eb_toma', 5);
+                  call('st', 'iq', 2);
+                  call('skill', 'ride', 2);
+                  call('say', 'คุณจำสัญลักษณ์บนแผนที่ได้หลายจุด และเก็บสำเนาไว้เป็นของตัวเอง', 'good');
+                }
+              },
+              {
+                l: 'นำเอกสารไปส่งให้เจ้าของร้านที่ท่าเรือ',
+                g: 'kind obey',
+                f(S) {
+                  flag(S, 'eb_chart_received');
+                  call('bond', 'eb_toma', 8);
+                  call('mon', 3);
+                  call('say', 'คุณส่งเอกสารถึงมือเจ้าของร้านทันเวลา เขามอบเงินเล็กน้อยเป็นคำขอบคุณ', 'good');
+                }
+              },
+              {
+                l: 'ถามโทมะเกี่ยวกับเส้นทางเรือ',
+                g: 'curious',
+                f(S) {
+                  flag(S, 'eb_chart_received');
+                  call('bond', 'eb_toma', 10);
+                  call('skill', 'ride', 3);
+                  call('say', 'โทมะเล่าเรื่องกระแสน้ำและจุดที่เรือเล็กควรหลีกเลี่ยง', 'good');
+                }
+              }
+            ]
+          };
+        }
+      },
+      {
+        id: 'op_eb_harbor_storm',
+        t: '[เนื้อเรื่องเสริม] สัญญาณเตือนก่อนพายุ',
+        once: 1,
+        w: 12,
+        origin: 'original',
+        canonStatus: 'sandbox',
+        homeOnly: true,
+        when: S => S.place === 'foosha' && S.age >= 12 && !!S.flags?.eb_chart_received && !S.flags?.eb_starter_complete,
+        play() {
+          return {
+            text: 'เมฆดำก่อตัวเหนืออ่าวเร็วกว่าปกติ เรือประมงสองลำยังอยู่ด้านนอก โทมะมองไปที่ระฆังเตือนภัยแล้วหันมาถามว่าคุณจะช่วยอย่างไร',
+            choices: [
+              {
+                l: 'ช่วยผูกเรือและเก็บของบนท่า',
+                g: 'brave help craft',
+                f(S) {
+                  flag(S, 'eb_starter_complete');
+                  flag(S, 'eb_starter_outcome', 'secured-boats');
+                  call('bond', 'eb_toma', 12);
+                  call('skill', 'craft', 2);
+                  call('st', 'fit', 2);
+                  call('say', 'เรือทุกลำถูกผูกไว้อย่างแน่นหนาก่อนฝนชุดแรกจะมาถึง', 'good');
+                }
+              },
+              {
+                l: 'ตีระฆังเตือนและพาคนขึ้นที่สูง',
+                g: 'kind leader safe',
+                f(S) {
+                  flag(S, 'eb_starter_complete');
+                  flag(S, 'eb_starter_outcome', 'warned-village');
+                  call('bond', 'eb_toma', 10);
+                  call('skill', 'charm', 2);
+                  call('st', 'joy', 2);
+                  call('say', 'เสียงระฆังทำให้ชาวบ้านเก็บของและพากันขึ้นไปยังเนินสูงทันเวลา', 'good');
+                }
+              },
+              {
+                l: 'ช่วยโทมะพาเด็กๆ ออกจากแนวชายฝั่ง',
+                g: 'brave kind hero',
+                f(S) {
+                  flag(S, 'eb_starter_complete');
+                  flag(S, 'eb_starter_outcome', 'escorted-children');
+                  call('bond', 'eb_toma', 14);
+                  call('st', 'fit', 2);
+                  call('say', 'คุณพาเด็กๆ ไปยังที่ปลอดภัย โทมะขอบคุณที่ไม่ทิ้งใครไว้ข้างหลัง', 'good');
+                }
+              }
+            ]
+          };
+        }
+      }
+    ];
+  }
+
+  const api = Object.freeze({ create });
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  root.OnePieceEastBlueStarter = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+</script>
+<script data-inline-module="crew-system">
+/* One Piece Life Simulator — pirate crew and faction primitives.
+ * Pure helpers; the game layer owns persistence and UI integration.
+ */
+(function (root) {
+  'use strict';
+
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+  const DEFAULT_ROLES = ['captain', 'first-mate', 'navigator', 'swordsman', 'sniper', 'cook', 'doctor', 'shipwright', 'musician', 'archaeologist', 'helmsman', 'fighter'];
+
+  function createCrew(input = {}) {
+    const captainId = input.captainId ? String(input.captainId) : null;
+    const crew = {
+      id: input.id || 'crew-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8),
+      name: String(input.name || 'Unnamed Pirates').trim() || 'Unnamed Pirates',
+      captainId,
+      members: [],
+      shipName: input.shipName || null,
+      bounty: clamp(Number(input.bounty) || 0, 0, Number.MAX_SAFE_INTEGER),
+      reputation: clamp(Number(input.reputation) || 0, -100, 100),
+      status: 'active',
+      foundedAt: input.foundedAt || new Date().toISOString(),
+      history: []
+    };
+    if (captainId) {
+      crew.members.push({ characterId: captainId, role: 'captain', joinedAt: crew.foundedAt });
+    }
+    return crew;
+  }
+
+  function joinCrew(crew, characterId, role = 'fighter', options = {}) {
+    if (!crew || crew.status !== 'active' || !characterId) return { crew, joined: false, reason: 'invalid-crew' };
+    const id = String(characterId);
+    if ((crew.members || []).some(member => member.characterId === id)) {
+      return { crew, joined: false, reason: 'already-member' };
+    }
+    const capacity = Math.max(1, Math.floor(Number(options.capacity) || 10));
+    if ((crew.members || []).length >= capacity) return { crew, joined: false, reason: 'crew-full' };
+    const safeRole = DEFAULT_ROLES.includes(role) && role !== 'captain' ? role : 'fighter';
+    const member = { characterId: id, role: safeRole, joinedAt: options.joinedAt || new Date().toISOString() };
+    const next = {
+      ...crew,
+      members: [...(crew.members || []), member],
+      history: [...(crew.history || []), { type: 'joined', characterId: id, role: safeRole, at: member.joinedAt }].slice(-100)
+    };
+    return { crew: next, joined: true, member };
+  }
+
+  function leaveCrew(crew, characterId, options = {}) {
+    if (!crew || !characterId) return { crew, left: false, reason: 'invalid-crew' };
+    const id = String(characterId);
+    if (id === crew.captainId) return { crew, left: false, reason: 'captain-must-transfer-or-disband' };
+    const member = (crew.members || []).find(item => item.characterId === id);
+    if (!member) return { crew, left: false, reason: 'not-member' };
+    const at = options.leftAt || new Date().toISOString();
+    return {
+      crew: {
+        ...crew,
+        members: crew.members.filter(item => item.characterId !== id),
+        history: [...(crew.history || []), { type: 'left', characterId: id, role: member.role, at }].slice(-100)
+      },
+      left: true,
+      member
+    };
+  }
+
+  function setMemberRole(crew, characterId, role) {
+    if (!crew || !DEFAULT_ROLES.includes(role) || role === 'captain') {
+      return { crew, updated: false, reason: 'invalid-role' };
+    }
+    const id = String(characterId);
+    if (!(crew.members || []).some(member => member.characterId === id)) {
+      return { crew, updated: false, reason: 'not-member' };
+    }
+    const members = crew.members.map(member => member.characterId === id ? { ...member, role } : member);
+    return { crew: { ...crew, members }, updated: true };
+  }
+
+  function transferCaptaincy(crew, newCaptainId, options = {}) {
+    if (!crew || !newCaptainId || !(crew.members || []).some(member => member.characterId === String(newCaptainId))) {
+      return { crew, transferred: false, reason: 'new-captain-not-member' };
+    }
+    const oldCaptainId = crew.captainId;
+    const next = {
+      ...crew,
+      captainId: String(newCaptainId),
+      members: crew.members.map(member => {
+        if (member.characterId === String(newCaptainId)) return { ...member, role: 'captain' };
+        if (member.characterId === oldCaptainId) return { ...member, role: 'first-mate' };
+        return member;
+      }),
+      history: [...(crew.history || []), { type: 'captaincy-transferred', from: oldCaptainId, to: String(newCaptainId), at: options.at || new Date().toISOString() }].slice(-100)
+    };
+    return { crew: next, transferred: true };
+  }
+
+  function addBounty(crew, amount, reason = 'world-event') {
+    const value = Number(amount);
+    if (!crew || !Number.isFinite(value) || value <= 0) return crew;
+    return {
+      ...crew,
+      bounty: clamp((Number(crew.bounty) || 0) + Math.floor(value), 0, Number.MAX_SAFE_INTEGER),
+      history: [...(crew.history || []), { type: 'bounty-increased', amount: Math.floor(value), reason: String(reason), at: new Date().toISOString() }].slice(-100)
+    };
+  }
+
+  function adjustReputation(crew, delta, reason = 'world-event') {
+    const amount = Number(delta);
+    if (!crew || !Number.isFinite(amount) || amount === 0) return crew;
+    const current = clamp(Number(crew.reputation) || 0, -100, 100);
+    const nextValue = clamp(current + amount, -100, 100);
+    return {
+      ...crew,
+      reputation: nextValue,
+      history: [...(crew.history || []), {
+        type: 'reputation-changed', delta: nextValue - current,
+        reputation: nextValue, reason: String(reason), at: new Date().toISOString()
+      }].slice(-100)
+    };
+  }
+
+  function crewRelationLabel(score) {
+    const value = clamp(Number(score) || 0, -100, 100);
+    if (value >= 60) return 'allied';
+    if (value >= 20) return 'friendly';
+    if (value <= -60) return 'at-war';
+    if (value <= -20) return 'hostile';
+    return 'neutral';
+  }
+
+  function setCrewRelation(crew, otherCrewId, score, options = {}) {
+    if (!crew || !otherCrewId || String(otherCrewId) === String(crew.id)) {
+      return { crew, updated: false, reason: 'invalid-target' };
+    }
+    const value = Number(score);
+    if (!Number.isFinite(value)) return { crew, updated: false, reason: 'invalid-score' };
+    const bounded = clamp(value, -100, 100);
+    const relations = { ...(crew.relations || {}), [String(otherCrewId)]: bounded };
+    return {
+      crew: {
+        ...crew,
+        relations,
+        history: [...(crew.history || []), {
+          type: 'relation-changed', otherCrewId: String(otherCrewId),
+          score: bounded, label: crewRelationLabel(bounded),
+          reason: options.reason || 'diplomacy', at: options.at || new Date().toISOString()
+        }].slice(-100)
+      },
+      updated: true
+    };
+  }
+
+  function resolveCrewEncounter(first, second, options = {}) {
+    if (!first || !second || !first.id || !second.id || first.id === second.id ||
+        first.status !== 'active' || second.status !== 'active') {
+      return { resolved: false, reason: 'invalid-crews' };
+    }
+    const winnerId = options.winnerId ? String(options.winnerId) : null;
+    if (winnerId && winnerId !== first.id && winnerId !== second.id) {
+      return { resolved: false, reason: 'winner-not-in-encounter' };
+    }
+    const hostility = clamp(Number(options.hostilityDelta ?? -25), -100, 0);
+    const firstReputation = winnerId ? (winnerId === first.id ? 5 : -3) : -1;
+    const secondReputation = winnerId ? (winnerId === second.id ? 5 : -3) : -1;
+    const event = {
+      type: 'crew-encounter',
+      opponentId: second.id,
+      winnerId,
+      outcome: winnerId ? (winnerId === first.id ? 'victory' : 'defeat') : 'stalemate',
+      at: options.at || new Date().toISOString()
+    };
+    const reverseEvent = { ...event, opponentId: first.id,
+      outcome: winnerId ? (winnerId === second.id ? 'victory' : 'defeat') : 'stalemate' };
+    let nextFirst = setCrewRelation(first, second.id, (first.relations || {})[second.id] || 0, { reason: 'encounter' }).crew;
+    let nextSecond = setCrewRelation(second, first.id, (second.relations || {})[first.id] || 0, { reason: 'encounter' }).crew;
+    nextFirst = setCrewRelation(nextFirst, second.id,
+      clamp(((first.relations || {})[second.id] || 0) + hostility, -100, 100),
+      { reason: 'crew-encounter', at: event.at }).crew;
+    nextSecond = setCrewRelation(nextSecond, first.id,
+      clamp(((second.relations || {})[first.id] || 0) + hostility, -100, 100),
+      { reason: 'crew-encounter', at: event.at }).crew;
+    nextFirst = adjustReputation(nextFirst, firstReputation, 'crew-encounter');
+    nextSecond = adjustReputation(nextSecond, secondReputation, 'crew-encounter');
+    nextFirst = { ...nextFirst, history: [...nextFirst.history, event].slice(-100) };
+    nextSecond = { ...nextSecond, history: [...nextSecond.history, reverseEvent].slice(-100) };
+    if (winnerId && Number(options.winnerBountyIncrease) > 0) {
+      if (winnerId === first.id) nextFirst = addBounty(nextFirst, options.winnerBountyIncrease, 'crew-encounter-victory');
+      else nextSecond = addBounty(nextSecond, options.winnerBountyIncrease, 'crew-encounter-victory');
+    }
+    return { resolved: true, first: nextFirst, second: nextSecond, winnerId, outcome: event.outcome };
+  }
+
+  function findCrewForMember(crews, characterId) {
+    const id = String(characterId);
+    return (crews || []).find(crew => crew.status === 'active' && (crew.members || []).some(member => member.characterId === id)) || null;
+  }
+
+  function disbandCrew(crew, reason = 'disbanded') {
+    if (!crew || crew.status !== 'active') return crew;
+    return {
+      ...crew,
+      status: 'disbanded',
+      disbandedAt: new Date().toISOString(),
+      disbandReason: String(reason),
+      history: [...(crew.history || []), { type: 'disbanded', reason: String(reason), at: new Date().toISOString() }].slice(-100)
+    };
+  }
+
+  const api = Object.freeze({ DEFAULT_ROLES, createCrew, joinCrew, leaveCrew, setMemberRole, transferCaptaincy, addBounty, adjustReputation, crewRelationLabel, setCrewRelation, resolveCrewEncounter, findCrewForMember, disbandCrew });
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  root.OnePieceCrewSystem = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+</script>
+<script data-inline-module="devil-fruit-system">
+/* One Piece Life Simulator — Devil Fruit rules.
+ * Pure data helpers. The game layer owns persistence, inventory and UI.
+ */
+(function (root) {
+  'use strict';
+
+  const TYPES = Object.freeze(['paramecia', 'zoan', 'logia']);
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+  function createFruit(input = {}) {
+    const type = String(input.type || '').toLowerCase();
+    const name = String(input.name || '').trim();
+    if (!name || !TYPES.includes(type)) return { created: false, reason: 'invalid-fruit' };
+    return {
+      created: true,
+      fruit: {
+        id: String(input.id || ('fruit-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7))),
+        name,
+        type,
+        rarity: String(input.rarity || 'unknown'),
+        consumedBy: null,
+        consumedAt: null
+      }
+    };
+  }
+
+  function consumeFruit(character, fruit, options = {}) {
+    if (!character || !character.id || !fruit || !fruit.id || !TYPES.includes(fruit.type)) {
+      return { consumed: false, reason: 'invalid-input', character, fruit };
+    }
+    if (character.devilFruit) return { consumed: false, reason: 'already-has-devil-fruit', character, fruit };
+    if (fruit.consumedBy) return { consumed: false, reason: 'fruit-already-consumed', character, fruit };
+    const consumedAt = options.at || new Date().toISOString();
+    const nextCharacter = {
+      ...character,
+      devilFruit: {
+        id: fruit.id,
+        name: fruit.name,
+        type: fruit.type,
+        mastery: 0,
+        awakened: false,
+        consumedAt
+      }
+    };
+    const nextFruit = { ...fruit, consumedBy: String(character.id), consumedAt };
+    return { consumed: true, character: nextCharacter, fruit: nextFruit };
+  }
+
+  function trainMastery(character, amount) {
+    const value = Number(amount);
+    if (!character || !character.devilFruit) return { trained: false, reason: 'no-devil-fruit', character };
+    if (!Number.isFinite(value) || value <= 0) return { trained: false, reason: 'invalid-training', character };
+    const current = clamp(Number(character.devilFruit.mastery) || 0, 0, 100);
+    const mastery = clamp(current + value, 0, 100);
+    return {
+      trained: mastery > current,
+      gained: mastery - current,
+      character: { ...character, devilFruit: { ...character.devilFruit, mastery } }
+    };
+  }
+
+  function awaken(character, options = {}) {
+    if (!character || !character.devilFruit) return { awakened: false, reason: 'no-devil-fruit', character };
+    if (character.devilFruit.awakened) return { awakened: false, reason: 'already-awakened', character };
+    const mastery = clamp(Number(character.devilFruit.mastery) || 0, 0, 100);
+    const threshold = clamp(Number(options.requiredMastery) || 80, 1, 100);
+    if (mastery < threshold) {
+      return { awakened: false, reason: 'insufficient-mastery', required: threshold, current: mastery, character };
+    }
+    return {
+      awakened: true,
+      character: {
+        ...character,
+        devilFruit: {
+          ...character.devilFruit,
+          awakened: true,
+          awakenedAt: options.at || new Date().toISOString()
+        }
+      }
+    };
+  }
+
+  function getSeaEffect(character, environment = {}) {
+    const hasFruit = Boolean(character && character.devilFruit);
+    const exposedToWater = Boolean(environment.inSea || environment.submerged || environment.seaStone);
+    if (!hasFruit || !exposedToWater) {
+      return { weakened: false, canSwim: true, strengthMultiplier: 1 };
+    }
+    return {
+      weakened: true,
+      canSwim: false,
+      strengthMultiplier: environment.seaStone ? 0.25 : 0.5
+    };
+  }
+
+  const api = Object.freeze({ TYPES, createFruit, consumeFruit, trainMastery, awaken, getSeaEffect });
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  root.OnePieceDevilFruitSystem = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+</script>
