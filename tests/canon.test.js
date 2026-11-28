@@ -28,6 +28,7 @@ test('events resolve to existing locations, factions and characters', () => {
   const characterIds = new Set(characters.map(item => item.id));
   for (const event of events) {
     assert.ok(locationIds.has(event.location_id), event.id + ' location');
+    assert.equal(event.chapter_range_scope, 'arc_span_not_exact_event_chapters');
     assert.ok(event.involved_faction_ids.length > 0, event.id + ' factions');
     assert.ok(event.involved_faction_ids.every(id => factionIds.has(id)), event.id + ' faction refs');
     assert.ok(event.involved_character_ids.every(id => characterIds.has(id)), event.id + ' character refs');
