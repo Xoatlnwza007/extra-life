@@ -1,0 +1,366 @@
+{
+  "schema_version": 1,
+  "coverage": "Groups directly involved in the representative timeline anchors; not an exhaustive faction directory.",
+  "factions": [
+    {
+      "id": "straw_hat_pirates",
+      "name": "Straw Hat Pirates",
+      "group_type": "pirate_crew",
+      "summary": "The central pirate crew whose voyage connects many of the reference events.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Straw_Hat_Pirates"
+      ]
+    },
+    {
+      "id": "arlong_pirates",
+      "name": "Arlong Pirates",
+      "group_type": "pirate_crew",
+      "summary": "A pirate crew that imposed control over villages in the Conomi Islands.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Arlong_Pirates"
+      ]
+    },
+    {
+      "id": "cocoyasi_villagers",
+      "name": "Cocoyasi villagers",
+      "group_type": "local_community",
+      "summary": "Residents of Cocoyasi Village affected by Arlong's occupation.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Cocoyasi_Village"
+      ]
+    },
+    {
+      "id": "baroque_works",
+      "name": "Baroque Works",
+      "group_type": "criminal_organization",
+      "summary": "A criminal organization involved in the Alabasta conflict.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Baroque_Works"
+      ]
+    },
+    {
+      "id": "alabasta_royal_family",
+      "name": "Alabasta royal family",
+      "group_type": "royal_house",
+      "summary": "The ruling royal family of Alabasta.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Nefertari_Family"
+      ]
+    },
+    {
+      "id": "enel_followers",
+      "name": "Enel's followers",
+      "group_type": "religious_military_group",
+      "summary": "The forces aligned with Enel during the Skypiea conflict.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Enel"
+      ]
+    },
+    {
+      "id": "shandia",
+      "name": "Shandia",
+      "group_type": "community",
+      "summary": "The people whose history and homeland are central to the conflict on the sky island.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Shandia"
+      ]
+    },
+    {
+      "id": "foxy_pirates",
+      "name": "Foxy Pirates",
+      "group_type": "pirate_crew",
+      "summary": "A pirate crew known for challenging other crews through Davy Back contests.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Foxy_Pirates"
+      ]
+    },
+    {
+      "id": "galley_la",
+      "name": "Galley-La Company",
+      "group_type": "shipwright_company",
+      "summary": "A major shipbuilding company based in Water Seven.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Galley-La_Company"
+      ]
+    },
+    {
+      "id": "cp9",
+      "name": "CP9",
+      "group_type": "government_intelligence_unit",
+      "summary": "A covert World Government unit involved in the Water Seven and Enies Lobby events.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/CP9"
+      ]
+    },
+    {
+      "id": "franky_family",
+      "name": "Franky Family",
+      "group_type": "underworld_gang",
+      "summary": "A group based in Water Seven that becomes involved in the crew's crisis.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Franky_Family"
+      ]
+    },
+    {
+      "id": "world_government",
+      "name": "World Government",
+      "group_type": "world_government",
+      "summary": "The global political institution whose agents and facilities shape many major events.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/World_Government"
+      ]
+    },
+    {
+      "id": "thriller_bark_pirates",
+      "name": "Thriller Bark Pirates",
+      "group_type": "pirate_crew",
+      "summary": "The crew and forces operating from Thriller Bark under Gecko Moria.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Thriller_Bark_Pirates"
+      ]
+    },
+    {
+      "id": "kuja",
+      "name": "Kuja Pirates",
+      "group_type": "pirate_crew",
+      "summary": "The warrior people and pirate force associated with Amazon Lily.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Kuja_Pirates"
+      ]
+    },
+    {
+      "id": "impel_down_prisoners",
+      "name": "Impel Down prisoners",
+      "group_type": "prison_population",
+      "summary": "Inmates whose temporary alliances shape the prison breakout.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Impel_Down"
+      ]
+    },
+    {
+      "id": "impel_down_staff",
+      "name": "Impel Down staff",
+      "group_type": "prison_authority",
+      "summary": "The guards and administrators responsible for the underwater prison.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Impel_Down"
+      ]
+    },
+    {
+      "id": "whitebeard_pirates",
+      "name": "Whitebeard Pirates",
+      "group_type": "pirate_crew",
+      "summary": "A major pirate crew drawn into the Summit War.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Whitebeard_Pirates"
+      ]
+    },
+    {
+      "id": "blackbeard_pirates",
+      "name": "Blackbeard Pirates",
+      "group_type": "pirate_crew",
+      "summary": "A pirate crew whose actions affect the Summit War and the balance of power.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Blackbeard_Pirates"
+      ]
+    },
+    {
+      "id": "marines",
+      "name": "Marines",
+      "group_type": "military_organization",
+      "summary": "The World Government's naval military organization.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Marines"
+      ]
+    },
+    {
+      "id": "fish_man_island_royals",
+      "name": "Fish-Man Island royal family",
+      "group_type": "royal_house",
+      "summary": "The royal family associated with Fish-Man Island's political future.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Ryugu_Kingdom"
+      ]
+    },
+    {
+      "id": "new_fishman_pirates",
+      "name": "New Fish-Man Pirates",
+      "group_type": "pirate_crew",
+      "summary": "A group central to the Fish-Man Island rebellion.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/New_Fish-Man_Pirates"
+      ]
+    },
+    {
+      "id": "heart_pirates",
+      "name": "Heart Pirates",
+      "group_type": "pirate_crew",
+      "summary": "Trafalgar Law's crew and an ally in later operations.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Heart_Pirates"
+      ]
+    },
+    {
+      "id": "punk_hazard_researchers",
+      "name": "Punk Hazard research group",
+      "group_type": "research_group",
+      "summary": "Researchers and laboratory personnel involved in the island's experiments.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Punk_Hazard"
+      ]
+    },
+    {
+      "id": "donquixote_family",
+      "name": "Donquixote Family",
+      "group_type": "pirate_crew",
+      "summary": "The ruling criminal family whose regime is challenged in Dressrosa.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Donquixote_Pirates"
+      ]
+    },
+    {
+      "id": "tontatta",
+      "name": "Tontatta Tribe",
+      "group_type": "community",
+      "summary": "A small-bodied people with a major role in the Dressrosa uprising.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Tontatta_Tribe"
+      ]
+    },
+    {
+      "id": "minks",
+      "name": "Mink Tribe",
+      "group_type": "community",
+      "summary": "The animal-like inhabitants of Zou, bound by strong traditions and loyalty.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Mink_Tribe"
+      ]
+    },
+    {
+      "id": "kozuki_clan",
+      "name": "Kozuki Clan",
+      "group_type": "royal_house",
+      "summary": "The former ruling family of Wano whose legacy shapes the country's resistance.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Kozuki_Family"
+      ]
+    },
+    {
+      "id": "beast_pirates",
+      "name": "Beast Pirates",
+      "group_type": "pirate_crew",
+      "summary": "The pirate crew that ruled Wano through force.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Beasts_Pirates"
+      ]
+    },
+    {
+      "id": "big_mom_pirates",
+      "name": "Big Mom Pirates",
+      "group_type": "pirate_crew",
+      "summary": "The pirate crew governing Totto Land under Charlotte Linlin.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Big_Mom_Pirates"
+      ]
+    },
+    {
+      "id": "fire_tank_pirates",
+      "name": "Fire Tank Pirates",
+      "group_type": "pirate_crew",
+      "summary": "Capone Bege's crew, central to a separate cover-story thread and Whole Cake events.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Fire_Tank_Pirates"
+      ]
+    },
+    {
+      "id": "germa_66",
+      "name": "Germa 66",
+      "group_type": "military_organization",
+      "summary": "A military organization and royal family involved in the Whole Cake Island events.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Germa_66"
+      ]
+    },
+    {
+      "id": "world_leaders",
+      "name": "World leaders",
+      "group_type": "political_group",
+      "summary": "Monarchs and delegates gathering for the Levely.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Levely"
+      ]
+    },
+    {
+      "id": "revolutionary_army",
+      "name": "Revolutionary Army",
+      "group_type": "revolutionary_organization",
+      "summary": "An organization opposing the World Government's political order.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Revolutionary_Army"
+      ]
+    },
+    {
+      "id": "ninja_pirate_mink_samurai_alliance",
+      "name": "Ninja-Pirate-Mink-Samurai Alliance",
+      "group_type": "alliance",
+      "summary": "The coalition assembled to challenge Kaidou's rule in Wano.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Ninja-Pirate-Mink-Samurai_Alliance"
+      ]
+    },
+    {
+      "id": "giant_warrior_pirates",
+      "name": "Giant Warrior Pirates",
+      "group_type": "pirate_crew",
+      "summary": "A legendary giant pirate crew whose legacy connects to Elbaph.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Giant_Warrior_Pirates"
+      ]
+    },
+    {
+      "id": "elbaph_giants",
+      "name": "Giants of Elbaph",
+      "group_type": "community",
+      "summary": "The giant population and society of Elbaph.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Elbaf"
+      ]
+    }
+  ]
+}
