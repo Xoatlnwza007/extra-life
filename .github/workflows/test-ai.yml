@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - one-piece-development
+      - player-agency-systems
     paths:
       - 'ai/**'
       - 'tests/**'
