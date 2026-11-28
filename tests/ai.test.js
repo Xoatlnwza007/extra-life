@@ -1419,7 +1419,7 @@ test('social reactions recall prior harm and become guarded without deleting pos
     targetIds: ['cautious-npc'], tags: ['threat', 'violence'],
     importance: 5, polarity: 'negative', createdAt: '2026-01-01T00:00:00.000Z'
   });
-  character = socialMemory.updateBond(character, 'player', { fear: 80 });
+  character = socialMemory.updateBond(character, 'player', { fear: 100, rivalry: 40 });
   const reaction = socialMemory.evaluateSocialResponse(character, 'player', {
     tags: ['violence'], now: Date.parse('2026-01-02T00:00:00.000Z')
   });
