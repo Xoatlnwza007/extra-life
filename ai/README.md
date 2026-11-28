@@ -365,3 +365,21 @@ Travel requires a reachable destination; exploration does not silently teleport 
 NPC. Inactive characters cannot act. The module is not yet connected to the existing
 monthly population loop, world economy, or game UI. This separation allows the
 activity vocabulary and world-effect contract to be reviewed before integration.
+
+
+## Episodic memory and multidimensional relationships (prepared module)
+
+`social-memory.js` extends the existing simple memory/relationship helpers without
+changing their legacy data shape. Episodic records can include actors, targets,
+witnesses, location, tags, emotion, polarity, importance, confidence and expiry.
+`recallMemories` retrieves relevant episodes by people, tags and place, ranking
+them by relevance, salience and recency rather than only taking the newest entries.
+
+Relationships can be represented as separate dimensions: trust, affection, respect,
+fear, rivalry and familiarity. `getBond` still reads legacy scalar relationship
+values when no dimensional profile exists; `updateBond` stores the expanded profile
+and keeps the legacy scalar score synchronized. `evaluateSocialResponse` returns
+a cautious/warm/uncertain stance based on the bond and recalled experiences.
+`recordMutualInteraction` stores distinct memories and asymmetric relationship
+changes for each participant. These are decision inputs, not scripted dialogue:
+the later integration layer must let NPC goals and personality decide what to do.
