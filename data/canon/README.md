@@ -5,7 +5,8 @@ This folder is a **data-only content layer**. It does not yet change the browser
 ## Contents
 
 - `arcs.json`: the story-section index, with manga chapter ranges and major locations.
-- `events.json`: representative manga-canon timeline anchors, linked to locations, factions, characters, flags, and player-facing scenario hooks.
+- `events.json`: representative manga-canon timeline anchors, linked to locations, factions, characters, and baseline reference flags.
+- `scenario_hooks.json`: 21 optional player-facing scenario seeds with three approaches each, fail-forward outcomes, spoiler gates, and explicit canon isolation.
 - `locations.json`: source-backed locations used by the event anchors.
 - `factions.json`: pirate crews, communities, government bodies, and alliances referenced by the events.
 - `characters.json`: concise references for named characters directly involved in the event anchors.
@@ -47,11 +48,12 @@ node --test tests/*.test.js
 node scripts/validate-canon.js
 ```
 
-The validator checks unique IDs, arc order and chapter bounds, event-to-arc/location/faction/character references, canon tags, source URLs, all 21 cover-story ranges and their catalogue groups, and sandbox isolation for fan ideas.
+The validator checks unique IDs, arc order and chapter bounds, event-to-arc/location/faction/character references, scenario-to-event links, three-path player choices, fail-forward rules, canon isolation, canon tags, source URLs, all 21 cover-story ranges and their catalogue groups, and sandbox isolation for fan ideas.
 
 ## Next content pass
 
 1. Add more verified key events and expand the timeline beyond this representative first tranche.
 2. Expand cover-story entries with structured aftermath, NPC/world-state consequences, and optional quest chains.
+3. Refine the broad event chapter spans into individually verified chapter beats before using them as exact gameplay triggers.
 3. Add source-backed scenario entry points and branching choices without assuming the player repeats Luffy's choices.
 4. Integrate the data into the active HTML runtime only after the branch/runtime contract has been reconciled.
