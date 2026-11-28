@@ -11858,15 +11858,15 @@ Object.assign(SCID,{'naruto.cl_coup':'council'});
 /* ===== open lobby: the same room interface over a public MQTT broker, so anyone with the page can play online
    without a Claude account. Each player keeps one retained message (their presence) on el1/<lobby>/p/<id>;
    the broker's last-will clears it when the tab drops. Peers that stop heartbeating fade out after PSTALE ms. ===== */
-const NETCFG={lib:'https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js',lobby:'extralife-th-v1',
+const NETCFG={lobby:'extralife-th-v1',
   brokers:['wss://broker.emqx.io:8084/mqtt','wss://broker.hivemq.com:8884/mqtt','wss://test.mosquitto.org:8081']};
 const PSTALE=20000;
-function netLib(){return new Promise((ok,no)=>{if(window.mqtt)return ok(window.mqtt);const s=document.createElement('script');s.src=NETCFG.lib;s.onload=()=>window.mqtt?ok(window.mqtt):no();s.onerror=no;setTimeout(no,8000);document.head.append(s);});}
+function netLib(){return Promise.resolve(window.mqtt||null);}
 function netTry(lib,url,id,base){return new Promise(ok=>{let c;const t=setTimeout(()=>{try{c&&c.end(true)}catch(e){}ok(null)},7000);
   try{c=lib.connect(url,{clientId:'el1_'+id,clean:true,reconnectPeriod:4000,connectTimeout:6000,keepalive:20,
     will:{topic:base+id,payload:'',retain:true,qos:0}});}catch(e){clearTimeout(t);return ok(null);}
   c.once('connect',()=>{clearTimeout(t);ok(c);});c.once('error',()=>{});});}
-async function NETMQ(){try{const lib=await netLib();const id=Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
+async function NETMQ(){try{const lib=await netLib();if(!lib)return null;const id=Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
   const base=`el1/${NETCFG.lobby}/p/`;let c=null;for(const u of NETCFG.brokers){c=await netTry(lib,u,id,base);if(c)break;}if(!c)return null;
   const map=new Map();let mine=null,cb=null;
   const view=pr=>({peer:pr.id,isMe:pr.id===id,sameTab:pr.id===id,presence:pr.p,guest:true});
@@ -11906,7 +11906,7 @@ function myPresence(){if(!S)return{g:'el1',on:0};const p={g:'el1',on:S.online?1:
   if(ON.chat)p.chat=ON.chat;if(ON.myAct)p.act=ON.myAct;if(ON.ack)p.ack=ON.ack;if(ON.ev)p.ev=ON.ev;return p;}
 function pushPresence(){if(!ON.room)return;const p=myPresence(),j=JSON.stringify(p);if(j===ON.last)return;ON.last=j;ON.room.presence(p).catch(()=>{});}
 /* ---- connect, then let the room light the game up ---- */
-(async()=>{try{ON.trying=1;let room=await NETMQ();if(!room&&window.claude&&claude.use)room=await claude.use('room');ON.trying=0;if(!room){onSetupUI();return;}ON.room=room;
+(async()=>{try{ON.trying=1;let room=await NETMQ();ON.trying=0;if(!room){onSetupUI();return;}ON.room=room;
   room.onPeers(ch=>{ON.peers=[...ch.peers];for(const p of ch.joined)if(!p.isMe&&p.presence?.on&&p.presence.w===W?.id&&S?.online)onNote(`${onTxt(p.presence.n,40)||'ผู้เล่นคนหนึ่ง'} เข้ามาในโลกนี้`);onDigest(ch.updated.concat(ch.joined));onRender();},()=>{});
   setInterval(pushPresence,1500);pushPresence();onRender();}catch(e){}})();
 /* ---- what I hear: chat lines, requests, answers, deaths ---- */
@@ -11970,7 +11970,7 @@ function onRender(){try{const btn=document.getElementById('onBtn'),pan=document.
 /* ---- setup: choose online mode ---- */
 function onSetupUI(){try{let row=document.getElementById('onRow');const sb=$('#startBtn');if(!sb)return;if(!row){row=document.createElement('div');row.id='onRow';row.className='onrow';sb.parentNode.insertBefore(row,sb);}row.innerHTML='';
   const can=!!ON.room;for(const [v,n] of [[false,'เล่นคนเดียว'],[true,'โหมดออนไลน์']]){const b=document.createElement('button');b.type='button';b.className='ghost';b.textContent=n;b.setAttribute('aria-pressed',!!cfg.online===v);b.disabled=v&&!can;b.onclick=()=>{cfg.online=v;onSetupUI();};row.append(b);}
-  const s=document.createElement('small');s.style.opacity='.75';s.textContent=can?(cfg.online?'เห็นผู้เล่นจริงในโลกเดียวกัน แชท คบหา ประลอง เวลาเดินช้าเท่ากันทุกคน ยังแก่และตายได้เหมือนเดิม':'เร่งเวลาได้ตามใจ'):(ON.trying?'กำลังเชื่อมต่อเซิร์ฟเวอร์ออนไลน์...':'เชื่อมต่อเซิร์ฟเวอร์ออนไลน์ไม่ได้ ลองรีเฟรชหน้าอีกครั้ง');row.append(s);}catch(e){}}
+  const s=document.createElement('small');s.style.opacity='.75';s.textContent=can?(cfg.online?'เห็นผู้เล่นจริงในโลกเดียวกัน แชท คบหา ประลอง เวลาเดินช้าเท่ากันทุกคน ยังแก่และตายได้เหมือนเดิม':'เร่งเวลาได้ตามใจ')(ON.trying?'กำลังตรวจสอบโหมดออนไลน์...':'โหมดออนไลน์ปิดชั่วคราวในรุ่นทดสอบไฟล์เดียว');row.append(s);}catch(e){}}
 {const sr0=setupRender;setupRender=function(){sr0();onSetupUI();};}
 setInterval(()=>{try{if(cfg.online&&S&&S.online==null)S.online=true;if(ON.room&&!document.getElementById('onRow')?.querySelector('button:not([disabled])+button:not([disabled])'))onSetupUI();onRender();}catch(e){}},4000);
 
