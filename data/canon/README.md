@@ -1,4 +1,4 @@
-# One Piece Canon & Story Data — First Tranche
+# One Piece Canon & Story Data — Content Catalogue
 
 This folder is a **data-only content layer**. It does not yet change the browser runtime or force the player to follow the Straw Hats' route.
 
@@ -9,10 +9,10 @@ This folder is a **data-only content layer**. It does not yet change the browser
 - `locations.json`: source-backed locations used by the event anchors.
 - `factions.json`: pirate crews, communities, government bodies, and alliances referenced by the events.
 - `characters.json`: concise references for named characters directly involved in the event anchors.
-- `cover_stories.json`: selected manga cover-page serials, kept separate from the main event timeline.
+- `cover_stories.json`: all 19 major manga cover-story serials (through Yamato's pilgrimage), kept separate from the main event timeline.
 - `fan_ideas.json`: community theories, what-if prompts, and fan worldbuilding formats transformed into original, optional sandbox hooks.
 
-This is a curated first tranche, not an exhaustive encyclopedia. The manga's Elbaph story is ongoing; keep it open-ended and add new factual anchors only after checking the newest released chapters against reliable sources.
+This is a curated game-content catalogue, not an exhaustive encyclopedia. The arc index was last checked through manga Chapter 1199 on 2026-11-28. The Elbaph story is ongoing and remains open-ended. The 19-item cover-story count follows the convention that groups the eight separated Straw Hat mini-stories into one serial; two short `Where They Are Now` runs are not included in that count.
 
 ## Classification policy
 
@@ -34,7 +34,7 @@ Fan ideas are always tagged `fanon_sandbox` and `play_scope: sandbox_only`. They
 
 ## Sources and adaptation
 
-Use the official ONE PIECE.com story index for the main arc index and chapter ordering; the official Shueisha/VIZ chapter list is checked when keeping the ongoing Elbaph range current. The One Piece Wiki is used as a secondary research index for event, character, faction, location, and cover-story references. Community sources are inspiration only.
+Use the official ONE PIECE.com story index for the main arc index and the VIZ chapter listing to verify the latest published chapter. The cover-story catalogue uses a cross-checked chapter-range index from One Piece Breaks and the One Piece Wiki as secondary research references. The One Piece Wiki is also a secondary research index for event, character, faction, and location references. Community sources are inspiration only.
 
 No long passages are copied. Community theories and prompts are paraphrased and transformed into new scenario hooks. Keep source URLs and author/community attribution with each item.
 
@@ -47,11 +47,11 @@ node --test tests/*.test.js
 node scripts/validate-canon.js
 ```
 
-The validator checks unique IDs, arc order and chapter bounds, event-to-arc/location/faction/character references, canon tags, source URLs, cover story ranges, and sandbox isolation for fan ideas.
+The validator checks unique IDs, arc order and chapter bounds, event-to-arc/location/faction/character references, canon tags, source URLs, all 19 cover-story ranges, and sandbox isolation for fan ideas.
 
 ## Next content pass
 
 1. Add more verified key events and expand the timeline beyond this representative first tranche.
-2. Catalogue more cover stories, including their chapter ranges, character aftermath, and world-state consequences.
+2. Expand cover-story entries with structured aftermath, NPC/world-state consequences, and optional quest chains.
 3. Add source-backed scenario entry points and branching choices without assuming the player repeats Luffy's choices.
 4. Integrate the data into the active HTML runtime only after the branch/runtime contract has been reconciled.
