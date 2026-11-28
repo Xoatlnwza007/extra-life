@@ -90,7 +90,15 @@
         "arlong",
         "nojiko"
       ],
-      "chapter_range_scope": "arc_span_not_exact_event_chapters"
+      "chapter_range_scope": "arc_span_not_exact_event_chapters",
+      "chapter_milestones": [
+        {
+          "chapter": 93,
+          "label": "Arlong is defeated",
+          "note": "The conflict at Arlong Park reaches its decisive turning point.",
+          "source_url": "https://onepiece.fandom.com/wiki/Chapter_93"
+        }
+      ]
     },
     {
       "id": "alabasta_civil_war_resolved",
@@ -180,7 +188,21 @@
         "mont_blanc_noland",
         "kalgara"
       ],
-      "chapter_range_scope": "arc_span_not_exact_event_chapters"
+      "chapter_range_scope": "arc_span_not_exact_event_chapters",
+      "chapter_milestones": [
+        {
+          "chapter": 299,
+          "label": "The Golden Bell rings",
+          "note": "Luffy rings the Great Golden Bell, allowing its sound to reach the people below.",
+          "source_url": "https://www.grandlinearchives.com/chapters/299"
+        },
+        {
+          "chapter": 300,
+          "label": "The war's aftermath",
+          "note": "Skypieans and Shandians begin rebuilding and celebrate the end of their long conflict.",
+          "source_url": "https://onepiece.fandom.com/wiki/Chapter_300"
+        }
+      ]
     },
     {
       "id": "davy_back_fight",
@@ -309,7 +331,21 @@
         "nico_robin",
         "franky"
       ],
-      "chapter_range_scope": "arc_span_not_exact_event_chapters"
+      "chapter_range_scope": "arc_span_not_exact_event_chapters",
+      "chapter_milestones": [
+        {
+          "chapter": 398,
+          "label": "Robin asks to live",
+          "note": "Robin openly asks the crew to take her back to sea after the Government flag is burned.",
+          "source_url": "https://onepiece.fandom.com/wiki/Chapter_398"
+        },
+        {
+          "chapter": 427,
+          "label": "Lucci is defeated",
+          "note": "Luffy defeats Lucci and the rescue reaches its decisive payoff.",
+          "source_url": "https://www.grandlinearchives.com/chapters/427"
+        }
+      ]
     },
     {
       "id": "thriller_bark_shadow_crisis",
@@ -527,7 +563,21 @@
         "edward_newgate",
         "monkey_d_luffy"
       ],
-      "chapter_range_scope": "arc_span_not_exact_event_chapters"
+      "chapter_range_scope": "arc_span_not_exact_event_chapters",
+      "chapter_milestones": [
+        {
+          "chapter": 574,
+          "label": "Ace dies",
+          "note": "Ace dies protecting Luffy, marking a major turning point in the war.",
+          "source_url": "https://onepiece.fandom.com/wiki/Chapter_574"
+        },
+        {
+          "chapter": 580,
+          "label": "The war concludes",
+          "note": "The Marineford battle reaches its conclusion and the world enters a changed era.",
+          "source_url": "https://onepiece.media/manga/"
+        }
+      ]
     },
     {
       "id": "fishman_island_rebellion",
@@ -662,7 +712,15 @@
         "donquixote_doflamingo",
         "rebecca"
       ],
-      "chapter_range_scope": "arc_span_not_exact_event_chapters"
+      "chapter_range_scope": "arc_span_not_exact_event_chapters",
+      "chapter_milestones": [
+        {
+          "chapter": 791,
+          "label": "Dressrosa is liberated",
+          "note": "Doflamingo's defeat is confirmed and the people begin reclaiming their freedom.",
+          "source_url": "https://www.grandlinearchives.com/chapters/791"
+        }
+      ]
     },
     {
       "id": "zou_mink_revelation",
@@ -755,7 +813,15 @@
         "charlotte_linlin",
         "brook"
       ],
-      "chapter_range_scope": "arc_span_not_exact_event_chapters"
+      "chapter_range_scope": "arc_span_not_exact_event_chapters",
+      "chapter_milestones": [
+        {
+          "chapter": 902,
+          "label": "The crew escapes Totto Land",
+          "note": "The Thousand Sunny group successfully escapes the territory, while the wider conflict continues.",
+          "source_url": "https://onepiece.fandom.com/wiki/Chapter_902"
+        }
+      ]
     },
     {
       "id": "levely_world_conclave",
@@ -934,7 +1000,21 @@
         "jaguar_d_saul",
         "scopper_gaban"
       ],
-      "chapter_range_scope": "arc_span_not_exact_event_chapters"
+      "chapter_range_scope": "arc_span_not_exact_event_chapters",
+      "chapter_milestones": [
+        {
+          "chapter": 1127,
+          "label": "Elbaph arc begins",
+          "note": "The official story index marks chapter 1127 as the beginning of the Elbaph arc.",
+          "source_url": "https://one-piece.com/story/index.html"
+        },
+        {
+          "chapter": 1130,
+          "label": "Luffy encounters Loki",
+          "note": "The crew identifies Elbaph and Luffy encounters the chained prince Loki.",
+          "source_url": "https://onepiece.fandom.com/wiki/Chapter_1130"
+        }
+      ]
     }
   ]
 }
