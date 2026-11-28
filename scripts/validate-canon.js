@@ -30,6 +30,9 @@ function validateDatasets(input = {}) {
   const factions = input.factions || readJson('factions.json').factions;
   const characters = input.characters || readJson('characters.json').characters;
   const scenarioHooks = input.scenarioHooks || readJson('scenario_hooks.json').scenarios;
+  const coverStoryQuests = input.coverStoryQuests || readJson('cover_story_quests.json').quest_chains;
+  const worldState = input.worldState || readJson('world_state_rules.json');
+  const randomEvents = input.randomEvents || readJson('random_events.json').events;
   const errors = [];
   const arcById = new Map();
   const locationById = new Map();
@@ -68,6 +71,10 @@ function validateDatasets(input = {}) {
   uniqueIds(factions, 'factions', factionById);
   uniqueIds(characters, 'characters', characterById);
   uniqueIds(scenarioHooks, 'scenario_hooks');
+  uniqueIds(coverStoryQuests, 'cover_story_quests');
+  uniqueIds(worldState.state_variables || [], 'world_state_variables');
+  uniqueIds(worldState.rules || [], 'world_state_rules');
+  uniqueIds(randomEvents, 'random_events');
 
   const orderedArcs = [...arcs].sort((a, b) => Number(a.order) - Number(b.order));
   for (let i = 0; i < orderedArcs.length; i++) {
@@ -200,6 +207,49 @@ function validateDatasets(input = {}) {
     }
   }
 
+  const coverStoryById = new Map(coverStories.map(story => [story.id, story]));
+  for (const quest of coverStoryQuests) {
+    if (!coverStoryById.has(quest.inspired_by_cover_story_id)) errors.push('cover_story_quest ' + quest.id + ': unknown inspiration cover story');
+    if (quest.canon_status !== 'optional_original' || quest.play_scope !== 'sandbox_only') errors.push('cover_story_quest ' + quest.id + ': must remain optional original sandbox content');
+    if (quest.canon_effect !== 'none' || quest.player_can_override !== true) errors.push('cover_story_quest ' + quest.id + ': must preserve canon isolation and player control');
+    if (!quest.spoiler_gate_arc || !Array.isArray(quest.stages) || quest.stages.length < 3) errors.push('cover_story_quest ' + quest.id + ': needs spoiler gate and at least three stages');
+    if (!Array.isArray(quest.outcomes) || quest.outcomes.length < 2) errors.push('cover_story_quest ' + quest.id + ': needs multiple possible outcomes');
+    validateSources(quest, 'cover_story_quest ' + quest.id);
+    uniqueIds(quest.stages || [], 'quest stages for ' + quest.id);
+    for (const stage of quest.stages || []) {
+      if (!stage.title || !stage.setup || !stage.fail_forward || !Array.isArray(stage.objectives) || stage.objectives.length < 1 ||
+          !Array.isArray(stage.approaches) || stage.approaches.length < 2) {
+        errors.push('cover_story_quest ' + quest.id + ': incomplete stage ' + stage.id);
+      }
+    }
+  }
+
+  const stateIds = new Set((worldState.state_variables || []).map(item => item.id));
+  for (const variable of worldState.state_variables || []) {
+    if (!['integer', 'number'].includes(variable.type) || !Number.isFinite(variable.min) ||
+        !Number.isFinite(variable.max) || variable.min > variable.max ||
+        !Number.isFinite(variable.default) || variable.default < variable.min || variable.default > variable.max) {
+      errors.push('world_state_variable ' + variable.id + ': invalid type or bounds');
+    }
+  }
+  for (const rule of worldState.rules || []) {
+    if (!rule.when || !Array.isArray(rule.effects) || !rule.effects.length || !rule.scope || rule.cap_each_tick !== true) {
+      errors.push('world_state_rule ' + rule.id + ': incomplete or uncapped rule');
+    }
+    for (const effect of rule.effects || []) {
+      if (!stateIds.has(effect.state) || !Number.isFinite(effect.delta)) errors.push('world_state_rule ' + rule.id + ': invalid state effect');
+    }
+  }
+  if (!Array.isArray(worldState.safeguards) || worldState.safeguards.length < 3) errors.push('world_state: missing anti-loop and canon safeguards');
+
+  for (const event of randomEvents) {
+    if (!event.title || !Number.isFinite(event.weight) || event.weight <= 0 || !event.trigger ||
+        !Array.isArray(event.conditions) || !event.conditions.length || !Array.isArray(event.choices) || event.choices.length < 2 ||
+        !Array.isArray(event.effects) || !event.fail_forward || event.canon_effect !== 'none' || !event.spoiler_gate_arc) {
+      errors.push('random_event ' + event.id + ': incomplete, forced, or canon-affecting event');
+    }
+  }
+
   for (const idea of fanIdeas) {
     if (idea.canon_status !== 'fanon_sandbox') errors.push('fan_idea ' + idea.id + ': must be fanon_sandbox');
     if (idea.play_scope !== 'sandbox_only') errors.push('fan_idea ' + idea.id + ': must be sandbox_only');
@@ -210,7 +260,9 @@ function validateDatasets(input = {}) {
   return { ok: errors.length === 0, errors, counts: {
     arcs: arcs.length, events: events.length, cover_stories: coverStories.length,
     fan_ideas: fanIdeas.length, scenario_hooks: scenarioHooks.length, locations: locations.length,
-    factions: factions.length, characters: characters.length
+    factions: factions.length, characters: characters.length, cover_story_quests: coverStoryQuests.length,
+    world_state_variables: (worldState.state_variables || []).length, world_state_rules: (worldState.rules || []).length,
+    random_events: randomEvents.length
   }};
 }
 
@@ -223,7 +275,10 @@ function loadDatasets() {
     locations: readJson('locations.json').locations,
     factions: readJson('factions.json').factions,
     characters: readJson('characters.json').characters,
-    scenarioHooks: readJson('scenario_hooks.json').scenarios
+    scenarioHooks: readJson('scenario_hooks.json').scenarios,
+    coverStoryQuests: readJson('cover_story_quests.json').quest_chains,
+    worldState: readJson('world_state_rules.json'),
+    randomEvents: readJson('random_events.json').events
   };
 }
 
