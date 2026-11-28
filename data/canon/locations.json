@@ -1,0 +1,216 @@
+{
+  "schema_version": 1,
+  "coverage": "Locations used by the representative timeline anchors; not an exhaustive world atlas.",
+  "locations": [
+    {
+      "id": "east_blue",
+      "name": "East Blue",
+      "arc_id": "east_blue",
+      "summary": "Eastern Blue Sea region and the starting waters for many novice pirates.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/East_Blue"
+      ]
+    },
+    {
+      "id": "cocoyasi_village",
+      "name": "Cocoyasi Village",
+      "arc_id": "east_blue",
+      "summary": "A village in the Conomi Islands whose history is tied to Arlong's occupation.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Cocoyasi_Village"
+      ]
+    },
+    {
+      "id": "alabasta_kingdom",
+      "name": "Alabasta Kingdom",
+      "arc_id": "alabasta",
+      "summary": "A desert kingdom whose internal conflict becomes the centre of the Alabasta story.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Alabasta"
+      ]
+    },
+    {
+      "id": "skypiea_upper_yard",
+      "name": "Skypiea / Upper Yard",
+      "arc_id": "sky_island",
+      "summary": "A sky island and its upper region, where the history of Shandora and its inhabitants is central.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Skypiea"
+      ]
+    },
+    {
+      "id": "long_ring_long_land",
+      "name": "Long Ring Long Land",
+      "arc_id": "davy_back_fight",
+      "summary": "An unusual island chain associated with the Davy Back Fight.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Long_Ring_Long_Land"
+      ]
+    },
+    {
+      "id": "water_seven",
+      "name": "Water Seven",
+      "arc_id": "water_seven",
+      "summary": "A shipbuilding city known for its shipwrights, docks, and canals.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Water_7"
+      ]
+    },
+    {
+      "id": "enies_lobby",
+      "name": "Enies Lobby",
+      "arc_id": "enies_lobby",
+      "summary": "A judicial stronghold of the World Government.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Enies_Lobby"
+      ]
+    },
+    {
+      "id": "thriller_bark",
+      "name": "Thriller Bark",
+      "arc_id": "thriller_bark",
+      "summary": "A massive ship-like island operating in the Florian Triangle.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Thriller_Bark"
+      ]
+    },
+    {
+      "id": "sabaody_archipelago",
+      "name": "Sabaody Archipelago",
+      "arc_id": "sabaody_archipelago",
+      "summary": "A mangrove archipelago and major passage point for ships heading to the New World.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Sabaody_Archipelago"
+      ]
+    },
+    {
+      "id": "amazon_lily",
+      "name": "Amazon Lily",
+      "arc_id": "amazon_lily",
+      "summary": "An isolated island inhabited and governed by the Kuja.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Amazon_Lily"
+      ]
+    },
+    {
+      "id": "impel_down",
+      "name": "Impel Down",
+      "arc_id": "impel_down",
+      "summary": "A high-security underwater prison of the World Government.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Impel_Down"
+      ]
+    },
+    {
+      "id": "marineford",
+      "name": "Marineford",
+      "arc_id": "marineford",
+      "summary": "The Marine headquarters location associated with the Summit War.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Marineford"
+      ]
+    },
+    {
+      "id": "fish_man_island",
+      "name": "Fish-Man Island",
+      "arc_id": "fish_man_island",
+      "summary": "An underwater island beneath the Red Line and an important crossroads between seas.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Fish-Man_Island"
+      ]
+    },
+    {
+      "id": "punk_hazard",
+      "name": "Punk Hazard",
+      "arc_id": "punk_hazard",
+      "summary": "A hazardous island altered by a major battle and used for secret experiments.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Punk_Hazard"
+      ]
+    },
+    {
+      "id": "dressrosa",
+      "name": "Dressrosa",
+      "arc_id": "dressrosa",
+      "summary": "A kingdom whose public image conceals the effects of its ruling family's actions.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Dressrosa"
+      ]
+    },
+    {
+      "id": "zou",
+      "name": "Zou",
+      "arc_id": "zou",
+      "summary": "A mobile island carried on the back of the giant elephant Zunesha.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Zou"
+      ]
+    },
+    {
+      "id": "totto_land",
+      "name": "Totto Land",
+      "arc_id": "whole_cake_island",
+      "summary": "A territory made up of many islands under Big Mom's rule.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Totto_Land"
+      ]
+    },
+    {
+      "id": "mary_geoise",
+      "name": "Mary Geoise",
+      "arc_id": "levely",
+      "summary": "The Holy Land and seat of the World Government's highest political institutions.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Mary_Geoise"
+      ]
+    },
+    {
+      "id": "wano_country",
+      "name": "Wano Country / Onigashima",
+      "arc_id": "wano_country",
+      "summary": "A closed country whose liberation and political future are central to the Wano story.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Wano_Country"
+      ]
+    },
+    {
+      "id": "egghead",
+      "name": "Egghead",
+      "arc_id": "egghead",
+      "summary": "A futuristic island associated with Dr. Vegapunk's scientific work.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Egghead"
+      ]
+    },
+    {
+      "id": "elbaph",
+      "name": "Elbaph",
+      "arc_id": "elbaph",
+      "summary": "The land of giants; the manga storyline remains ongoing.",
+      "canon_status": "manga_canon",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Elbaf"
+      ]
+    }
+  ]
+}
