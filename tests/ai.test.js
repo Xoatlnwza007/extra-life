@@ -97,7 +97,8 @@ test('save controls provide mobile-safe touch targets and viewport spacing', () 
   assert.match(styles, /safe-area-inset-bottom/);
   assert.match(styles, /max-width:480px/);
   assert.match(styles, /orientation:landscape/);
-  assert.match(styles, /100dvh/);});
+  assert.match(styles, /100dvh/);
+});
 
 test('decision engine prefers an action that advances an active goal', () => {
   const state = {
@@ -196,7 +197,8 @@ test('population simulation processes every living NPC and skips dead NPCs', () 
     { n: 'Villager C', r: 'shop', alive: false }
   ];
   const result = world.simulatePopulation({ npcBrains: {} }, npcs, {});
-  assert.equal(result.simulatedCount, 2);  assert.deepEqual(result.actions.map(item => item.npc), ['Villager A', 'Villager B']);
+  assert.equal(result.simulatedCount, 2);
+  assert.deepEqual(result.actions.map(item => item.npc), ['Villager A', 'Villager B']);
   assert.ok(result.profiles['Villager A'].memories.length > 0);
   assert.ok(result.profiles['Villager B'].memories.length > 0);
   assert.equal(result.profiles['Villager C'], undefined);
@@ -295,7 +297,8 @@ test('pirate crew panel creates a crew and recruits an NPC through its controls'
     assert.ok(panelBody.children.some(node => typeof node.textContent === 'string' && node.textContent.includes('Nami เข้าร่วมลูกเรือ')));
 
     const memberRow = panelBody.children.find(node =>
-      node.className === 'el-crew-row' &&      node.children.some(child => child.tagName === 'SELECT')
+      node.className === 'el-crew-row' &&
+      node.children.some(child => child.tagName === 'SELECT')
     );
     const roleSelect = memberRow.children.find(child => child.tagName === 'SELECT');
     roleSelect.value = 'cook';
@@ -394,7 +397,8 @@ test('player crew is stored in game state and recruits NPCs persistently', () =>
   state.flags.bounty = 50000000;
   state.fame = 20;
   state.dark = 60;
-  const updatedCrew = world.syncPlayerCrew(state, crews).crew;  assert.equal(updatedCrew.reputation, -40);
+  const updatedCrew = world.syncPlayerCrew(state, crews).crew;
+  assert.equal(updatedCrew.reputation, -40);
   assert.equal(updatedCrew.history.length, 4);
   assert.equal(updatedCrew.history[2].amount, 20000000);
 
@@ -494,6 +498,7 @@ test('Devil Fruit system enforces one fruit, mastery and awakening rules', () =>
   assert.equal(made.created, true);
   const invalid = fruits.createFruit({ name: 'Unknown Fruit', type: 'mythical' });
   assert.equal(invalid.created, false);
+
   const luffy = { id: 'luffy', name: 'Luffy' };
   const consumed = fruits.consumeFruit(luffy, made.fruit, { at: '2026-01-01T00:00:00.000Z' });
   assert.equal(consumed.consumed, true);
@@ -592,7 +597,8 @@ test('One Piece yearly simulation automatically advances the full living NPC pop
   assert.equal(result.actions.length, 36);
   assert.equal(result.monthlyResults.length, 12);
   assert.deepEqual(result.monthlyResults.map(month => month.month), Array.from({ length: 12 }, (_, i) => i + 1));
-  assert.equal(result.simulationCalendar.totalMonths, 12);  assert.deepEqual(gameState.npcSimulationCalendar, result.simulationCalendar);
+  assert.equal(result.simulationCalendar.totalMonths, 12);
+  assert.deepEqual(gameState.npcSimulationCalendar, result.simulationCalendar);
   assert.ok(result.profiles.Nami);
   assert.ok(result.profiles.Usopp);
   assert.ok(result.profiles.Sanji);
@@ -691,7 +697,8 @@ test('NPC population simulation is reproducible across long runs with a seeded r
         for (const value of Object.values(profile.relationships || {})) {
           assert.ok(value >= -100 && value <= 100, npc.n + ' relationships should remain bounded');
         }
-      }      state = { ...state, npcBrains: result.profiles };
+      }
+      state = { ...state, npcBrains: result.profiles };
     }
     return history;
   }
@@ -790,7 +797,8 @@ test('save system keeps a last-known-good backup and recovers a corrupted primar
   const storage = {
     getItem: key => values.has(key) ? values.get(key) : null,
     setItem: (key, value) => values.set(key, String(value))
-  };  const manager = world.saveSystem.createManager(storage);
+  };
+  const manager = world.saveSystem.createManager(storage);
 
   assert.equal(manager.save({ name: 'First Captain', age: 20 }).ok, true);
   assert.equal(manager.save({ name: 'Second Captain', age: 21 }).ok, true);
@@ -889,7 +897,8 @@ test('save manager rejects invalid imports and preserves the current game save',
   const storage = {
     getItem: key => values.has(key) ? values.get(key) : null,
     setItem: (key, value) => values.set(key, String(value))
-  };  const manager = world.saveSystem.createManager(storage);
+  };
+  const manager = world.saveSystem.createManager(storage);
   manager.save({ captain: 'Safe Captain', berries: 500 });
   const before = values.get('extra-life-v2');
 
@@ -988,7 +997,8 @@ test('browser save helpers reject unsupported download and import inputs', async
     getItem: () => null,
     setItem: () => {}
   });
-  assert.equal(world.saveSystem.downloadExport(manager, {}).reason, 'unsupported');  assert.equal((await world.saveSystem.importFile({}, manager)).reason, 'unsupported');
+  assert.equal(world.saveSystem.downloadExport(manager, {}).reason, 'unsupported');
+  assert.equal((await world.saveSystem.importFile({}, manager)).reason, 'unsupported');
 });
 
 
@@ -1087,7 +1097,8 @@ test('progression coordinator trains Haki, consumes fruit once, and gates awaken
   assert.equal(progression.getSeaEffect(awakened.character, { inSea: true }, options).canSwim, false);
   const summary = progression.getSummary(awakened.character, options);
   assert.equal(summary.ready, true);
-  assert.equal(summary.devilFruit.awakened, true);});
+  assert.equal(summary.devilFruit.awakened, true);
+});
 
 
 test('Haki progression sync follows unlocked power flags and preserves mastery', () => {
@@ -1187,3 +1198,48 @@ test('Marine intelligence registers wanted pirates and detects sightings using s
   const result = marines.evaluateSighting(force, {
     id: 'pirate-1', name: 'Blue Dagger', bounty: 50000000,
     notoriety: 80, location: 'Shells Town'
+  }, {
+    location: 'Shells Town', distance: 0, cover: 0,
+    random: () => 0, at: '2026-01-01T00:00:00.000Z'
+  });
+  force = result.force;
+  assert.equal(result.detected, true);
+  assert.equal(result.record.status, 'tracking');
+  assert.equal(result.record.sightings, 1);
+  assert.equal(marines.getActivePursuits(force).length, 1);
+});
+
+test('Marine pursuit progresses from investigation to pursuit and resolves capture', () => {
+  const marines = require('../ai/marine-system.js');
+  const force = marines.createMarineForce({ id: 'marine-grand-line' });
+  const registered = marines.registerWanted(force, {
+    id: 'pirate-2', name: 'Storm Fox', bounty: 120000000
+  }, { at: '2026-01-01T00:00:00.000Z' });
+  const sighting = marines.evaluateSighting(registered.force, {
+    id: 'pirate-2', name: 'Storm Fox', bounty: 120000000
+  }, { random: () => 0, at: '2026-01-02T00:00:00.000Z' });
+  const firstAdvance = marines.advancePursuit(sighting.record, {
+    evidence: 100, targetMovement: 0, resources: 100,
+    at: '2026-01-03T00:00:00.000Z'
+  });
+  const advanced = marines.advancePursuit(firstAdvance.record, {
+    evidence: 100, targetMovement: 0, resources: 100,
+    at: '2026-01-04T00:00:00.000Z'
+  });
+  assert.equal(advanced.phase, 'pursuing');
+  const outcome = marines.resolveEncounter(advanced.record, {
+    marineStrength: 100, targetStrength: 1, support: 100,
+    random: () => 0, at: '2026-01-04T00:00:00.000Z'
+  });
+  assert.equal(outcome.resolved, true);
+  assert.equal(outcome.captured, true);
+  assert.equal(outcome.record.status, 'captured');
+  assert.equal(marines.getActivePursuits({ wantedRecords: { [outcome.record.targetId]: outcome.record } }).length, 0);
+});
+
+test('Marine system rejects zero-bounty targets and cannot advance a resolved pursuit', () => {
+  const marines = require('../ai/marine-system.js');
+  const force = marines.createMarineForce();
+  assert.equal(marines.registerWanted(force, { id: 'civilian', bounty: 0 }).reason, 'no-bounty');
+  assert.equal(marines.advancePursuit({ status: 'captured' }).reason, 'no-active-pursuit');
+});
