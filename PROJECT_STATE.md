@@ -366,4 +366,4 @@ Do not call the project playable-complete until a new/existing player can:
 ### Remaining caveats / next work
 - Online multiplayer is intentionally disabled in this self-contained test build because its MQTT client was previously downloaded from an external CDN. Re-enable only after bundling or implementing an inline MQTT client.
 - Legacy non-One-Piece definitions remain in the HTML source but are not exposed as playable modes.
-- Next concrete task: wait for the repository's current Actions run after this handoff documentation update, then prepare a short Playtest guide and continue hardening One Piece systems based on owner testing feedback.
+- Next concrete task: prepare a short Playtest guide for the owner, then continue hardening One Piece systems based on test feedback. Keep `index.html` as the only browser runtime.
