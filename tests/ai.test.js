@@ -12,6 +12,7 @@ globalThis.OnePieceNPCBrain = brain;
 const eventAdapter = require('../ai/event-adapter.js');
 const world = require('../ai/world-simulation.js');
 const crews = require('../ai/crew-system.js');
+const npcLife = require('../ai/npc-life.js');
 
  
 test('browser bootstrap loads the One Piece companion systems in dependency order', async () => {
@@ -1305,4 +1306,69 @@ test('crew monthly upkeep consumes supplies and treasury and exposes morale risk
   assert.ok(result.crew.members.every(member => member.morale < 60));
   assert.ok(result.events.every(event => event.type === 'member-at-risk'));
   assert.equal(crews.getCrewReadiness(result.crew).memberCount, 2);
+});
+
+
+test('NPC life profiles provide career-specific actions and a daily schedule', () => {
+  const profile = npcLife.createLifeProfile({
+    id: 'doctor-npc', career: 'doctor', location: 'Drum Village',
+    needs: { food: 30, rest: 55 }, skills: { doctor: 25 }
+  });
+  assert.equal(profile.career, 'doctor');
+  assert.equal(npcLife.getScheduledActivity(profile, { hour: 9 }), 'work');
+  const candidates = npcLife.generateCandidates(profile, { hour: 9 });
+  assert.ok(candidates.some(action => action.id === 'study'));
+  assert.ok(candidates.some(action => action.id === 'help'));
+  assert.ok(candidates.some(action => action.scheduled));
+  assert.equal(npcLife.generateCandidates({ ...profile, status: 'dead' }, {}).length, 0);
+});
+
+test('NPC life simulation cannot travel without a valid route and preserves location', () => {
+  const profile = npcLife.createLifeProfile({ id: 'sailor', career: 'sailor', location: 'Foosha Village' });
+  const travel = npcLife.resolveActivity(profile, { id: 'travel', available: true, relief: {} }, {});
+  assert.equal(travel.resolved, false);
+  assert.equal(travel.reason, 'no-valid-route');
+  assert.equal(profile.location, 'Foosha Village');
+  const moved = npcLife.resolveActivity(profile, {
+    id: 'travel', available: true, relief: {}, destination: 'Shells Town'
+  }, { travelCost: 5, at: '2026-01-01T00:00:00.000Z' });
+  assert.equal(moved.resolved, true);
+  assert.equal(moved.profile.location, 'Shells Town');
+  assert.equal(moved.profile.money, 0);
+  assert.equal(moved.worldEffects.from, 'Foosha Village');
+});
+
+test('NPC independent turns advance needs, career skills, money and personal goals', () => {
+  const profile = npcLife.createLifeProfile({
+    id: 'merchant-npc', career: 'merchant', location: 'Loguetown',
+    money: 10, needs: { wealth: 10 },
+    goals: [{ id: 'g', action: 'trade', tags: ['trade'], status: 'active', progress: 0, targetProgress: 1 }]
+  });
+  const result = npcLife.takeTurn(profile, { hour: 10 }, {
+    decide: (state, candidates) => ({
+      action: candidates.find(candidate => candidate.id === 'trade'),
+      ranking: [{ id: 'trade', score: 10 }]
+    })
+  });
+  assert.equal(result.resolved, true);
+  assert.equal(result.action, 'trade');
+  assert.ok(result.profile.money > 10);
+  assert.ok(result.profile.needs.wealth > 10);
+  assert.equal(result.profile.goals[0].status, 'completed');
+  assert.ok(result.profile.skills.merchant > 0);
+});
+
+test('NPC goals and activity choices remain local and do not force canon outcomes', () => {
+  const profile = npcLife.createLifeProfile({
+    id: 'free-agent', career: 'explorer', location: 'Unknown Island',
+    goals: [{ id: 'g', description: 'Find a safe route', tags: ['explore'], status: 'active' }]
+  });
+  const candidates = npcLife.generateCandidates(profile, { discoverableArea: true });
+  assert.ok(candidates.some(action => action.id === 'explore'));
+  assert.ok(!candidates.some(action => action.id === 'travel' && action.available));
+  const result = npcLife.resolveActivity(profile, {
+    id: 'explore', available: true, tags: ['explore'], relief: {}
+  }, { discoverableArea: true });
+  assert.equal(result.resolved, true);
+  assert.equal(result.worldEffects.locationChanged, false);
 });
