@@ -1,0 +1,456 @@
+{
+  "schema_version": 1,
+  "coverage": "Named characters directly referenced by the representative timeline anchors; profile details are intentionally concise.",
+  "characters": [
+    {
+      "id": "monkey_d_luffy",
+      "name": "Monkey D. Luffy",
+      "story_role": "protagonist",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Monkey_D._Luffy"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "roronoa_zoro",
+      "name": "Roronoa Zoro",
+      "story_role": "crew_member",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Roronoa_Zoro"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "nami",
+      "name": "Nami",
+      "story_role": "crew_member",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Nami"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "usopp",
+      "name": "Usopp",
+      "story_role": "crew_member",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Usopp"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "sanji",
+      "name": "Sanji",
+      "story_role": "crew_member",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Sanji"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "arlong",
+      "name": "Arlong",
+      "story_role": "antagonist",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Arlong"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "nojiko",
+      "name": "Nojiko",
+      "story_role": "supporting",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Nojiko"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "nefertari_vivi",
+      "name": "Nefertari Vivi",
+      "story_role": "ally",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Nefertari_Vivi"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "crocodile",
+      "name": "Crocodile",
+      "story_role": "antagonist",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Crocodile"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "nefertari_cobra",
+      "name": "Nefertari Cobra",
+      "story_role": "supporting",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Nefertari_Cobra"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "enel",
+      "name": "Enel",
+      "story_role": "antagonist",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Enel"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "mont_blanc_noland",
+      "name": "Noland",
+      "story_role": "historical",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Mont_Blanc_Noland"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "kalgara",
+      "name": "Kalgara",
+      "story_role": "historical",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Kalgara"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "foxy",
+      "name": "Foxy",
+      "story_role": "antagonist",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Foxy"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "nico_robin",
+      "name": "Nico Robin",
+      "story_role": "crew_member",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Nico_Robin"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "franky",
+      "name": "Franky",
+      "story_role": "crew_member",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Franky"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "iceburg",
+      "name": "Iceburg",
+      "story_role": "supporting",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Iceburg"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "gecko_moria",
+      "name": "Gecko Moria",
+      "story_role": "antagonist",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Gecko_Moria"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "brook",
+      "name": "Brook",
+      "story_role": "crew_member",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Brook"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "perona",
+      "name": "Perona",
+      "story_role": "supporting",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Perona"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "bartholomew_kuma",
+      "name": "Bartholomew Kuma",
+      "story_role": "major_character",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Bartholomew_Kuma"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "borsalino",
+      "name": "Borsalino (Kizaru)",
+      "story_role": "major_character",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Borsalino"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "sentomaru",
+      "name": "Sentomaru",
+      "story_role": "supporting",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Sentomaru"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "boa_hancock",
+      "name": "Boa Hancock",
+      "story_role": "ally",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Boa_Hancock"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "bentham",
+      "name": "Bon Clay",
+      "story_role": "ally",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Bentham"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "buggy",
+      "name": "Buggy",
+      "story_role": "major_character",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Buggy"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "jinbe",
+      "name": "Jinbe",
+      "story_role": "ally",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Jinbe"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "magellan",
+      "name": "Magellan",
+      "story_role": "antagonist",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Magellan"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "portgas_d_ace",
+      "name": "Portgas D. Ace",
+      "story_role": "major_character",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Portgas_D._Ace"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "edward_newgate",
+      "name": "Edward Newgate",
+      "story_role": "major_character",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Edward_Newgate"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "shirahoshi",
+      "name": "Shirahoshi",
+      "story_role": "ally",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Shirahoshi"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "hody_jones",
+      "name": "Hody Jones",
+      "story_role": "antagonist",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Hody_Jones"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "trafalgar_d_water_law",
+      "name": "Trafalgar Law",
+      "story_role": "ally",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Trafalgar_D._Water_Law"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "caesar_clown",
+      "name": "Caesar Clown",
+      "story_role": "antagonist",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Caesar_Clown"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "smoker",
+      "name": "Smoker",
+      "story_role": "rival",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Smoker"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "donquixote_doflamingo",
+      "name": "Donquixote Doflamingo",
+      "story_role": "antagonist",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Donquixote_Doflamingo"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "rebecca",
+      "name": "Rebecca",
+      "story_role": "ally",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Rebecca"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "kin_emon",
+      "name": "Kin'emon",
+      "story_role": "ally",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Kin%27emon"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "raizo",
+      "name": "Raizo",
+      "story_role": "ally",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Raizo"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "inuarashi",
+      "name": "Inuarashi",
+      "story_role": "ally",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Inuarashi"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "nekomamushi",
+      "name": "Nekomamushi",
+      "story_role": "ally",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Nekomamushi"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "charlotte_linlin",
+      "name": "Charlotte Linlin",
+      "story_role": "antagonist",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Charlotte_Linlin"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "kaidou",
+      "name": "Kaidou",
+      "story_role": "antagonist",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Kaidou"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "kozuki_momonosuke",
+      "name": "Kouzuki Momonosuke",
+      "story_role": "ally",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Kozuki_Momonosuke"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "yamato",
+      "name": "Yamato",
+      "story_role": "ally",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Yamato"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "vegapunk",
+      "name": "Dr. Vegapunk",
+      "story_role": "major_character",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Vegapunk"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "jewelry_bonney",
+      "name": "Jewelry Bonney",
+      "story_role": "major_character",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Jewelry_Bonney"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "loki",
+      "name": "Loki",
+      "story_role": "major_character",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Loki"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "jaguar_d_saul",
+      "name": "Saul",
+      "story_role": "ally",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Jaguar_D._Saul"
+      ],
+      "canon_status": "manga_canon"
+    },
+    {
+      "id": "scopper_gaban",
+      "name": "Scopper Gaban",
+      "story_role": "major_character",
+      "source_urls": [
+        "https://onepiece.fandom.com/wiki/Scopper_Gaban"
+      ],
+      "canon_status": "manga_canon"
+    }
+  ]
+}

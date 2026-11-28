@@ -1,0 +1,427 @@
+{
+  "schema_version": 1,
+  "source_policy": "Official ONE PIECE.com arc boundaries cross-checked against VIZ chapter listings. Last verified against VIZ Chapter 1199 on 2026-11-28. Elbaph is open-ended and ongoing.",
+  "arcs": [
+    {
+      "id": "east_blue",
+      "order": 1,
+      "title": "East Blue",
+      "title_ja": "東の海編",
+      "chapter_start": 1,
+      "chapter_end": 100,
+      "ongoing": false,
+      "canon_status": "manga_canon",
+      "locations": [
+        "Dawn Island",
+        "Shells Town",
+        "Orange Town",
+        "Syrup Village",
+        "Baratie",
+        "Cocoyasi Village",
+        "Loguetown"
+      ],
+      "player_divergence_allowed": true,
+      "timeline_policy": "reference_not_forced",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs",
+        "https://www.viz.com/shonenjump/chapters/one-piece"
+      ]
+    },
+    {
+      "id": "alabasta",
+      "order": 2,
+      "title": "Alabasta",
+      "title_ja": "アラバスタ編",
+      "chapter_start": 101,
+      "chapter_end": 217,
+      "ongoing": false,
+      "canon_status": "manga_canon",
+      "locations": [
+        "Reverse Mountain",
+        "Whiskey Peak",
+        "Little Garden",
+        "Drum Island",
+        "Alabasta Kingdom"
+      ],
+      "player_divergence_allowed": true,
+      "timeline_policy": "reference_not_forced",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs",
+        "https://www.viz.com/shonenjump/chapters/one-piece"
+      ]
+    },
+    {
+      "id": "sky_island",
+      "order": 3,
+      "title": "Sky Island",
+      "title_ja": "空島編",
+      "chapter_start": 218,
+      "chapter_end": 303,
+      "ongoing": false,
+      "canon_status": "manga_canon",
+      "locations": [
+        "Jaya",
+        "Skypiea"
+      ],
+      "player_divergence_allowed": true,
+      "timeline_policy": "reference_not_forced",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs",
+        "https://www.viz.com/shonenjump/chapters/one-piece"
+      ]
+    },
+    {
+      "id": "davy_back_fight",
+      "order": 4,
+      "title": "Davy Back Fight",
+      "title_ja": "デービーバックファイト編",
+      "chapter_start": 304,
+      "chapter_end": 321,
+      "ongoing": false,
+      "canon_status": "manga_canon",
+      "locations": [
+        "Long Ring Long Land"
+      ],
+      "player_divergence_allowed": true,
+      "timeline_policy": "reference_not_forced",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs",
+        "https://www.viz.com/shonenjump/chapters/one-piece"
+      ]
+    },
+    {
+      "id": "water_seven",
+      "order": 5,
+      "title": "Water Seven",
+      "title_ja": "ウォーターセブン編",
+      "chapter_start": 322,
+      "chapter_end": 374,
+      "ongoing": false,
+      "canon_status": "manga_canon",
+      "locations": [
+        "Water Seven"
+      ],
+      "player_divergence_allowed": true,
+      "timeline_policy": "reference_not_forced",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs",
+        "https://www.viz.com/shonenjump/chapters/one-piece"
+      ]
+    },
+    {
+      "id": "enies_lobby",
+      "order": 6,
+      "title": "Enies Lobby",
+      "title_ja": "エニエス・ロビー編",
+      "chapter_start": 375,
+      "chapter_end": 441,
+      "ongoing": false,
+      "canon_status": "manga_canon",
+      "locations": [
+        "Enies Lobby",
+        "Water Seven"
+      ],
+      "player_divergence_allowed": true,
+      "timeline_policy": "reference_not_forced",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs",
+        "https://www.viz.com/shonenjump/chapters/one-piece"
+      ]
+    },
+    {
+      "id": "thriller_bark",
+      "order": 7,
+      "title": "Thriller Bark",
+      "title_ja": "スリラーバーク編",
+      "chapter_start": 442,
+      "chapter_end": 490,
+      "ongoing": false,
+      "canon_status": "manga_canon",
+      "locations": [
+        "Florian Triangle",
+        "Thriller Bark"
+      ],
+      "player_divergence_allowed": true,
+      "timeline_policy": "reference_not_forced",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs",
+        "https://www.viz.com/shonenjump/chapters/one-piece"
+      ]
+    },
+    {
+      "id": "sabaody_archipelago",
+      "order": 8,
+      "title": "Sabaody Archipelago",
+      "title_ja": "シャボンディ諸島編",
+      "chapter_start": 491,
+      "chapter_end": 513,
+      "ongoing": false,
+      "canon_status": "manga_canon",
+      "locations": [
+        "Sabaody Archipelago"
+      ],
+      "player_divergence_allowed": true,
+      "timeline_policy": "reference_not_forced",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs",
+        "https://www.viz.com/shonenjump/chapters/one-piece"
+      ]
+    },
+    {
+      "id": "amazon_lily",
+      "order": 9,
+      "title": "Amazon Lily",
+      "title_ja": "女ヶ島アマゾン・リリー編",
+      "chapter_start": 514,
+      "chapter_end": 524,
+      "ongoing": false,
+      "canon_status": "manga_canon",
+      "locations": [
+        "Amazon Lily"
+      ],
+      "player_divergence_allowed": true,
+      "timeline_policy": "reference_not_forced",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs",
+        "https://www.viz.com/shonenjump/chapters/one-piece"
+      ]
+    },
+    {
+      "id": "impel_down",
+      "order": 10,
+      "title": "Impel Down",
+      "title_ja": "大監獄インペルダウン編",
+      "chapter_start": 525,
+      "chapter_end": 549,
+      "ongoing": false,
+      "canon_status": "manga_canon",
+      "locations": [
+        "Impel Down"
+      ],
+      "player_divergence_allowed": true,
+      "timeline_policy": "reference_not_forced",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs",
+        "https://www.viz.com/shonenjump/chapters/one-piece"
+      ]
+    },
+    {
+      "id": "marineford",
+      "order": 11,
+      "title": "Marineford",
+      "title_ja": "マリンフォード頂上戦争編",
+      "chapter_start": 550,
+      "chapter_end": 597,
+      "ongoing": false,
+      "canon_status": "manga_canon",
+      "locations": [
+        "Marineford",
+        "Post-War locations"
+      ],
+      "player_divergence_allowed": true,
+      "timeline_policy": "reference_not_forced",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs",
+        "https://www.viz.com/shonenjump/chapters/one-piece"
+      ]
+    },
+    {
+      "id": "fish_man_island",
+      "order": 12,
+      "title": "Fish-Man Island",
+      "title_ja": "魚人島編",
+      "chapter_start": 598,
+      "chapter_end": 653,
+      "ongoing": false,
+      "canon_status": "manga_canon",
+      "locations": [
+        "Return to Sabaody",
+        "Fish-Man Island"
+      ],
+      "player_divergence_allowed": true,
+      "timeline_policy": "reference_not_forced",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs",
+        "https://www.viz.com/shonenjump/chapters/one-piece"
+      ]
+    },
+    {
+      "id": "punk_hazard",
+      "order": 13,
+      "title": "Punk Hazard",
+      "title_ja": "パンクハザード編",
+      "chapter_start": 654,
+      "chapter_end": 700,
+      "ongoing": false,
+      "canon_status": "manga_canon",
+      "locations": [
+        "Punk Hazard"
+      ],
+      "player_divergence_allowed": true,
+      "timeline_policy": "reference_not_forced",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs",
+        "https://www.viz.com/shonenjump/chapters/one-piece"
+      ]
+    },
+    {
+      "id": "dressrosa",
+      "order": 14,
+      "title": "Dressrosa",
+      "title_ja": "ドレスローザ編",
+      "chapter_start": 701,
+      "chapter_end": 801,
+      "ongoing": false,
+      "canon_status": "manga_canon",
+      "locations": [
+        "Dressrosa"
+      ],
+      "player_divergence_allowed": true,
+      "timeline_policy": "reference_not_forced",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs",
+        "https://www.viz.com/shonenjump/chapters/one-piece"
+      ]
+    },
+    {
+      "id": "zou",
+      "order": 15,
+      "title": "Zou",
+      "title_ja": "ゾウ編",
+      "chapter_start": 802,
+      "chapter_end": 822,
+      "ongoing": false,
+      "canon_status": "manga_canon",
+      "locations": [
+        "Zou"
+      ],
+      "player_divergence_allowed": true,
+      "timeline_policy": "reference_not_forced",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs",
+        "https://www.viz.com/shonenjump/chapters/one-piece"
+      ]
+    },
+    {
+      "id": "whole_cake_island",
+      "order": 16,
+      "title": "Whole Cake Island",
+      "title_ja": "ホールケーキアイランド編",
+      "chapter_start": 823,
+      "chapter_end": 902,
+      "ongoing": false,
+      "canon_status": "manga_canon",
+      "locations": [
+        "Zou",
+        "Totto Land",
+        "Whole Cake Island"
+      ],
+      "player_divergence_allowed": true,
+      "timeline_policy": "reference_not_forced",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs",
+        "https://www.viz.com/shonenjump/chapters/one-piece"
+      ]
+    },
+    {
+      "id": "levely",
+      "order": 17,
+      "title": "Levely (Reverie)",
+      "title_ja": "世界会議（レヴェリー）編",
+      "chapter_start": 903,
+      "chapter_end": 908,
+      "ongoing": false,
+      "canon_status": "manga_canon",
+      "locations": [
+        "Mary Geoise"
+      ],
+      "player_divergence_allowed": true,
+      "timeline_policy": "reference_not_forced",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs",
+        "https://www.viz.com/shonenjump/chapters/one-piece"
+      ]
+    },
+    {
+      "id": "wano_country",
+      "order": 18,
+      "title": "Wano Country",
+      "title_ja": "ワノ国編",
+      "chapter_start": 909,
+      "chapter_end": 1057,
+      "ongoing": false,
+      "canon_status": "manga_canon",
+      "locations": [
+        "Wano Country",
+        "Onigashima"
+      ],
+      "player_divergence_allowed": true,
+      "timeline_policy": "reference_not_forced",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs",
+        "https://www.viz.com/shonenjump/chapters/one-piece"
+      ]
+    },
+    {
+      "id": "egghead",
+      "order": 19,
+      "title": "Egghead",
+      "title_ja": "エッグヘッド編",
+      "chapter_start": 1058,
+      "chapter_end": 1126,
+      "ongoing": false,
+      "canon_status": "manga_canon",
+      "locations": [
+        "Egghead"
+      ],
+      "player_divergence_allowed": true,
+      "timeline_policy": "reference_not_forced",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs",
+        "https://www.viz.com/shonenjump/chapters/one-piece"
+      ]
+    },
+    {
+      "id": "elbaph",
+      "order": 20,
+      "title": "Elbaph",
+      "title_ja": "エルバフ編",
+      "chapter_start": 1127,
+      "chapter_end": null,
+      "ongoing": true,
+      "canon_status": "manga_canon",
+      "locations": [
+        "Elbaph"
+      ],
+      "player_divergence_allowed": true,
+      "timeline_policy": "reference_not_forced",
+      "source_urls": [
+        "https://one-piece.com/story/index.html",
+        "https://onepiece.fandom.com/wiki/Story_Arcs",
+        "https://www.viz.com/shonenjump/chapters/one-piece"
+      ]
+    }
+  ],
+  "last_verified_chapter": 1199,
+  "last_verified_date": "2026-11-28",
+  "current_arc_id": "elbaph"
+}

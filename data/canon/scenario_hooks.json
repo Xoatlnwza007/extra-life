@@ -1,0 +1,888 @@
+{
+  "schema_version": 1,
+  "policy": "Optional player-facing scenario seeds. These are original game hooks inspired by broad canon locations and conflicts; they do not recreate canon scenes, require the Straw Hat crew, or force canon outcomes.",
+  "scenarios": [
+    {
+      "id": "east_blue_crew_formation_scenario",
+      "event_id": "east_blue_crew_formation",
+      "arc_id": "east_blue",
+      "spoiler_gate_arc": "east_blue",
+      "title": "The voyage begins — optional crew scenario",
+      "setup": "A small port is preparing for a dangerous voyage, but its shipwright, navigator, and hired guards disagree about who should lead.",
+      "objectives": [
+        "Choose the crew's approach.",
+        "Resolve the local problem without assuming the manga's protagonists are present.",
+        "Record the player's outcome separately from the reference timeline."
+      ],
+      "choices": [
+        {
+          "id": "cooperate",
+          "label": "Repair the vessel and negotiate fair wages",
+          "approach": "cooperation",
+          "tradeoff": "Requires time and trust; improves local relationships.",
+          "possible_result": "The player gains a reliable local contact and a modest resource or information reward."
+        },
+        {
+          "id": "investigate",
+          "label": "Recruit a local crew around a shared ambition",
+          "approach": "investigation_or_negotiation",
+          "tradeoff": "Takes longer and may expose the player to competing interests.",
+          "possible_result": "The player uncovers a useful lead and can choose which party receives it."
+        },
+        {
+          "id": "act_independently",
+          "label": "Take a paid escort contract and sail independently",
+          "approach": "direct_action_or_independent_route",
+          "tradeoff": "Offers faster progress but can create a local rival or lasting consequence.",
+          "possible_result": "The player resolves the immediate obstacle on their own terms, with a cost determined by the simulation."
+        }
+      ],
+      "fail_forward": "If the player fails or leaves, the situation continues through local NPC actions; the world records a changed relationship, lost opportunity, or new complication rather than forcing a canon outcome.",
+      "canon_effect": "none",
+      "outcome_scope": "local_world_state",
+      "player_choice_required": true,
+      "player_can_override": true,
+      "source_event_chapter_scope": "arc_span_not_exact_event_chapters"
+    },
+    {
+      "id": "arlong_park_liberation_scenario",
+      "event_id": "arlong_park_liberation",
+      "arc_id": "east_blue",
+      "spoiler_gate_arc": "east_blue",
+      "title": "The Arlong Park conflict — optional crew scenario",
+      "setup": "A coastal village is trapped by an extortion network that controls its boats and food deliveries.",
+      "objectives": [
+        "Choose the crew's approach.",
+        "Resolve the local problem without assuming the manga's protagonists are present.",
+        "Record the player's outcome separately from the reference timeline."
+      ],
+      "choices": [
+        {
+          "id": "cooperate",
+          "label": "Help residents organize a safe supply route",
+          "approach": "cooperation",
+          "tradeoff": "Requires time and trust; improves local relationships.",
+          "possible_result": "The player gains a reliable local contact and a modest resource or information reward."
+        },
+        {
+          "id": "investigate",
+          "label": "Gather evidence and expose the racket to rival captains",
+          "approach": "investigation_or_negotiation",
+          "tradeoff": "Takes longer and may expose the player to competing interests.",
+          "possible_result": "The player uncovers a useful lead and can choose which party receives it."
+        },
+        {
+          "id": "act_independently",
+          "label": "Challenge the local enforcers directly and accept the risk of retaliation",
+          "approach": "direct_action_or_independent_route",
+          "tradeoff": "Offers faster progress but can create a local rival or lasting consequence.",
+          "possible_result": "The player resolves the immediate obstacle on their own terms, with a cost determined by the simulation."
+        }
+      ],
+      "fail_forward": "If the player fails or leaves, the situation continues through local NPC actions; the world records a changed relationship, lost opportunity, or new complication rather than forcing a canon outcome.",
+      "canon_effect": "none",
+      "outcome_scope": "local_world_state",
+      "player_choice_required": true,
+      "player_can_override": true,
+      "source_event_chapter_scope": "arc_span_not_exact_event_chapters"
+    },
+    {
+      "id": "alabasta_civil_war_resolved_scenario",
+      "event_id": "alabasta_civil_war_resolved",
+      "arc_id": "alabasta",
+      "spoiler_gate_arc": "alabasta",
+      "title": "The Alabasta conflict — optional crew scenario",
+      "setup": "A desert kingdom is close to civil conflict after forged messages and water shortages turn neighbors against one another.",
+      "objectives": [
+        "Choose the crew's approach.",
+        "Resolve the local problem without assuming the manga's protagonists are present.",
+        "Record the player's outcome separately from the reference timeline."
+      ],
+      "choices": [
+        {
+          "id": "cooperate",
+          "label": "Trace the source of the forged orders",
+          "approach": "cooperation",
+          "tradeoff": "Requires time and trust; improves local relationships.",
+          "possible_result": "The player gains a reliable local contact and a modest resource or information reward."
+        },
+        {
+          "id": "investigate",
+          "label": "Escort water convoys and protect civilians",
+          "approach": "investigation_or_negotiation",
+          "tradeoff": "Takes longer and may expose the player to competing interests.",
+          "possible_result": "The player uncovers a useful lead and can choose which party receives it."
+        },
+        {
+          "id": "act_independently",
+          "label": "Negotiate a temporary ceasefire between local leaders",
+          "approach": "direct_action_or_independent_route",
+          "tradeoff": "Offers faster progress but can create a local rival or lasting consequence.",
+          "possible_result": "The player resolves the immediate obstacle on their own terms, with a cost determined by the simulation."
+        }
+      ],
+      "fail_forward": "If the player fails or leaves, the situation continues through local NPC actions; the world records a changed relationship, lost opportunity, or new complication rather than forcing a canon outcome.",
+      "canon_effect": "none",
+      "outcome_scope": "local_world_state",
+      "player_choice_required": true,
+      "player_can_override": true,
+      "source_event_chapter_scope": "arc_span_not_exact_event_chapters"
+    },
+    {
+      "id": "skypiea_golden_bell_scenario",
+      "event_id": "skypiea_golden_bell",
+      "arc_id": "sky_island",
+      "spoiler_gate_arc": "sky_island",
+      "title": "The bell of Shandora — optional crew scenario",
+      "setup": "A settlement above the clouds is divided over access to an ancient landmark and the resources around it.",
+      "objectives": [
+        "Choose the crew's approach.",
+        "Resolve the local problem without assuming the manga's protagonists are present.",
+        "Record the player's outcome separately from the reference timeline."
+      ],
+      "choices": [
+        {
+          "id": "cooperate",
+          "label": "Map a safe route through the upper ruins",
+          "approach": "cooperation",
+          "tradeoff": "Requires time and trust; improves local relationships.",
+          "possible_result": "The player gains a reliable local contact and a modest resource or information reward."
+        },
+        {
+          "id": "investigate",
+          "label": "Mediate a shared-use agreement between communities",
+          "approach": "investigation_or_negotiation",
+          "tradeoff": "Takes longer and may expose the player to competing interests.",
+          "possible_result": "The player uncovers a useful lead and can choose which party receives it."
+        },
+        {
+          "id": "act_independently",
+          "label": "Recover a missing historical record before treasure hunters destroy it",
+          "approach": "direct_action_or_independent_route",
+          "tradeoff": "Offers faster progress but can create a local rival or lasting consequence.",
+          "possible_result": "The player resolves the immediate obstacle on their own terms, with a cost determined by the simulation."
+        }
+      ],
+      "fail_forward": "If the player fails or leaves, the situation continues through local NPC actions; the world records a changed relationship, lost opportunity, or new complication rather than forcing a canon outcome.",
+      "canon_effect": "none",
+      "outcome_scope": "local_world_state",
+      "player_choice_required": true,
+      "player_can_override": true,
+      "source_event_chapter_scope": "arc_span_not_exact_event_chapters"
+    },
+    {
+      "id": "davy_back_fight_scenario",
+      "event_id": "davy_back_fight",
+      "arc_id": "davy_back_fight",
+      "spoiler_gate_arc": "davy_back_fight",
+      "title": "The Davy Back challenge — optional crew scenario",
+      "setup": "A flamboyant captain proposes a series of contests whose stakes could split a small allied crew.",
+      "objectives": [
+        "Choose the crew's approach.",
+        "Resolve the local problem without assuming the manga's protagonists are present.",
+        "Record the player's outcome separately from the reference timeline."
+      ],
+      "choices": [
+        {
+          "id": "cooperate",
+          "label": "Accept the contests under fair, written rules",
+          "approach": "cooperation",
+          "tradeoff": "Requires time and trust; improves local relationships.",
+          "possible_result": "The player gains a reliable local contact and a modest resource or information reward."
+        },
+        {
+          "id": "investigate",
+          "label": "Replace the contest with a cooperative challenge that tests both crews",
+          "approach": "investigation_or_negotiation",
+          "tradeoff": "Takes longer and may expose the player to competing interests.",
+          "possible_result": "The player uncovers a useful lead and can choose which party receives it."
+        },
+        {
+          "id": "act_independently",
+          "label": "Refuse the wager and offer a non-competitive alliance",
+          "approach": "direct_action_or_independent_route",
+          "tradeoff": "Offers faster progress but can create a local rival or lasting consequence.",
+          "possible_result": "The player resolves the immediate obstacle on their own terms, with a cost determined by the simulation."
+        }
+      ],
+      "fail_forward": "If the player fails or leaves, the situation continues through local NPC actions; the world records a changed relationship, lost opportunity, or new complication rather than forcing a canon outcome.",
+      "canon_effect": "none",
+      "outcome_scope": "local_world_state",
+      "player_choice_required": true,
+      "player_can_override": true,
+      "source_event_chapter_scope": "arc_span_not_exact_event_chapters"
+    },
+    {
+      "id": "water_seven_crew_crisis_scenario",
+      "event_id": "water_seven_crew_crisis",
+      "arc_id": "water_seven",
+      "spoiler_gate_arc": "water_seven",
+      "title": "The Water Seven crisis — optional crew scenario",
+      "setup": "A shipbuilding city is shaken by missing blueprints, a damaged vessel, and accusations between rival workshops.",
+      "objectives": [
+        "Choose the crew's approach.",
+        "Resolve the local problem without assuming the manga's protagonists are present.",
+        "Record the player's outcome separately from the reference timeline."
+      ],
+      "choices": [
+        {
+          "id": "cooperate",
+          "label": "Protect a workshop while its staff repair the ship",
+          "approach": "cooperation",
+          "tradeoff": "Requires time and trust; improves local relationships.",
+          "possible_result": "The player gains a reliable local contact and a modest resource or information reward."
+        },
+        {
+          "id": "investigate",
+          "label": "Investigate the theft and follow the money trail",
+          "approach": "investigation_or_negotiation",
+          "tradeoff": "Takes longer and may expose the player to competing interests.",
+          "possible_result": "The player uncovers a useful lead and can choose which party receives it."
+        },
+        {
+          "id": "act_independently",
+          "label": "Broker a repair contract between competing shipwrights",
+          "approach": "direct_action_or_independent_route",
+          "tradeoff": "Offers faster progress but can create a local rival or lasting consequence.",
+          "possible_result": "The player resolves the immediate obstacle on their own terms, with a cost determined by the simulation."
+        }
+      ],
+      "fail_forward": "If the player fails or leaves, the situation continues through local NPC actions; the world records a changed relationship, lost opportunity, or new complication rather than forcing a canon outcome.",
+      "canon_effect": "none",
+      "outcome_scope": "local_world_state",
+      "player_choice_required": true,
+      "player_can_override": true,
+      "source_event_chapter_scope": "arc_span_not_exact_event_chapters"
+    },
+    {
+      "id": "enies_lobby_rescue_scenario",
+      "event_id": "enies_lobby_rescue",
+      "arc_id": "enies_lobby",
+      "spoiler_gate_arc": "enies_lobby",
+      "title": "The Enies Lobby rescue — optional crew scenario",
+      "setup": "A government archive holds evidence that could clear an innocent crew member, but the facility is heavily guarded.",
+      "objectives": [
+        "Choose the crew's approach.",
+        "Resolve the local problem without assuming the manga's protagonists are present.",
+        "Record the player's outcome separately from the reference timeline."
+      ],
+      "choices": [
+        {
+          "id": "cooperate",
+          "label": "Infiltrate the records wing and copy the evidence",
+          "approach": "cooperation",
+          "tradeoff": "Requires time and trust; improves local relationships.",
+          "possible_result": "The player gains a reliable local contact and a modest resource or information reward."
+        },
+        {
+          "id": "investigate",
+          "label": "Create a diversion so civilians and detainees can escape",
+          "approach": "investigation_or_negotiation",
+          "tradeoff": "Takes longer and may expose the player to competing interests.",
+          "possible_result": "The player uncovers a useful lead and can choose which party receives it."
+        },
+        {
+          "id": "act_independently",
+          "label": "Negotiate an exchange through an independent intermediary",
+          "approach": "direct_action_or_independent_route",
+          "tradeoff": "Offers faster progress but can create a local rival or lasting consequence.",
+          "possible_result": "The player resolves the immediate obstacle on their own terms, with a cost determined by the simulation."
+        }
+      ],
+      "fail_forward": "If the player fails or leaves, the situation continues through local NPC actions; the world records a changed relationship, lost opportunity, or new complication rather than forcing a canon outcome.",
+      "canon_effect": "none",
+      "outcome_scope": "local_world_state",
+      "player_choice_required": true,
+      "player_can_override": true,
+      "source_event_chapter_scope": "arc_span_not_exact_event_chapters"
+    },
+    {
+      "id": "thriller_bark_shadow_crisis_scenario",
+      "event_id": "thriller_bark_shadow_crisis",
+      "arc_id": "thriller_bark",
+      "spoiler_gate_arc": "thriller_bark",
+      "title": "The Thriller Bark shadow crisis — optional crew scenario",
+      "setup": "Ships disappear in a foggy sea, and survivors report that their shadows or personal effects have been stolen.",
+      "objectives": [
+        "Choose the crew's approach.",
+        "Resolve the local problem without assuming the manga's protagonists are present.",
+        "Record the player's outcome separately from the reference timeline."
+      ],
+      "choices": [
+        {
+          "id": "cooperate",
+          "label": "Search the abandoned vessel for missing people",
+          "approach": "cooperation",
+          "tradeoff": "Requires time and trust; improves local relationships.",
+          "possible_result": "The player gains a reliable local contact and a modest resource or information reward."
+        },
+        {
+          "id": "investigate",
+          "label": "Track the broker moving stolen identities and effects",
+          "approach": "investigation_or_negotiation",
+          "tradeoff": "Takes longer and may expose the player to competing interests.",
+          "possible_result": "The player uncovers a useful lead and can choose which party receives it."
+        },
+        {
+          "id": "act_independently",
+          "label": "Guide nearby ships through the fog and avoid the island's interior",
+          "approach": "direct_action_or_independent_route",
+          "tradeoff": "Offers faster progress but can create a local rival or lasting consequence.",
+          "possible_result": "The player resolves the immediate obstacle on their own terms, with a cost determined by the simulation."
+        }
+      ],
+      "fail_forward": "If the player fails or leaves, the situation continues through local NPC actions; the world records a changed relationship, lost opportunity, or new complication rather than forcing a canon outcome.",
+      "canon_effect": "none",
+      "outcome_scope": "local_world_state",
+      "player_choice_required": true,
+      "player_can_override": true,
+      "source_event_chapter_scope": "arc_span_not_exact_event_chapters"
+    },
+    {
+      "id": "sabaody_separation_scenario",
+      "event_id": "sabaody_separation",
+      "arc_id": "sabaody_archipelago",
+      "spoiler_gate_arc": "sabaody_archipelago",
+      "title": "The Sabaody separation — optional crew scenario",
+      "setup": "A busy mangrove port is in turmoil as crews, brokers, and frightened travelers try to leave before a crackdown.",
+      "objectives": [
+        "Choose the crew's approach.",
+        "Resolve the local problem without assuming the manga's protagonists are present.",
+        "Record the player's outcome separately from the reference timeline."
+      ],
+      "choices": [
+        {
+          "id": "cooperate",
+          "label": "Escort stranded travelers to safe ships",
+          "approach": "cooperation",
+          "tradeoff": "Requires time and trust; improves local relationships.",
+          "possible_result": "The player gains a reliable local contact and a modest resource or information reward."
+        },
+        {
+          "id": "investigate",
+          "label": "Gather proof of an illegal trafficking network and get it to a trusted reporter",
+          "approach": "investigation_or_negotiation",
+          "tradeoff": "Takes longer and may expose the player to competing interests.",
+          "possible_result": "The player uncovers a useful lead and can choose which party receives it."
+        },
+        {
+          "id": "act_independently",
+          "label": "Arrange a quiet departure using false cargo papers",
+          "approach": "direct_action_or_independent_route",
+          "tradeoff": "Offers faster progress but can create a local rival or lasting consequence.",
+          "possible_result": "The player resolves the immediate obstacle on their own terms, with a cost determined by the simulation."
+        }
+      ],
+      "fail_forward": "If the player fails or leaves, the situation continues through local NPC actions; the world records a changed relationship, lost opportunity, or new complication rather than forcing a canon outcome.",
+      "canon_effect": "none",
+      "outcome_scope": "local_world_state",
+      "player_choice_required": true,
+      "player_can_override": true,
+      "source_event_chapter_scope": "arc_span_not_exact_event_chapters"
+    },
+    {
+      "id": "amazon_lily_arrival_scenario",
+      "event_id": "amazon_lily_arrival",
+      "arc_id": "amazon_lily",
+      "spoiler_gate_arc": "amazon_lily",
+      "title": "The Amazon Lily arrival — optional crew scenario",
+      "setup": "An isolated island has strict customs, and an unexpected visitor has caused tension between residents and traders.",
+      "objectives": [
+        "Choose the crew's approach.",
+        "Resolve the local problem without assuming the manga's protagonists are present.",
+        "Record the player's outcome separately from the reference timeline."
+      ],
+      "choices": [
+        {
+          "id": "cooperate",
+          "label": "Respect local rules and request a formal audience",
+          "approach": "cooperation",
+          "tradeoff": "Requires time and trust; improves local relationships.",
+          "possible_result": "The player gains a reliable local contact and a modest resource or information reward."
+        },
+        {
+          "id": "investigate",
+          "label": "Offer medicine and supplies in exchange for safe passage",
+          "approach": "investigation_or_negotiation",
+          "tradeoff": "Takes longer and may expose the player to competing interests.",
+          "possible_result": "The player uncovers a useful lead and can choose which party receives it."
+        },
+        {
+          "id": "act_independently",
+          "label": "Help resolve a dispute between visiting merchants and island residents",
+          "approach": "direct_action_or_independent_route",
+          "tradeoff": "Offers faster progress but can create a local rival or lasting consequence.",
+          "possible_result": "The player resolves the immediate obstacle on their own terms, with a cost determined by the simulation."
+        }
+      ],
+      "fail_forward": "If the player fails or leaves, the situation continues through local NPC actions; the world records a changed relationship, lost opportunity, or new complication rather than forcing a canon outcome.",
+      "canon_effect": "none",
+      "outcome_scope": "local_world_state",
+      "player_choice_required": true,
+      "player_can_override": true,
+      "source_event_chapter_scope": "arc_span_not_exact_event_chapters"
+    },
+    {
+      "id": "impel_down_breakout_scenario",
+      "event_id": "impel_down_breakout",
+      "arc_id": "impel_down",
+      "spoiler_gate_arc": "impel_down",
+      "title": "The Impel Down breakout — optional crew scenario",
+      "setup": "A sealed prison transport is damaged near a remote outpost, leaving prisoners and guards in immediate danger.",
+      "objectives": [
+        "Choose the crew's approach.",
+        "Resolve the local problem without assuming the manga's protagonists are present.",
+        "Record the player's outcome separately from the reference timeline."
+      ],
+      "choices": [
+        {
+          "id": "cooperate",
+          "label": "Rescue people from the wreck without taking sides",
+          "approach": "cooperation",
+          "tradeoff": "Requires time and trust; improves local relationships.",
+          "possible_result": "The player gains a reliable local contact and a modest resource or information reward."
+        },
+        {
+          "id": "investigate",
+          "label": "Secure the manifest and identify who arranged the transport",
+          "approach": "investigation_or_negotiation",
+          "tradeoff": "Takes longer and may expose the player to competing interests.",
+          "possible_result": "The player uncovers a useful lead and can choose which party receives it."
+        },
+        {
+          "id": "act_independently",
+          "label": "Use the confusion to extract a specific captive, accepting a lasting pursuit risk",
+          "approach": "direct_action_or_independent_route",
+          "tradeoff": "Offers faster progress but can create a local rival or lasting consequence.",
+          "possible_result": "The player resolves the immediate obstacle on their own terms, with a cost determined by the simulation."
+        }
+      ],
+      "fail_forward": "If the player fails or leaves, the situation continues through local NPC actions; the world records a changed relationship, lost opportunity, or new complication rather than forcing a canon outcome.",
+      "canon_effect": "none",
+      "outcome_scope": "local_world_state",
+      "player_choice_required": true,
+      "player_can_override": true,
+      "source_event_chapter_scope": "arc_span_not_exact_event_chapters"
+    },
+    {
+      "id": "marineford_war_outcome_scenario",
+      "event_id": "marineford_war_outcome",
+      "arc_id": "marineford",
+      "spoiler_gate_arc": "marineford",
+      "title": "The Summit War — optional crew scenario",
+      "setup": "A major battle has left nearby waters full of wreckage, wounded sailors, and valuable information drifting between ships.",
+      "objectives": [
+        "Choose the crew's approach.",
+        "Resolve the local problem without assuming the manga's protagonists are present.",
+        "Record the player's outcome separately from the reference timeline."
+      ],
+      "choices": [
+        {
+          "id": "cooperate",
+          "label": "Rescue survivors and deliver them to neutral care",
+          "approach": "cooperation",
+          "tradeoff": "Requires time and trust; improves local relationships.",
+          "possible_result": "The player gains a reliable local contact and a modest resource or information reward."
+        },
+        {
+          "id": "investigate",
+          "label": "Recover navigational charts and intelligence from the wreckage",
+          "approach": "investigation_or_negotiation",
+          "tradeoff": "Takes longer and may expose the player to competing interests.",
+          "possible_result": "The player uncovers a useful lead and can choose which party receives it."
+        },
+        {
+          "id": "act_independently",
+          "label": "Protect a small evacuation convoy from opportunistic raiders",
+          "approach": "direct_action_or_independent_route",
+          "tradeoff": "Offers faster progress but can create a local rival or lasting consequence.",
+          "possible_result": "The player resolves the immediate obstacle on their own terms, with a cost determined by the simulation."
+        }
+      ],
+      "fail_forward": "If the player fails or leaves, the situation continues through local NPC actions; the world records a changed relationship, lost opportunity, or new complication rather than forcing a canon outcome.",
+      "canon_effect": "none",
+      "outcome_scope": "local_world_state",
+      "player_choice_required": true,
+      "player_can_override": true,
+      "source_event_chapter_scope": "arc_span_not_exact_event_chapters"
+    },
+    {
+      "id": "fishman_island_rebellion_scenario",
+      "event_id": "fishman_island_rebellion",
+      "arc_id": "fish_man_island",
+      "spoiler_gate_arc": "fish_man_island",
+      "title": "The Fish-Man Island rebellion — optional crew scenario",
+      "setup": "A deep-sea settlement faces rising hostility after a series of attacks are blamed on the wrong community.",
+      "objectives": [
+        "Choose the crew's approach.",
+        "Resolve the local problem without assuming the manga's protagonists are present.",
+        "Record the player's outcome separately from the reference timeline."
+      ],
+      "choices": [
+        {
+          "id": "cooperate",
+          "label": "Investigate the attacks and identify the real instigators",
+          "approach": "cooperation",
+          "tradeoff": "Requires time and trust; improves local relationships.",
+          "possible_result": "The player gains a reliable local contact and a modest resource or information reward."
+        },
+        {
+          "id": "investigate",
+          "label": "Protect a mixed group of residents during a public gathering",
+          "approach": "investigation_or_negotiation",
+          "tradeoff": "Takes longer and may expose the player to competing interests.",
+          "possible_result": "The player uncovers a useful lead and can choose which party receives it."
+        },
+        {
+          "id": "act_independently",
+          "label": "Negotiate a trade and safety agreement between surface visitors and island merchants",
+          "approach": "direct_action_or_independent_route",
+          "tradeoff": "Offers faster progress but can create a local rival or lasting consequence.",
+          "possible_result": "The player resolves the immediate obstacle on their own terms, with a cost determined by the simulation."
+        }
+      ],
+      "fail_forward": "If the player fails or leaves, the situation continues through local NPC actions; the world records a changed relationship, lost opportunity, or new complication rather than forcing a canon outcome.",
+      "canon_effect": "none",
+      "outcome_scope": "local_world_state",
+      "player_choice_required": true,
+      "player_can_override": true,
+      "source_event_chapter_scope": "arc_span_not_exact_event_chapters"
+    },
+    {
+      "id": "punk_hazard_alliance_scenario",
+      "event_id": "punk_hazard_alliance",
+      "arc_id": "punk_hazard",
+      "spoiler_gate_arc": "punk_hazard",
+      "title": "The Punk Hazard alliance — optional crew scenario",
+      "setup": "A hazardous research island contains abandoned laboratories, unstable chemicals, and people who were never meant to be test subjects.",
+      "objectives": [
+        "Choose the crew's approach.",
+        "Resolve the local problem without assuming the manga's protagonists are present.",
+        "Record the player's outcome separately from the reference timeline."
+      ],
+      "choices": [
+        {
+          "id": "cooperate",
+          "label": "Evacuate the test subjects and secure medical supplies",
+          "approach": "cooperation",
+          "tradeoff": "Requires time and trust; improves local relationships.",
+          "possible_result": "The player gains a reliable local contact and a modest resource or information reward."
+        },
+        {
+          "id": "investigate",
+          "label": "Steal or destroy the research records before they can be reused",
+          "approach": "investigation_or_negotiation",
+          "tradeoff": "Takes longer and may expose the player to competing interests.",
+          "possible_result": "The player uncovers a useful lead and can choose which party receives it."
+        },
+        {
+          "id": "act_independently",
+          "label": "Stabilize the facility and bargain for safe passage",
+          "approach": "direct_action_or_independent_route",
+          "tradeoff": "Offers faster progress but can create a local rival or lasting consequence.",
+          "possible_result": "The player resolves the immediate obstacle on their own terms, with a cost determined by the simulation."
+        }
+      ],
+      "fail_forward": "If the player fails or leaves, the situation continues through local NPC actions; the world records a changed relationship, lost opportunity, or new complication rather than forcing a canon outcome.",
+      "canon_effect": "none",
+      "outcome_scope": "local_world_state",
+      "player_choice_required": true,
+      "player_can_override": true,
+      "source_event_chapter_scope": "arc_span_not_exact_event_chapters"
+    },
+    {
+      "id": "dressrosa_liberation_scenario",
+      "event_id": "dressrosa_liberation",
+      "arc_id": "dressrosa",
+      "spoiler_gate_arc": "dressrosa",
+      "title": "The Dressrosa uprising — optional crew scenario",
+      "setup": "A colourful kingdom hides a coercive system that has made residents afraid to speak openly.",
+      "objectives": [
+        "Choose the crew's approach.",
+        "Resolve the local problem without assuming the manga's protagonists are present.",
+        "Record the player's outcome separately from the reference timeline."
+      ],
+      "choices": [
+        {
+          "id": "cooperate",
+          "label": "Help families recover missing property and records",
+          "approach": "cooperation",
+          "tradeoff": "Requires time and trust; improves local relationships.",
+          "possible_result": "The player gains a reliable local contact and a modest resource or information reward."
+        },
+        {
+          "id": "investigate",
+          "label": "Build a discreet network to protect witnesses",
+          "approach": "investigation_or_negotiation",
+          "tradeoff": "Takes longer and may expose the player to competing interests.",
+          "possible_result": "The player uncovers a useful lead and can choose which party receives it."
+        },
+        {
+          "id": "act_independently",
+          "label": "Challenge the local power broker through a public contest or legal claim",
+          "approach": "direct_action_or_independent_route",
+          "tradeoff": "Offers faster progress but can create a local rival or lasting consequence.",
+          "possible_result": "The player resolves the immediate obstacle on their own terms, with a cost determined by the simulation."
+        }
+      ],
+      "fail_forward": "If the player fails or leaves, the situation continues through local NPC actions; the world records a changed relationship, lost opportunity, or new complication rather than forcing a canon outcome.",
+      "canon_effect": "none",
+      "outcome_scope": "local_world_state",
+      "player_choice_required": true,
+      "player_can_override": true,
+      "source_event_chapter_scope": "arc_span_not_exact_event_chapters"
+    },
+    {
+      "id": "zou_mink_revelation_scenario",
+      "event_id": "zou_mink_revelation",
+      "arc_id": "zou",
+      "spoiler_gate_arc": "zou",
+      "title": "The secret of Zou — optional crew scenario",
+      "setup": "A mobile settlement is sheltering visitors, but a missing medicine shipment threatens relations between residents and outsiders.",
+      "objectives": [
+        "Choose the crew's approach.",
+        "Resolve the local problem without assuming the manga's protagonists are present.",
+        "Record the player's outcome separately from the reference timeline."
+      ],
+      "choices": [
+        {
+          "id": "cooperate",
+          "label": "Search the surrounding routes for the missing medicine",
+          "approach": "cooperation",
+          "tradeoff": "Requires time and trust; improves local relationships.",
+          "possible_result": "The player gains a reliable local contact and a modest resource or information reward."
+        },
+        {
+          "id": "investigate",
+          "label": "Mediate a dispute over who may access the settlement's stores",
+          "approach": "investigation_or_negotiation",
+          "tradeoff": "Takes longer and may expose the player to competing interests.",
+          "possible_result": "The player uncovers a useful lead and can choose which party receives it."
+        },
+        {
+          "id": "act_independently",
+          "label": "Escort a scouting party and document safe paths across the moving terrain",
+          "approach": "direct_action_or_independent_route",
+          "tradeoff": "Offers faster progress but can create a local rival or lasting consequence.",
+          "possible_result": "The player resolves the immediate obstacle on their own terms, with a cost determined by the simulation."
+        }
+      ],
+      "fail_forward": "If the player fails or leaves, the situation continues through local NPC actions; the world records a changed relationship, lost opportunity, or new complication rather than forcing a canon outcome.",
+      "canon_effect": "none",
+      "outcome_scope": "local_world_state",
+      "player_choice_required": true,
+      "player_can_override": true,
+      "source_event_chapter_scope": "arc_span_not_exact_event_chapters"
+    },
+    {
+      "id": "whole_cake_escape_scenario",
+      "event_id": "whole_cake_escape",
+      "arc_id": "whole_cake_island",
+      "spoiler_gate_arc": "whole_cake_island",
+      "title": "The Whole Cake Island escape — optional crew scenario",
+      "setup": "An island chain ruled by a powerful family offers the crew a deal that may conceal a trap.",
+      "objectives": [
+        "Choose the crew's approach.",
+        "Resolve the local problem without assuming the manga's protagonists are present.",
+        "Record the player's outcome separately from the reference timeline."
+      ],
+      "choices": [
+        {
+          "id": "cooperate",
+          "label": "Negotiate a limited safe-conduct agreement",
+          "approach": "cooperation",
+          "tradeoff": "Requires time and trust; improves local relationships.",
+          "possible_result": "The player gains a reliable local contact and a modest resource or information reward."
+        },
+        {
+          "id": "investigate",
+          "label": "Smuggle a threatened family member out through a merchant route",
+          "approach": "investigation_or_negotiation",
+          "tradeoff": "Takes longer and may expose the player to competing interests.",
+          "possible_result": "The player uncovers a useful lead and can choose which party receives it."
+        },
+        {
+          "id": "act_independently",
+          "label": "Expose the hidden terms of a public alliance before it is signed",
+          "approach": "direct_action_or_independent_route",
+          "tradeoff": "Offers faster progress but can create a local rival or lasting consequence.",
+          "possible_result": "The player resolves the immediate obstacle on their own terms, with a cost determined by the simulation."
+        }
+      ],
+      "fail_forward": "If the player fails or leaves, the situation continues through local NPC actions; the world records a changed relationship, lost opportunity, or new complication rather than forcing a canon outcome.",
+      "canon_effect": "none",
+      "outcome_scope": "local_world_state",
+      "player_choice_required": true,
+      "player_can_override": true,
+      "source_event_chapter_scope": "arc_span_not_exact_event_chapters"
+    },
+    {
+      "id": "levely_world_conclave_scenario",
+      "event_id": "levely_world_conclave",
+      "arc_id": "levely",
+      "spoiler_gate_arc": "levely",
+      "title": "The Levely — optional crew scenario",
+      "setup": "Delegates from several kingdoms are gathering, and a leaked document could trigger a diplomatic crisis.",
+      "objectives": [
+        "Choose the crew's approach.",
+        "Resolve the local problem without assuming the manga's protagonists are present.",
+        "Record the player's outcome separately from the reference timeline."
+      ],
+      "choices": [
+        {
+          "id": "cooperate",
+          "label": "Protect a delegate long enough to deliver a private message",
+          "approach": "cooperation",
+          "tradeoff": "Requires time and trust; improves local relationships.",
+          "possible_result": "The player gains a reliable local contact and a modest resource or information reward."
+        },
+        {
+          "id": "investigate",
+          "label": "Verify the document and publish only evidence that can be substantiated",
+          "approach": "investigation_or_negotiation",
+          "tradeoff": "Takes longer and may expose the player to competing interests.",
+          "possible_result": "The player uncovers a useful lead and can choose which party receives it."
+        },
+        {
+          "id": "act_independently",
+          "label": "Broker a private meeting between rival delegations",
+          "approach": "direct_action_or_independent_route",
+          "tradeoff": "Offers faster progress but can create a local rival or lasting consequence.",
+          "possible_result": "The player resolves the immediate obstacle on their own terms, with a cost determined by the simulation."
+        }
+      ],
+      "fail_forward": "If the player fails or leaves, the situation continues through local NPC actions; the world records a changed relationship, lost opportunity, or new complication rather than forcing a canon outcome.",
+      "canon_effect": "none",
+      "outcome_scope": "local_world_state",
+      "player_choice_required": true,
+      "player_can_override": true,
+      "source_event_chapter_scope": "arc_span_not_exact_event_chapters"
+    },
+    {
+      "id": "wano_country_liberation_scenario",
+      "event_id": "wano_country_liberation",
+      "arc_id": "wano_country",
+      "spoiler_gate_arc": "wano_country",
+      "title": "The raid on Onigashima — optional crew scenario",
+      "setup": "A closed country is recovering from years of forced labour, shortages, and competing claims over its future.",
+      "objectives": [
+        "Choose the crew's approach.",
+        "Resolve the local problem without assuming the manga's protagonists are present.",
+        "Record the player's outcome separately from the reference timeline."
+      ],
+      "choices": [
+        {
+          "id": "cooperate",
+          "label": "Escort food and tools to isolated villages",
+          "approach": "cooperation",
+          "tradeoff": "Requires time and trust; improves local relationships.",
+          "possible_result": "The player gains a reliable local contact and a modest resource or information reward."
+        },
+        {
+          "id": "investigate",
+          "label": "Help local organizers coordinate a noncombatant evacuation",
+          "approach": "investigation_or_negotiation",
+          "tradeoff": "Takes longer and may expose the player to competing interests.",
+          "possible_result": "The player uncovers a useful lead and can choose which party receives it."
+        },
+        {
+          "id": "act_independently",
+          "label": "Recover records that can support a fair settlement after the conflict",
+          "approach": "direct_action_or_independent_route",
+          "tradeoff": "Offers faster progress but can create a local rival or lasting consequence.",
+          "possible_result": "The player resolves the immediate obstacle on their own terms, with a cost determined by the simulation."
+        }
+      ],
+      "fail_forward": "If the player fails or leaves, the situation continues through local NPC actions; the world records a changed relationship, lost opportunity, or new complication rather than forcing a canon outcome.",
+      "canon_effect": "none",
+      "outcome_scope": "local_world_state",
+      "player_choice_required": true,
+      "player_can_override": true,
+      "source_event_chapter_scope": "arc_span_not_exact_event_chapters"
+    },
+    {
+      "id": "egghead_incident_scenario",
+      "event_id": "egghead_incident",
+      "arc_id": "egghead",
+      "spoiler_gate_arc": "egghead",
+      "title": "The Egghead incident — optional crew scenario",
+      "setup": "A futuristic research island is being evacuated while valuable data and unfinished inventions remain unsecured.",
+      "objectives": [
+        "Choose the crew's approach.",
+        "Resolve the local problem without assuming the manga's protagonists are present.",
+        "Record the player's outcome separately from the reference timeline."
+      ],
+      "choices": [
+        {
+          "id": "cooperate",
+          "label": "Protect researchers and civilians during evacuation",
+          "approach": "cooperation",
+          "tradeoff": "Requires time and trust; improves local relationships.",
+          "possible_result": "The player gains a reliable local contact and a modest resource or information reward."
+        },
+        {
+          "id": "investigate",
+          "label": "Recover a limited set of research notes without exposing private records",
+          "approach": "investigation_or_negotiation",
+          "tradeoff": "Takes longer and may expose the player to competing interests.",
+          "possible_result": "The player uncovers a useful lead and can choose which party receives it."
+        },
+        {
+          "id": "act_independently",
+          "label": "Disable dangerous prototypes before scavengers can activate them",
+          "approach": "direct_action_or_independent_route",
+          "tradeoff": "Offers faster progress but can create a local rival or lasting consequence.",
+          "possible_result": "The player resolves the immediate obstacle on their own terms, with a cost determined by the simulation."
+        }
+      ],
+      "fail_forward": "If the player fails or leaves, the situation continues through local NPC actions; the world records a changed relationship, lost opportunity, or new complication rather than forcing a canon outcome.",
+      "canon_effect": "none",
+      "outcome_scope": "local_world_state",
+      "player_choice_required": true,
+      "player_can_override": true,
+      "source_event_chapter_scope": "arc_span_not_exact_event_chapters"
+    },
+    {
+      "id": "elbaph_arrival_scenario",
+      "event_id": "elbaph_arrival",
+      "arc_id": "elbaph",
+      "spoiler_gate_arc": "elbaph",
+      "title": "The Elbaph adventure begins — optional crew scenario",
+      "setup": "A land of giants welcomes visitors cautiously as explorers, traders, and local communities disagree over access to old ruins.",
+      "objectives": [
+        "Choose the crew's approach.",
+        "Resolve the local problem without assuming the manga's protagonists are present.",
+        "Record the player's outcome separately from the reference timeline."
+      ],
+      "choices": [
+        {
+          "id": "cooperate",
+          "label": "Map a safe expedition route with local guides",
+          "approach": "cooperation",
+          "tradeoff": "Requires time and trust; improves local relationships.",
+          "possible_result": "The player gains a reliable local contact and a modest resource or information reward."
+        },
+        {
+          "id": "investigate",
+          "label": "Mediate a dispute between a village and visiting salvagers",
+          "approach": "investigation_or_negotiation",
+          "tradeoff": "Takes longer and may expose the player to competing interests.",
+          "possible_result": "The player uncovers a useful lead and can choose which party receives it."
+        },
+        {
+          "id": "act_independently",
+          "label": "Help preserve an old archive while allowing scholars controlled access",
+          "approach": "direct_action_or_independent_route",
+          "tradeoff": "Offers faster progress but can create a local rival or lasting consequence.",
+          "possible_result": "The player resolves the immediate obstacle on their own terms, with a cost determined by the simulation."
+        }
+      ],
+      "fail_forward": "If the player fails or leaves, the situation continues through local NPC actions; the world records a changed relationship, lost opportunity, or new complication rather than forcing a canon outcome.",
+      "canon_effect": "none",
+      "outcome_scope": "local_world_state",
+      "player_choice_required": true,
+      "player_can_override": true,
+      "source_event_chapter_scope": "arc_span_not_exact_event_chapters"
+    }
+  ]
+}

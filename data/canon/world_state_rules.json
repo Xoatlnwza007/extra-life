@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "policy": "Generic simulation rules for optional NPC and settlement state. These rules react only to player-authored local outcomes; they do not simulate or rewrite canon-character actions.",
+  "state_variables": [
+    {
+      "id": "settlement_trust",
+      "type": "integer",
+      "min": 0,
+      "max": 100,
+      "default": 50,
+      "description": "How willing local residents are to trade, share rumors, or offer shelter."
+    },
+    {
+      "id": "market_supply",
+      "type": "integer",
+      "min": 0,
+      "max": 100,
+      "default": 50,
+      "description": "Availability of ordinary goods and repair materials."
+    },
+    {
+      "id": "security_pressure",
+      "type": "integer",
+      "min": 0,
+      "max": 100,
+      "default": 20,
+      "description": "Local threat level from piracy, extortion, or active disputes."
+    },
+    {
+      "id": "crew_reputation",
+      "type": "integer",
+      "min": 0,
+      "max": 100,
+      "default": 50,
+      "description": "Local reputation of the player's crew; distinct from global bounty."
+    },
+    {
+      "id": "faction_tension",
+      "type": "integer",
+      "min": 0,
+      "max": 100,
+      "default": 25,
+      "description": "Hostility between locally present groups."
+    }
+  ],
+  "rules": [
+    {
+      "id": "helpful_trade_recovery",
+      "when": "player completes a fair trade, repair, or relief task",
+      "effects": [
+        {
+          "state": "settlement_trust",
+          "delta": 5
+        },
+        {
+          "state": "market_supply",
+          "delta": 3
+        },
+        {
+          "state": "crew_reputation",
+          "delta": 2
+        }
+      ],
+      "cap_each_tick": true,
+      "scope": "current_island_only"
+    },
+    {
+      "id": "public_intimidation_backlash",
+      "when": "player uses public threats against civilians or neutral merchants",
+      "effects": [
+        {
+          "state": "settlement_trust",
+          "delta": -8
+        },
+        {
+          "state": "security_pressure",
+          "delta": 5
+        },
+        {
+          "state": "crew_reputation",
+          "delta": -4
+        }
+      ],
+      "cap_each_tick": true,
+      "scope": "current_island_only"
+    },
+    {
+      "id": "successful_dispute_mediation",
+      "when": "player resolves a local dispute with consent from affected sides",
+      "effects": [
+        {
+          "state": "faction_tension",
+          "delta": -8
+        },
+        {
+          "state": "settlement_trust",
+          "delta": 4
+        }
+      ],
+      "cap_each_tick": true,
+      "scope": "involved_local_groups"
+    },
+    {
+      "id": "failed_supply_route",
+      "when": "a local route is blocked or a delivery quest fails forward",
+      "effects": [
+        {
+          "state": "market_supply",
+          "delta": -6
+        },
+        {
+          "state": "security_pressure",
+          "delta": 3
+        }
+      ],
+      "cap_each_tick": true,
+      "scope": "connected_local_routes"
+    },
+    {
+      "id": "community_rebuild",
+      "when": "player funds or contributes labor to a settlement recovery project",
+      "effects": [
+        {
+          "state": "market_supply",
+          "delta": 5
+        },
+        {
+          "state": "settlement_trust",
+          "delta": 6
+        },
+        {
+          "state": "security_pressure",
+          "delta": -2
+        }
+      ],
+      "cap_each_tick": true,
+      "scope": "current_island_only"
+    },
+    {
+      "id": "witness_protection",
+      "when": "player protects a witness without exposing their identity",
+      "effects": [
+        {
+          "state": "settlement_trust",
+          "delta": 3
+        },
+        {
+          "state": "crew_reputation",
+          "delta": 3
+        },
+        {
+          "state": "faction_tension",
+          "delta": -2
+        }
+      ],
+      "cap_each_tick": true,
+      "scope": "witness_network"
+    },
+    {
+      "id": "unpaid_crew_debt",
+      "when": "player abandons a hired crew or supplier after accepting an obligation",
+      "effects": [
+        {
+          "state": "settlement_trust",
+          "delta": -4
+        },
+        {
+          "state": "crew_reputation",
+          "delta": -6
+        }
+      ],
+      "cap_each_tick": true,
+      "scope": "affected_contacts"
+    }
+  ],
+  "safeguards": [
+    "Clamp every state variable to its declared min/max.",
+    "Apply each rule once per resolved quest outcome, not once per frame or browser refresh.",
+    "Store player-caused state separately from canon reference data.",
+    "Never apply these rules to named canon characters or distant canon events without a player-visible cause.",
+    "A negative result changes local conditions; it must not hard-lock the main story."
+  ]
+}

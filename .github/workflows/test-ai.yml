@@ -1,14 +1,26 @@
-name: AI module tests
+name: AI and story data tests
 
 on:
   push:
     branches:
       - one-piece-development
+      - canon-content
     paths:
       - 'ai/**'
+      - 'data/canon/**'
+      - 'scripts/**'
       - 'tests/**'
       - 'README.md'
       - '.github/workflows/deploy-pages.yml'
+      - '.github/workflows/test-ai.yml'
+  pull_request:
+    branches:
+      - one-piece-development
+    paths:
+      - 'ai/**'
+      - 'data/canon/**'
+      - 'scripts/**'
+      - 'tests/**'
       - '.github/workflows/test-ai.yml'
   workflow_dispatch:
 
@@ -22,5 +34,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Run AI unit tests
-        run: node --test tests/ai.test.js
+      - name: Run all unit tests
+        run: node --test tests/*.test.js
+      - name: Validate canon data
+        run: node scripts/validate-canon.js
