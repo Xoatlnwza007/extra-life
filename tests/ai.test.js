@@ -252,13 +252,24 @@ test('East Blue original starter events form a gated four-step sandbox chain', (
   assert.ok(calls.some(call => call[0] === 'skill'));
 });
 
-test('main game loads save protection before the game bootstrap', () => {
+test('main game is a single-file One Piece runtime with Playtest controls', () => {
   const fs = require('node:fs');
   const html = fs.readFileSync(require('node:path').join(__dirname, '..', 'index.html'), 'utf8');
-  const runtimeScript = html.indexOf('<script src="./ai/world-simulation.js"></script>');
   const gameBootstrap = html.indexOf('window.claude?.hot?.ready');
-  assert.ok(runtimeScript >= 0, 'modular simulation runtime script is present');
-  assert.ok(gameBootstrap > runtimeScript, "runtime installs before the game's initial resume/bootstrap check");
+  const firstInlineModule = html.indexOf('<script data-inline-module="decision-engine">');
+  const worldRuntime = html.indexOf('<script data-inline-module="world-simulation">');
+  assert.ok(gameBootstrap >= 0, 'game bootstrap is present');
+  assert.ok(firstInlineModule > gameBootstrap, 'One Piece runtime modules are bundled after the game script');
+  assert.ok(worldRuntime > firstInlineModule, 'world runtime is bundled after its companion modules');
+  assert.doesNotMatch(html, /<script\s+src=["'][^"']+\.js["']/i, 'the playable HTML must not fetch external JavaScript');
+  for (const moduleName of ['decision-engine','character-state','npc-brain','event-adapter','east-blue-starter','crew-system','devil-fruit-system','haki-system','progression-system','marine-system','combat-adapter','marine-ui']) {
+    assert.match(html, new RegExp('data-inline-module="' + moduleName + '"'));
+  }
+  assert.match(html, /const cfg=\{world:'op',sex:'m',year:1500,place:'foosha'/);
+  assert.match(html, /for\(const k of \['op'\]\)/);
+  assert.match(html, /if\(kind==='time'\|\|kind==='mash'\)/);
+  assert.match(html, /id="playtestPanel"/);
+  assert.match(html, /data-pt-key="bounty"/);
   assert.match(html, /OnePieceWorldSimulation\.simulate\(S,population/);
   assert.match(html, /OnePieceCombatAdapter\.modifyOutgoingDamage\(v,S,'op'\)/);
   assert.match(html, /OnePieceCombatAdapter\.modifyIncomingDamage\(d,S,'op'\)/);
