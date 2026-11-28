@@ -12,6 +12,9 @@ This folder is a **data-only content layer**. It does not yet change the browser
 - `characters.json`: concise references for named characters directly involved in the event anchors.
 - `cover_stories.json`: all 19 major manga cover-story serials plus two short `Where They Are Now` follow-ups, kept separate from the main event timeline.
 - `fan_ideas.json`: 16 community theories, what-if prompts, and fan worldbuilding formats transformed into original, optional sandbox hooks.
+- `cover_story_quests.json`: six original three-stage optional quest chains inspired by cover-story structures; they do not reenact canon or assign new actions to manga characters.
+- `world_state_rules.json`: five bounded local NPC/settlement variables and seven player-outcome rules, with anti-loop and canon-isolation safeguards.
+- `random_events.json`: ten conditional, optional island/route events with fail-forward outcomes and spoiler gates.
 
 This is a curated game-content catalogue, not an exhaustive encyclopedia. The arc index was last checked through manga Chapter 1199 on 2026-11-28. The Elbaph story is ongoing and remains open-ended. The catalogue contains 21 records: 19 major serials and two supplemental short follow-ups. The 19-item major-serial count groups the eight separated Straw Hat mini-stories into one serial.
 
@@ -48,12 +51,8 @@ node --test tests/*.test.js
 node scripts/validate-canon.js
 ```
 
-The validator checks unique IDs, arc order and chapter bounds, event-to-arc/location/faction/character references, source-backed milestone chapter bounds, scenario-to-event links, three-path player choices, fail-forward rules, canon isolation, canon tags, source URLs, all 21 cover-story ranges and their catalogue groups, and sandbox isolation for fan ideas.
+The validator checks unique IDs, arc order and chapter bounds, event-to-arc/location/faction/character references, source-backed milestone chapter bounds, scenario-to-event links, three-path player choices, fail-forward rules, canon isolation, canon tags, source URLs, all 21 cover-story ranges and their catalogue groups, six cover-story quest chains and their source-story links, bounded world-state effects, ten conditional random events, and sandbox isolation for fan ideas.
 
-## Next content pass
+## Integration boundary
 
-1. Add more verified key events and expand the timeline beyond this representative first tranche.
-2. Expand cover-story entries with structured aftermath, NPC/world-state consequences, and optional quest chains.
-3. Refine the broad event chapter spans into individually verified chapter beats before using them as exact gameplay triggers.
-3. Add source-backed scenario entry points and branching choices without assuming the player repeats Luffy's choices.
-4. Integrate the data into the active HTML runtime only after the branch/runtime contract has been reconciled.
+The new quest, world-state, and random-event files are structured content only. They are not yet wired into the HTML runtime. Runtime integration must first reconcile the existing single-file game contract, preserve mobile/tablet behavior, and keep player state separate from canon reference data. The broad event chapter spans are not exact gameplay triggers.
