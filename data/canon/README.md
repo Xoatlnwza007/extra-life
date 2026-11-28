@@ -4,16 +4,19 @@ This folder is a **data-only content layer**. It does not yet change the browser
 
 ## Contents
 
-- `arcs.json`: the official story-section index, with manga chapter ranges and major locations.
-- `events.json`: a first-pass set of representative manga-canon timeline anchors and player-facing scenario hooks.
-- `cover_stories.json`: selected manga cover-page serials that provide canonical side-story material.
+- `arcs.json`: the story-section index, with manga chapter ranges and major locations.
+- `events.json`: representative manga-canon timeline anchors, linked to locations, factions, characters, flags, and player-facing scenario hooks.
+- `locations.json`: source-backed locations used by the event anchors.
+- `factions.json`: pirate crews, communities, government bodies, and alliances referenced by the events.
+- `characters.json`: concise references for named characters directly involved in the event anchors.
+- `cover_stories.json`: selected manga cover-page serials, kept separate from the main event timeline.
 - `fan_ideas.json`: community theories, what-if prompts, and fan worldbuilding formats transformed into original, optional sandbox hooks.
 
-This is a curated first tranche, not an exhaustive encyclopedia. The ongoing Elbaph arc must be extended only after checking newly published chapters against reliable sources.
+This is a curated first tranche, not an exhaustive encyclopedia. The manga's Elbaph story is ongoing; keep it open-ended and add new factual anchors only after checking the newest released chapters against reliable sources.
 
 ## Classification policy
 
-- `manga_canon`: events confirmed in the manga.
+- `manga_canon`: events, characters, factions, or locations grounded in the manga.
 - `cover_story`: serialized manga cover-page side stories. They are official story material, but are kept separate from the main arc timeline.
 - `anime_only`: anime-original material. It is not silently added to manga canon.
 - `fan_theory`: a community hypothesis, not a confirmed fact.
@@ -31,7 +34,7 @@ Fan ideas are always tagged `fanon_sandbox` and `play_scope: sandbox_only`. They
 
 ## Sources and adaptation
 
-Use the official ONE PIECE.com story index for the official arc-section names and chapter boundaries. The One Piece Wiki is used as a secondary research index for arc descriptions and cover-story references. Community sources are inspiration only.
+Use the official ONE PIECE.com story index for the main arc index and chapter ordering; the official Shueisha/VIZ chapter list is checked when keeping the ongoing Elbaph range current. The One Piece Wiki is used as a secondary research index for event, character, faction, location, and cover-story references. Community sources are inspiration only.
 
 No long passages are copied. Community theories and prompts are paraphrased and transformed into new scenario hooks. Keep source URLs and author/community attribution with each item.
 
@@ -44,11 +47,11 @@ node --test tests/*.test.js
 node scripts/validate-canon.js
 ```
 
-The validator checks unique IDs, arc order and chapter bounds, event-to-arc references, canon tags, sandbox isolation for fan ideas, and source URLs.
+The validator checks unique IDs, arc order and chapter bounds, event-to-arc/location/faction/character references, canon tags, source URLs, cover story ranges, and sandbox isolation for fan ideas.
 
 ## Next content pass
 
-1. Verify additional key events at chapter-level precision and expand character/location/faction references.
-2. Catalogue more cover stories, including their release ranges and story consequences.
-3. Add source-backed scenario entry points and branch conditions without assuming the player repeats Luffy's choices.
+1. Add more verified key events and expand the timeline beyond this representative first tranche.
+2. Catalogue more cover stories, including their chapter ranges, character aftermath, and world-state consequences.
+3. Add source-backed scenario entry points and branching choices without assuming the player repeats Luffy's choices.
 4. Integrate the data into the active HTML runtime only after the branch/runtime contract has been reconciled.
