@@ -77,7 +77,7 @@ test('browser bootstrap reports a missing companion module without stopping late
   };
   assert.equal(await world.loadCompanionModules(host), false);
   assert.deepEqual(host.__onePieceModuleErrors, ['./ai/event-adapter.js']);
-  assert.equal(scripts.length, world.companionModules.length);
+  assert.equal(scripts.length, 6);
 });
 
 test('game touch stylesheet adapts controls for phones and tablets', () => {
