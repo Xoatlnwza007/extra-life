@@ -18330,16 +18330,21 @@ async function tripMenu(){const t=tripOf();if(!t||busy)return;busy=true;let next
 try{const wb=WACTS.find(a=>a[0]==='travelBtn');if(wb)wb[2]=()=>travelMenu();}catch(e){}
 {const rdT=render;render=function(){const r=rdT.apply(this,arguments);try{const b=document.querySelector('#acts [data-w="travelBtn"]');const t=tripOf();if(b&&t&&S.age>=12){const lab=`✈ อยู่ที่${t.k.split(' ')[0]} · กลับ/ไปต่อ`;b.dataset.base=lab;if(b.textContent!==lab)b.textContent=lab;b.disabled=!S.alive;}}catch(e){}return r;};}
 /* each month away: pay for the stay; work, money and family pull you home after a while */
-{const mpT=monthPass;monthPass=async function(){const r=await mpT.apply(this,arguments);try{const t=tripOf();if(!t||!S.alive)return r;
-  if(jailed()||S.flags.titan){S.trip=null;return r;}
-  const m=S.year*12+(S.mo||0)-t.m0;mon(-tripCost(t));
-  if(S.money<0){tripEnd(`เงินหมดระหว่างอยู่ที่${t.k} คุณต้องขอติดเกวียนพ่อค้ากลับบ้าน`);return r;}
-  if(isWork(S)&&m>=2&&!t.warned){t.warned=1;perf(-8);say(`${BOSS()}ส่งจดหมายมาถามว่าคุณจะกลับมาทำงานเมื่อไหร่`,'bad');}
-  if(isWork(S)&&m>=5&&chance(.4)){say(`คุณหายไปนานเกินไป ${BOSS()}รับคนใหม่มาแทนแล้ว`,'bad');S.job=null;}
-  if(S.kids.some(k=>k.alive&&S.year-k.y<12)&&m>=3&&chance(.3)){tripEnd(`จดหมายจากบ้านบอกว่าลูกๆ คิดถึง คุณเก็บของกลับจาก${t.k}ทันที`);return r;}
-  if(AUTO.on&&m>=R(1,4))tripEnd();
-  else if(chance(.35)){const D=(TRAVEL[W.id]||[]).find(d=>d.n===t.k);if(D&&D.arr){const [x,e]=pick(D.arr);goEff(e);say(`ที่${t.k}: ${x}`,'plain');toast(x,`เดือน ${(S.mo||0)+1} · ${t.k}`,'');}}
-  save();render();}catch(e){console.error(e);}return r;};}
+function applyTravelMonthlyCharge(){
+  try{
+    const t=tripOf();if(!t||!S.alive)return false;
+    if(jailed()||S.flags.titan){S.trip=null;return false;}
+    const m=S.year*12+(S.mo||0)-t.m0;mon(-tripCost(t));
+    if(S.money<0){tripEnd(`เงินหมดระหว่างอยู่ที่${t.k} คุณต้องขอติดเกวียนพ่อค้ากลับบ้าน`);return true;}
+    if(isWork(S)&&m>=2&&!t.warned){t.warned=1;perf(-8);say(`${BOSS()}ส่งจดหมายมาถามว่าคุณจะกลับมาทำงานเมื่อไหร่`,'bad');}
+    if(isWork(S)&&m>=5&&chance(.4)){say(`คุณหายไปนานเกินไป ${BOSS()}รับคนใหม่มาแทนแล้ว`,'bad');S.job=null;}
+    if(S.kids.some(k=>k.alive&&S.year-k.y<12)&&m>=3&&chance(.3)){tripEnd(`จดหมายจากบ้านบอกว่าลูกๆ คิดถึง คุณเก็บของกลับจาก${t.k}ทันที`);return true;}
+    if(AUTO.on&&m>=R(1,4))tripEnd();
+    else if(chance(.35)){const D=(TRAVEL[W.id]||[]).find(d=>d.n===t.k);if(D&&D.arr){const [x,e]=pick(D.arr);goEff(e);say(`ที่${t.k}: ${x}`,'plain');toast(x,`เดือน ${(S.mo||0)+1} · ${t.k}`,'');}}
+    save();render();return true;
+  }catch(e){console.error(e);return false;}
+}
+{const mpT=monthPass;monthPass=async function(){const r=await mpT.apply(this,arguments);applyTravelMonthlyCharge();return r;};}
 /* moving house, being jailed or dying ends any trip */
 {const dD=die;die=function(){try{if(S)S.trip=null;}catch(e){}return dD.apply(this,arguments);};}
 
