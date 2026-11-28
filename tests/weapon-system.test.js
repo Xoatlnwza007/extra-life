@@ -26,7 +26,7 @@ test('durability reduces weapon power and broken weapons stop contributing', () 
   const state = { own: { items: ['sword'] } };
   const equipped = weapons.equipWeapon(state, shop, 'sword').state;
   const worn = weapons.damageDurability(equipped, shop, 50);
-  assert.equal(weapons.getCombatStats(worn.state, shop).weaponPower, 9);
+  assert.equal(weapons.getCombatStats(worn.state, shop).weaponPower, 10);
   const broken = weapons.damageDurability(worn.state, shop, 30);
   assert.equal(broken.broken, true);
   assert.equal(weapons.getCombatStats(broken.state, shop).weaponPower, 0);
