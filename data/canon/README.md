@@ -9,10 +9,10 @@ This folder is a **data-only content layer**. It does not yet change the browser
 - `locations.json`: source-backed locations used by the event anchors.
 - `factions.json`: pirate crews, communities, government bodies, and alliances referenced by the events.
 - `characters.json`: concise references for named characters directly involved in the event anchors.
-- `cover_stories.json`: all 19 major manga cover-story serials (through Yamato's pilgrimage), kept separate from the main event timeline.
+- `cover_stories.json`: all 19 major manga cover-story serials plus two short `Where They Are Now` follow-ups, kept separate from the main event timeline.
 - `fan_ideas.json`: community theories, what-if prompts, and fan worldbuilding formats transformed into original, optional sandbox hooks.
 
-This is a curated game-content catalogue, not an exhaustive encyclopedia. The arc index was last checked through manga Chapter 1199 on 2026-11-28. The Elbaph story is ongoing and remains open-ended. The 19-item cover-story count follows the convention that groups the eight separated Straw Hat mini-stories into one serial; two short `Where They Are Now` runs are not included in that count.
+This is a curated game-content catalogue, not an exhaustive encyclopedia. The arc index was last checked through manga Chapter 1199 on 2026-11-28. The Elbaph story is ongoing and remains open-ended. The catalogue contains 21 records: 19 major serials and two supplemental short follow-ups. The 19-item major-serial count groups the eight separated Straw Hat mini-stories into one serial.
 
 ## Classification policy
 
@@ -47,7 +47,7 @@ node --test tests/*.test.js
 node scripts/validate-canon.js
 ```
 
-The validator checks unique IDs, arc order and chapter bounds, event-to-arc/location/faction/character references, canon tags, source URLs, all 19 cover-story ranges, and sandbox isolation for fan ideas.
+The validator checks unique IDs, arc order and chapter bounds, event-to-arc/location/faction/character references, canon tags, source URLs, all 21 cover-story ranges and their catalogue groups, and sandbox isolation for fan ideas.
 
 ## Next content pass
 
