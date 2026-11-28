@@ -116,6 +116,9 @@ function validateDatasets(input = {}) {
     if (event.canon_status !== 'manga_canon' && event.canon_status !== 'needs_review') {
       errors.push('event ' + event.id + ': factual timeline events must be manga_canon or needs_review');
     }
+    if (event.chapter_range_scope !== 'arc_span_not_exact_event_chapters') {
+      errors.push('event ' + event.id + ': chapter range scope must identify broad arc-span references');
+    }
     if (!event.chapter_range || !Number.isInteger(event.chapter_range.start)) {
       errors.push('event ' + event.id + ': missing chapter range');
     } else if (arc && event.chapter_range.start < arc.chapter_start) {
