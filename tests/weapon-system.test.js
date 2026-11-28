@@ -48,3 +48,10 @@ test('invalid damage and repair inputs do not create negative durability', () =>
   const repaired = weapons.repairWeapon(damaged.state, shop, 'knife', 1000);
   assert.equal(repaired.durability, 100);
 });
+
+test('explicit unequip disables legacy strongest-weapon fallback', () => {
+  const state = { own: { items: ['knife', 'sword'] } };
+  const unequipped = weapons.unequipWeapon(state).state;
+  assert.equal(weapons.getCombatStats(unequipped, shop).weaponPower, 0);
+  assert.equal(weapons.damageDurability(unequipped, shop).reason, 'no-weapon');
+});
