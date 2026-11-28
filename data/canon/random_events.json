@@ -1,0 +1,224 @@
+{
+  "schema_version": 1,
+  "policy": "Optional local-world events for sandbox play. Every event is original, non-canon, player-optional, and must be selected only when its conditions are met.",
+  "selection": {
+    "scope": "current_island_or_known_route",
+    "cooldown_days": 2,
+    "max_active_per_island": 1,
+    "require_player_presence_or_recent_contact": true,
+    "never_interrupt_combat_or_dialogue": true,
+    "roll_only_after_safe_transition": true
+  },
+  "events": [
+    {
+      "id": "adrift_supply_crate",
+      "title": "A Crate in the Current",
+      "weight": 10,
+      "conditions": [
+        "player is near a navigable coast",
+        "market_supply is below 70"
+      ],
+      "trigger": "safe_arrival_or_day_change",
+      "choices": [
+        "Return the crate to its marked owner",
+        "Sell the contents",
+        "Use the supplies to help a nearby settlement"
+      ],
+      "effects": [
+        "A trade contact may be discovered",
+        "Settlement trust and supply can change"
+      ],
+      "fail_forward": "If ignored, the crate washes ashore and becomes a rumor lead.",
+      "canon_effect": "none",
+      "spoiler_gate_arc": "east_blue"
+    },
+    {
+      "id": "dockside_work_dispute",
+      "title": "Trouble at the Docks",
+      "weight": 8,
+      "conditions": [
+        "a port settlement is visited",
+        "faction_tension is above 20"
+      ],
+      "trigger": "safe_arrival",
+      "choices": [
+        "Mediate the dispute",
+        "Take a paid side",
+        "Leave the workers to settle it"
+      ],
+      "effects": [
+        "Faction tension and local trust may change",
+        "A temporary port service may become unavailable"
+      ],
+      "fail_forward": "The dispute cools down over time, but one side may remember the player's choice.",
+      "canon_effect": "none",
+      "spoiler_gate_arc": "east_blue"
+    },
+    {
+      "id": "weathered_log_pose",
+      "title": "A Weathered Log Pose",
+      "weight": 6,
+      "conditions": [
+        "player has access to a ship",
+        "a route transition is pending"
+      ],
+      "trigger": "before_optional_route_choice",
+      "choices": [
+        "Repair and calibrate it",
+        "Trade it to a navigator",
+        "Ignore it as unreliable"
+      ],
+      "effects": [
+        "May reveal a safe detour or a supply stop; never overrides required navigation"
+      ],
+      "fail_forward": "The device gives no reliable reading, but its previous owner becomes a contact.",
+      "canon_effect": "none",
+      "spoiler_gate_arc": "east_blue"
+    },
+    {
+      "id": "traveling_medic",
+      "title": "A Traveling Medic",
+      "weight": 7,
+      "conditions": [
+        "player has a crew member needing recovery or a settlement has low trust"
+      ],
+      "trigger": "safe_arrival_or_day_change",
+      "choices": [
+        "Pay for treatment",
+        "Trade medicine or supplies",
+        "Offer escort in exchange"
+      ],
+      "effects": [
+        "Recovery support or a medical contact; costs and trust depend on choice"
+      ],
+      "fail_forward": "The medic leaves after offering basic first aid and a location rumor.",
+      "canon_effect": "none",
+      "spoiler_gate_arc": "east_blue"
+    },
+    {
+      "id": "false_bounty_poster",
+      "title": "The Wrong Face on the Poster",
+      "weight": 5,
+      "conditions": [
+        "player has visited a populated port"
+      ],
+      "trigger": "safe_arrival",
+      "choices": [
+        "Correct the poster with evidence",
+        "Ignore the mistake",
+        "Use the confusion to misdirect a pursuer"
+      ],
+      "effects": [
+        "Local reputation or security pressure may change"
+      ],
+      "fail_forward": "The poster remains for a while, creating a small social complication rather than a forced fight.",
+      "canon_effect": "none",
+      "spoiler_gate_arc": "east_blue"
+    },
+    {
+      "id": "night_market_shortage",
+      "title": "A Night-Market Shortage",
+      "weight": 8,
+      "conditions": [
+        "market_supply is below 55",
+        "a market settlement is open"
+      ],
+      "trigger": "night_or_safe_arrival",
+      "choices": [
+        "Bring in supplies",
+        "Help ration essential goods",
+        "Buy scarce goods at the posted price"
+      ],
+      "effects": [
+        "Market supply, trust, and prices may change locally"
+      ],
+      "fail_forward": "The shortage eases slowly; prices remain elevated for a short period.",
+      "canon_effect": "none",
+      "spoiler_gate_arc": "east_blue"
+    },
+    {
+      "id": "rival_crew_rescue",
+      "title": "Sails in Distress",
+      "weight": 4,
+      "conditions": [
+        "player is at sea",
+        "security_pressure is above 25"
+      ],
+      "trigger": "sea_travel_safe_window",
+      "choices": [
+        "Rescue the crew",
+        "Offer aid for payment",
+        "Keep distance and mark the location"
+      ],
+      "effects": [
+        "May create a rival, ally, or future rescue lead based on conduct"
+      ],
+      "fail_forward": "The vessel escapes or is lost off-screen; no canon character is involved.",
+      "canon_effect": "none",
+      "spoiler_gate_arc": "east_blue"
+    },
+    {
+      "id": "festival_volunteer_call",
+      "title": "A Festival Needs Hands",
+      "weight": 9,
+      "conditions": [
+        "a settlement has settlement_trust above 35",
+        "a local festival flag is active"
+      ],
+      "trigger": "safe_arrival",
+      "choices": [
+        "Volunteer",
+        "Sponsor a stall or contest",
+        "Enjoy the festival without taking a task"
+      ],
+      "effects": [
+        "Small reputation gains, local contacts, and optional minigame entry"
+      ],
+      "fail_forward": "The festival proceeds without the player; a contact may still remember their visit.",
+      "canon_effect": "none",
+      "spoiler_gate_arc": "east_blue"
+    },
+    {
+      "id": "missing_ferry",
+      "title": "The Missing Ferry",
+      "weight": 5,
+      "conditions": [
+        "player has visited a coastal settlement",
+        "security_pressure is above 15"
+      ],
+      "trigger": "safe_arrival_or_day_change",
+      "choices": [
+        "Search the route",
+        "Question the harbor office",
+        "Organize a temporary crossing"
+      ],
+      "effects": [
+        "May open a local rescue quest or reveal a smuggling clue"
+      ],
+      "fail_forward": "The ferry returns late or is found damaged; the route remains usable with delay.",
+      "canon_effect": "none",
+      "spoiler_gate_arc": "east_blue"
+    },
+    {
+      "id": "strange_scrap_merchant",
+      "title": "The Scrap Merchant's Offer",
+      "weight": 6,
+      "conditions": [
+        "player has access to a port or workshop",
+        "market_supply is below 80"
+      ],
+      "trigger": "safe_arrival",
+      "choices": [
+        "Inspect the parts",
+        "Buy at a discount",
+        "Report suspected stolen goods"
+      ],
+      "effects": [
+        "May unlock ship repair materials or a local dispute"
+      ],
+      "fail_forward": "The merchant moves on; the player keeps any public evidence gathered.",
+      "canon_effect": "none",
+      "spoiler_gate_arc": "east_blue"
+    }
+  ]
+}
