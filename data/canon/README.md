@@ -1,0 +1,54 @@
+# One Piece Canon & Story Data — First Tranche
+
+This folder is a **data-only content layer**. It does not yet change the browser runtime or force the player to follow the Straw Hats' route.
+
+## Contents
+
+- `arcs.json`: the official story-section index, with manga chapter ranges and major locations.
+- `events.json`: a first-pass set of representative manga-canon timeline anchors and player-facing scenario hooks.
+- `cover_stories.json`: selected manga cover-page serials that provide canonical side-story material.
+- `fan_ideas.json`: community theories, what-if prompts, and fan worldbuilding formats transformed into original, optional sandbox hooks.
+
+This is a curated first tranche, not an exhaustive encyclopedia. The ongoing Elbaph arc must be extended only after checking newly published chapters against reliable sources.
+
+## Classification policy
+
+- `manga_canon`: events confirmed in the manga.
+- `cover_story`: serialized manga cover-page side stories. They are official story material, but are kept separate from the main arc timeline.
+- `anime_only`: anime-original material. It is not silently added to manga canon.
+- `fan_theory`: a community hypothesis, not a confirmed fact.
+- `fanon_sandbox`: an original optional scenario inspired by a fan discussion, fan work, or community prompt.
+- `needs_review`: a disputed or insufficiently sourced claim.
+
+Fan ideas are always tagged `fanon_sandbox` and `play_scope: sandbox_only`. They must never populate canon flags, rewrite canon outcomes, or appear as factual news. When a fan idea discusses a late-series mystery, its `spoiler_gate_arc` must prevent it from appearing in an earlier-stage playthrough.
+
+## Runtime contract
+
+- Canon is a **reference timeline**, not a mandatory player script.
+- Events use `trigger_mode: scenario_anchor_only` or `world_news_anchor`; they are not meant to auto-fire simply because a date or location matches.
+- A player's actions may replace the reference outcome. Future integration must store player outcomes separately from canon reference outcomes.
+- The current HTML single-file runtime remains the source of truth for playable code. These files are not loaded by the browser in this tranche.
+
+## Sources and adaptation
+
+Use the official ONE PIECE.com story index for the official arc-section names and chapter boundaries. The One Piece Wiki is used as a secondary research index for arc descriptions and cover-story references. Community sources are inspiration only.
+
+No long passages are copied. Community theories and prompts are paraphrased and transformed into new scenario hooks. Keep source URLs and author/community attribution with each item.
+
+## Validation
+
+Run:
+
+```sh
+node --test tests/*.test.js
+node scripts/validate-canon.js
+```
+
+The validator checks unique IDs, arc order and chapter bounds, event-to-arc references, canon tags, sandbox isolation for fan ideas, and source URLs.
+
+## Next content pass
+
+1. Verify additional key events at chapter-level precision and expand character/location/faction references.
+2. Catalogue more cover stories, including their release ranges and story consequences.
+3. Add source-backed scenario entry points and branch conditions without assuming the player repeats Luffy's choices.
+4. Integrate the data into the active HTML runtime only after the branch/runtime contract has been reconciled.
