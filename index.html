@@ -11970,7 +11970,7 @@ function onRender(){try{const btn=document.getElementById('onBtn'),pan=document.
 /* ---- setup: choose online mode ---- */
 function onSetupUI(){try{let row=document.getElementById('onRow');const sb=$('#startBtn');if(!sb)return;if(!row){row=document.createElement('div');row.id='onRow';row.className='onrow';sb.parentNode.insertBefore(row,sb);}row.innerHTML='';
   const can=!!ON.room;for(const [v,n] of [[false,'เล่นคนเดียว'],[true,'โหมดออนไลน์']]){const b=document.createElement('button');b.type='button';b.className='ghost';b.textContent=n;b.setAttribute('aria-pressed',!!cfg.online===v);b.disabled=v&&!can;b.onclick=()=>{cfg.online=v;onSetupUI();};row.append(b);}
-  const s=document.createElement('small');s.style.opacity='.75';s.textContent=can?(cfg.online?'เห็นผู้เล่นจริงในโลกเดียวกัน แชท คบหา ประลอง เวลาเดินช้าเท่ากันทุกคน ยังแก่และตายได้เหมือนเดิม':'เร่งเวลาได้ตามใจ')(ON.trying?'กำลังตรวจสอบโหมดออนไลน์...':'โหมดออนไลน์ปิดชั่วคราวในรุ่นทดสอบไฟล์เดียว');row.append(s);}catch(e){}}
+  const s=document.createElement('small');s.style.opacity='.75';s.textContent=can?(cfg.online?'เห็นผู้เล่นจริงในโลกเดียวกัน แชท คบหา ประลอง เวลาเดินช้าเท่ากันทุกคน ยังแก่และตายได้เหมือนเดิม':'เร่งเวลาได้ตามใจ'):(ON.trying?'กำลังตรวจสอบโหมดออนไลน์...':'โหมดออนไลน์ปิดชั่วคราวในรุ่นทดสอบไฟล์เดียว');row.append(s);}catch(e){}}
 {const sr0=setupRender;setupRender=function(){sr0();onSetupUI();};}
 setInterval(()=>{try{if(cfg.online&&S&&S.online==null)S.online=true;if(ON.room&&!document.getElementById('onRow')?.querySelector('button:not([disabled])+button:not([disabled])'))onSetupUI();onRender();}catch(e){}},4000);
 
