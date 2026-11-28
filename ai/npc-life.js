@@ -97,12 +97,13 @@
       }, 0);
       const goalMatch = (profile.goals || []).some(goal => goal.status === 'active' &&
         (goal.action === id || (goal.tags || []).some(tag => definition.tags.includes(tag))));
+      const scheduledMatch = scheduled === id || (scheduled === 'career' && careerActions.includes(id));
       return {
         id, label: id, tags: definition.tags, relief: definition.relief,
         expectedReward: definition.reward + (profile.careerLevel - 1) * 0.15,
         risk: definition.risk, available,
-        opportunityValue: goalMatch ? 12 : 0,
-        scheduled: scheduled === id || (scheduled === 'career' && careerActions.includes(id)),
+        opportunityValue: (goalMatch ? 12 : 0) + (scheduledMatch ? 4 : 0),
+        scheduled: scheduledMatch,
         destination: id === 'travel' && available ? context.reachableDestinations[0] : null
       };
     }).filter(Boolean);
