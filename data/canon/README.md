@@ -5,7 +5,7 @@ This folder is a **data-only content layer**. It does not yet change the browser
 ## Contents
 
 - `arcs.json`: the story-section index, with manga chapter ranges and major locations.
-- `events.json`: representative manga-canon timeline anchors, linked to locations, factions, characters, and baseline reference flags.
+- `events.json`: representative manga-canon timeline anchors, linked to locations, factions, characters, and baseline reference flags. Seven anchors now include 11 source-verified key chapter milestones; broad arc spans remain clearly labelled and are not exact event triggers.
 - `scenario_hooks.json`: 21 optional player-facing scenario seeds with three approaches each, fail-forward outcomes, spoiler gates, and explicit canon isolation.
 - `locations.json`: source-backed locations used by the event anchors.
 - `factions.json`: pirate crews, communities, government bodies, and alliances referenced by the events.
@@ -48,7 +48,7 @@ node --test tests/*.test.js
 node scripts/validate-canon.js
 ```
 
-The validator checks unique IDs, arc order and chapter bounds, event-to-arc/location/faction/character references, scenario-to-event links, three-path player choices, fail-forward rules, canon isolation, canon tags, source URLs, all 21 cover-story ranges and their catalogue groups, and sandbox isolation for fan ideas.
+The validator checks unique IDs, arc order and chapter bounds, event-to-arc/location/faction/character references, source-backed milestone chapter bounds, scenario-to-event links, three-path player choices, fail-forward rules, canon isolation, canon tags, source URLs, all 21 cover-story ranges and their catalogue groups, and sandbox isolation for fan ideas.
 
 ## Next content pass
 
