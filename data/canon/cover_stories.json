@@ -16,7 +16,8 @@
       "source_urls": [
         "https://onepiece.fandom.com/wiki/Buggy%27s_Crew_Adventure_Chronicles",
         "https://onepiece.fandom.com/wiki/Category%3ACover_Stories"
-      ]
+      ],
+      "catalogue_group": "major_serial"
     },
     {
       "id": "diary_of_koby_meppo",
@@ -31,7 +32,8 @@
       "source_urls": [
         "https://onepiece.fandom.com/wiki/Diary_of_Koby-Meppo",
         "https://onepiece.fandom.com/wiki/Category%3ACover_Stories"
-      ]
+      ],
+      "catalogue_group": "major_serial"
     },
     {
       "id": "jangos_dance_paradise",
@@ -46,7 +48,8 @@
       "source_urls": [
         "https://onepiecebreaks.com/cover-stories/",
         "https://onepiece.fandom.com/wiki/Jango%27s_Dance_Paradise"
-      ]
+      ],
+      "catalogue_group": "major_serial"
     },
     {
       "id": "hatchans_sea_floor_stroll",
@@ -61,7 +64,8 @@
       "source_urls": [
         "https://onepiecebreaks.com/cover-stories/",
         "https://onepiece.fandom.com/wiki/Hatchan%27s_Sea-Floor_Stroll"
-      ]
+      ],
+      "catalogue_group": "major_serial"
     },
     {
       "id": "wapols_omnivorous_hurrah",
@@ -76,7 +80,8 @@
       "source_urls": [
         "https://onepiecebreaks.com/cover-stories/",
         "https://onepiece.fandom.com/wiki/Wapol%27s_Omnivorous_Hurrah"
-      ]
+      ],
+      "catalogue_group": "major_serial"
     },
     {
       "id": "ace_great_blackbeard_search",
@@ -91,7 +96,8 @@
       "source_urls": [
         "https://onepiece.fandom.com/wiki/Ace%27s_Great_Blackbeard_Search",
         "https://onepiece.fandom.com/wiki/Category%3ACover_Stories"
-      ]
+      ],
+      "catalogue_group": "major_serial"
     },
     {
       "id": "gedatsus_accidental_blue_sea_life",
@@ -106,7 +112,8 @@
       "source_urls": [
         "https://onepiecebreaks.com/cover-stories/",
         "https://onepiece.fandom.com/wiki/Gedatsu%27s_Accidental_Blue-Sea_Life"
-      ]
+      ],
+      "catalogue_group": "major_serial"
     },
     {
       "id": "miss_goldenweeks_operation",
@@ -121,6 +128,23 @@
       "source_urls": [
         "https://onepiecebreaks.com/cover-stories/",
         "https://onepiece.fandom.com/wiki/Miss_Goldenweek%27s_Operation_Meet_Baroque_Works"
+      ],
+      "catalogue_group": "major_serial"
+    },
+    {
+      "id": "where_they_are_now_skypiea",
+      "title": "Where They Are Now (Skypiea)",
+      "chapter_range": {
+        "start": 424,
+        "end": 427
+      },
+      "canon_status": "cover_story",
+      "catalogue_group": "supplemental_short_run",
+      "summary": "A short follow-up cover sequence revisits characters and communities from the Skypiea storyline.",
+      "story_use": "A compact example of post-arc callbacks: the player can receive a brief world update about people and settlements left behind.",
+      "source_urls": [
+        "https://onepiecebreaks.com/cover-stories/",
+        "https://onepiece.fandom.com/wiki/Where_They_Are_Now"
       ]
     },
     {
@@ -136,6 +160,23 @@
       "source_urls": [
         "https://onepiece.fandom.com/wiki/Enel%27s_Great_Space_Operations",
         "https://onepiece.fandom.com/wiki/Category%3ACover_Stories"
+      ],
+      "catalogue_group": "major_serial"
+    },
+    {
+      "id": "where_they_are_now_water_7",
+      "title": "Where They Are Now (Water 7)",
+      "chapter_range": {
+        "start": 486,
+        "end": 490
+      },
+      "canon_status": "cover_story",
+      "catalogue_group": "supplemental_short_run",
+      "summary": "A short follow-up cover sequence checks in on characters from the Water 7 storyline after the crew departs.",
+      "story_use": "A model for short epilogue scenes that update NPC locations, relationships, and local conditions without launching a full quest chain.",
+      "source_urls": [
+        "https://onepiecebreaks.com/cover-stories/",
+        "https://onepiece.fandom.com/wiki/Where_They_Are_Now"
       ]
     },
     {
@@ -151,7 +192,8 @@
       "source_urls": [
         "https://onepiecebreaks.com/cover-stories/",
         "https://onepiece.fandom.com/wiki/CP9%27s_Independent_Report"
-      ]
+      ],
+      "catalogue_group": "major_serial"
     },
     {
       "id": "straw_hat_separation_serial",
@@ -166,7 +208,8 @@
       "source_urls": [
         "https://onepiecebreaks.com/cover-stories/",
         "https://onepiece.fandom.com/wiki/Straw_Hat%27s_Separation_Serial"
-      ]
+      ],
+      "catalogue_group": "major_serial"
     },
     {
       "id": "from_the_decks_of_the_world",
@@ -181,7 +224,8 @@
       "source_urls": [
         "https://onepiecebreaks.com/cover-stories/",
         "https://onepiece.fandom.com/wiki/From_the_Decks_of_the_World"
-      ]
+      ],
+      "catalogue_group": "major_serial"
     },
     {
       "id": "caribous_kehihihihi_new_world",
@@ -196,7 +240,8 @@
       "source_urls": [
         "https://onepiecebreaks.com/cover-stories/",
         "https://onepiece.fandom.com/wiki/Caribou%27s_Kehihihihi_in_the_New_World"
-      ]
+      ],
+      "catalogue_group": "major_serial"
     },
     {
       "id": "jinbe_solo_journey",
@@ -211,7 +256,8 @@
       "source_urls": [
         "https://onepiecebreaks.com/cover-stories/",
         "https://onepiece.fandom.com/wiki/Solo_Journey_of_Jinbe,_Knight_of_the_Sea"
-      ]
+      ],
+      "catalogue_group": "major_serial"
     },
     {
       "id": "from_the_decks_500_million_man",
@@ -226,7 +272,8 @@
       "source_urls": [
         "https://onepiecebreaks.com/cover-stories/",
         "https://onepiece.fandom.com/wiki/From_the_Decks_of_the_World:_The_500,000,000_Man_Arc"
-      ]
+      ],
+      "catalogue_group": "major_serial"
     },
     {
       "id": "straw_hat_grand_fleet_stories",
@@ -241,7 +288,8 @@
       "source_urls": [
         "https://onepiece.fandom.com/wiki/The_Stories_of_the_Self-Proclaimed_Straw_Hat_Grand_Fleet",
         "https://onepiece.fandom.com/wiki/Category%3ACover_Stories"
-      ]
+      ],
+      "catalogue_group": "major_serial"
     },
     {
       "id": "gang_bege_oh_my_family",
@@ -256,7 +304,8 @@
       "source_urls": [
         "https://onepiece.fandom.com/wiki/%22Gang%22_Bege%27s_Oh_My_Family",
         "https://onepiece.fandom.com/wiki/Category%3ACover_Stories"
-      ]
+      ],
+      "catalogue_group": "major_serial"
     },
     {
       "id": "germa_emotionless_excursion",
@@ -271,7 +320,8 @@
       "source_urls": [
         "https://onepiecebreaks.com/cover-stories/",
         "https://onepiece.fandom.com/wiki/Germa_66%27s_Ahh..._An_Emotionless_Excursion"
-      ]
+      ],
+      "catalogue_group": "major_serial"
     },
     {
       "id": "yamato_golden_harvest_pilgrimage",
@@ -286,7 +336,8 @@
       "source_urls": [
         "https://onepiece.fandom.com/wiki/Oni_Child_Yamato%27s_Golden_Harvest_Surrogate_Pilgrimage",
         "https://onepiece.fandom.com/wiki/Category%3ACover_Stories"
-      ]
+      ],
+      "catalogue_group": "major_serial"
     }
   ]
 }
