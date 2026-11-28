@@ -34,6 +34,51 @@
       ]
     },
     {
+      "id": "jangos_dance_paradise",
+      "title": "Jango's Dance Paradise",
+      "chapter_range": {
+        "start": 126,
+        "end": 172
+      },
+      "canon_status": "cover_story",
+      "summary": "Jango, while on the run, meets Fullbody through a dance contest; their encounter leads to an unexpected friendship and a new place in the Marines.",
+      "story_use": "A template for rival-to-ally stories, social contests, mistaken identities, and NPCs whose loyalties change after shared experiences.",
+      "source_urls": [
+        "https://onepiecebreaks.com/cover-stories/",
+        "https://onepiece.fandom.com/wiki/Jango%27s_Dance_Paradise"
+      ]
+    },
+    {
+      "id": "hatchans_sea_floor_stroll",
+      "title": "Hatchan's Sea-Floor Stroll",
+      "chapter_range": {
+        "start": 182,
+        "end": 228
+      },
+      "canon_status": "cover_story",
+      "summary": "After Arlong's defeat, Hatchan travels underwater, meets Camie and Pappag, and eventually starts a takoyaki business.",
+      "story_use": "A model for redemption arcs, meeting recurring civilian NPCs, and turning a former enemy into a merchant or quest-giver.",
+      "source_urls": [
+        "https://onepiecebreaks.com/cover-stories/",
+        "https://onepiece.fandom.com/wiki/Hatchan%27s_Sea-Floor_Stroll"
+      ]
+    },
+    {
+      "id": "wapols_omnivorous_hurrah",
+      "title": "Wapol's Omnivorous Hurrah",
+      "chapter_range": {
+        "start": 236,
+        "end": 262
+      },
+      "canon_status": "cover_story",
+      "summary": "After losing his kingdom, Wapol uses his unusual abilities to build a successful toy business and regain influence.",
+      "story_use": "A model for displaced rulers, rebuilding an enterprise, economic progression, and morally ambiguous NPC entrepreneurs.",
+      "source_urls": [
+        "https://onepiecebreaks.com/cover-stories/",
+        "https://onepiece.fandom.com/wiki/Wapol%27s_Omnivorous_Hurrah"
+      ]
+    },
+    {
       "id": "ace_great_blackbeard_search",
       "title": "Ace's Great Blackbeard Search",
       "chapter_range": {
@@ -49,6 +94,36 @@
       ]
     },
     {
+      "id": "gedatsus_accidental_blue_sea_life",
+      "title": "Gedatsu's Accidental Blue-Sea Life",
+      "chapter_range": {
+        "start": 314,
+        "end": 348
+      },
+      "canon_status": "cover_story",
+      "summary": "After falling from Skypiea, Gedatsu becomes involved in digging a hot spring and settles into work at a bathhouse.",
+      "story_use": "A template for absurd side quests, accidental settlement, local infrastructure projects, and former antagonists living ordinary lives.",
+      "source_urls": [
+        "https://onepiecebreaks.com/cover-stories/",
+        "https://onepiece.fandom.com/wiki/Gedatsu%27s_Accidental_Blue-Sea_Life"
+      ]
+    },
+    {
+      "id": "miss_goldenweeks_operation",
+      "title": "Miss Goldenweek's Operation: Meet Baroque Works",
+      "chapter_range": {
+        "start": 359,
+        "end": 413
+      },
+      "canon_status": "cover_story",
+      "summary": "Miss Goldenweek gathers former Baroque Works agents and works to help free imprisoned colleagues.",
+      "story_use": "A model for rescue chains, faction reunions, prison contacts, and the long-term consequences of a defeated organization.",
+      "source_urls": [
+        "https://onepiecebreaks.com/cover-stories/",
+        "https://onepiece.fandom.com/wiki/Miss_Goldenweek%27s_Operation_Meet_Baroque_Works"
+      ]
+    },
+    {
       "id": "enel_great_space_operations",
       "title": "Enel's Great Space Operations",
       "chapter_range": {
@@ -61,6 +136,96 @@
       "source_urls": [
         "https://onepiece.fandom.com/wiki/Enel%27s_Great_Space_Operations",
         "https://onepiece.fandom.com/wiki/Category%3ACover_Stories"
+      ]
+    },
+    {
+      "id": "cp9_independent_report",
+      "title": "CP9's Independent Report",
+      "chapter_range": {
+        "start": 491,
+        "end": 528
+      },
+      "canon_status": "cover_story",
+      "summary": "The defeated CP9 agents seek funds for Lucci's treatment, protect a town from pirates, and go into hiding.",
+      "story_use": "A model for defeated elite NPCs, medical expenses, fugitive networks, and temporary alliances with communities.",
+      "source_urls": [
+        "https://onepiecebreaks.com/cover-stories/",
+        "https://onepiece.fandom.com/wiki/CP9%27s_Independent_Report"
+      ]
+    },
+    {
+      "id": "straw_hat_separation_serial",
+      "title": "Straw Hat's Separation Serial",
+      "chapter_range": {
+        "start": 543,
+        "end": 560
+      },
+      "canon_status": "cover_story",
+      "summary": "The separated Straw Hat crew members each face events in the places where Kuma sent them.",
+      "story_use": "A direct design reference for parallel character storylines, asynchronous companion progression, and reconnecting separated crew members.",
+      "source_urls": [
+        "https://onepiecebreaks.com/cover-stories/",
+        "https://onepiece.fandom.com/wiki/Straw_Hat%27s_Separation_Serial"
+      ]
+    },
+    {
+      "id": "from_the_decks_of_the_world",
+      "title": "From the Decks of the World",
+      "chapter_range": {
+        "start": 613,
+        "end": 668
+      },
+      "canon_status": "cover_story",
+      "summary": "People and communities encountered earlier react to news of the Straw Hats after the two-year separation.",
+      "story_use": "A model for world simulation and news propagation: NPCs remember the player's reputation and react to major milestones while the player is elsewhere.",
+      "source_urls": [
+        "https://onepiecebreaks.com/cover-stories/",
+        "https://onepiece.fandom.com/wiki/From_the_Decks_of_the_World"
+      ]
+    },
+    {
+      "id": "caribous_kehihihihi_new_world",
+      "title": "Caribou's Kehihihihi in the New World",
+      "chapter_range": {
+        "start": 674,
+        "end": 731
+      },
+      "canon_status": "cover_story",
+      "summary": "Caribou escapes custody, reaches an island, and becomes involved in a conflict affecting the local population.",
+      "story_use": "A model for escaped captives, island-level political conflicts, and an antagonist whose actions can alter local conditions off-screen.",
+      "source_urls": [
+        "https://onepiecebreaks.com/cover-stories/",
+        "https://onepiece.fandom.com/wiki/Caribou%27s_Kehihihihi_in_the_New_World"
+      ]
+    },
+    {
+      "id": "jinbe_solo_journey",
+      "title": "Solo Journey of Jinbe, Knight of the Sea",
+      "chapter_range": {
+        "start": 751,
+        "end": 785
+      },
+      "canon_status": "cover_story",
+      "summary": "Jinbe travels beneath the sea and investigates trouble involving a missing town.",
+      "story_use": "A model for underwater exploration, missing-settlement investigations, and independent ally missions that run alongside the main voyage.",
+      "source_urls": [
+        "https://onepiecebreaks.com/cover-stories/",
+        "https://onepiece.fandom.com/wiki/Solo_Journey_of_Jinbe,_Knight_of_the_Sea"
+      ]
+    },
+    {
+      "id": "from_the_decks_500_million_man",
+      "title": "From the Decks of the World: The 500,000,000 Man Arc",
+      "chapter_range": {
+        "start": 805,
+        "end": 838
+      },
+      "canon_status": "cover_story",
+      "summary": "People around the world react to Doflamingo's defeat and the news of Luffy's 500-million-berry bounty.",
+      "story_use": "A model for reputation updates, bounty reactions, local rumors, and changes in NPC behavior after world-scale events.",
+      "source_urls": [
+        "https://onepiecebreaks.com/cover-stories/",
+        "https://onepiece.fandom.com/wiki/From_the_Decks_of_the_World:_The_500,000,000_Man_Arc"
       ]
     },
     {
@@ -91,6 +256,21 @@
       "source_urls": [
         "https://onepiece.fandom.com/wiki/%22Gang%22_Bege%27s_Oh_My_Family",
         "https://onepiece.fandom.com/wiki/Category%3ACover_Stories"
+      ]
+    },
+    {
+      "id": "germa_emotionless_excursion",
+      "title": "Germa 66's Ahh... An Emotionless Excursion",
+      "chapter_range": {
+        "start": 1035,
+        "end": 1078
+      },
+      "canon_status": "cover_story",
+      "summary": "The Vinsmoke family fights to escape Big Mom's territory and recover family members held there.",
+      "story_use": "A model for family rescue operations, faction escape routes, and parallel events involving a powerful organization outside the player's immediate location.",
+      "source_urls": [
+        "https://onepiecebreaks.com/cover-stories/",
+        "https://onepiece.fandom.com/wiki/Germa_66%27s_Ahh..._An_Emotionless_Excursion"
       ]
     },
     {
