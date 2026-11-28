@@ -108,3 +108,47 @@ test('canon story anchors allow the player to diverge from the reference timelin
   assert.ok(arcs.every(arc => arc.player_divergence_allowed === true));
   assert.ok(events.every(event => event.player_can_override === true));
 });
+
+
+test('cover-story adaptations are original multi-stage sandbox quests, not canon retellings', () => {
+  const data = loadDatasets();
+  const stories = new Set(data.coverStories.map(story => story.id));
+  assert.equal(data.coverStoryQuests.length, 6);
+  for (const quest of data.coverStoryQuests) {
+    assert.ok(stories.has(quest.inspired_by_cover_story_id));
+    assert.equal(quest.canon_status, 'optional_original');
+    assert.equal(quest.play_scope, 'sandbox_only');
+    assert.equal(quest.canon_effect, 'none');
+    assert.equal(quest.player_can_override, true);
+    assert.ok(quest.stages.length >= 3);
+    assert.ok(quest.stages.every(stage => stage.fail_forward && stage.approaches.length >= 2));
+  }
+});
+
+test('NPC and settlement rules use bounded local state and cannot rewrite canon', () => {
+  const { worldState } = loadDatasets();
+  assert.equal(worldState.state_variables.length, 5);
+  for (const variable of worldState.state_variables) {
+    assert.ok(variable.min <= variable.default && variable.default <= variable.max);
+  }
+  assert.equal(worldState.rules.length, 7);
+  const stateIds = new Set(worldState.state_variables.map(item => item.id));
+  for (const rule of worldState.rules) {
+    assert.equal(rule.cap_each_tick, true);
+    assert.ok(rule.effects.every(effect => stateIds.has(effect.state)));
+  }
+  assert.ok(worldState.safeguards.length >= 5);
+});
+
+test('random events are optional, conditional, spoiler-gated and canon-isolated', () => {
+  const { randomEvents } = loadDatasets();
+  assert.equal(randomEvents.length, 10);
+  for (const event of randomEvents) {
+    assert.ok(event.weight > 0);
+    assert.ok(event.conditions.length > 0);
+    assert.ok(event.choices.length >= 2);
+    assert.equal(event.canon_effect, 'none');
+    assert.ok(event.spoiler_gate_arc);
+    assert.ok(event.fail_forward.length > 0);
+  }
+});
