@@ -1,6 +1,14 @@
 name: AI module tests
 
 on:
+  pull_request:
+    branches:
+      - one-piece-development
+    paths:
+      - 'ai/**'
+      - 'tests/**'
+      - 'README.md'
+      - '.github/workflows/**'
   push:
     branches:
       - one-piece-development
@@ -23,4 +31,4 @@ jobs:
         with:
           node-version: 20
       - name: Run AI unit tests
-        run: node --test tests/ai.test.js
+        run: node --test tests/*.test.js
